@@ -1,0 +1,50 @@
+<DataBase>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexA9.JLinkScript"
+            Name="MCIMX6X1_A9"
+            Core="JLINK_CORE_CORTEX_A9"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexM4.JLinkScript"
+            Name="MCIMX6X1_M4"
+            Core="JLINK_CORE_CORTEX_M4"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexA9.JLinkScript"
+            Name="MCIMX6X2_A9"
+            Core="JLINK_CORE_CORTEX_A9"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexM4.JLinkScript"
+            Name="MCIMX6X2_M4"
+            Core="JLINK_CORE_CORTEX_M4"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexA9.JLinkScript"
+            Name="MCIMX6X3_A9"
+            Core="JLINK_CORE_CORTEX_A9"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexM4.JLinkScript"
+            Name="MCIMX6X3_M4"
+            Core="JLINK_CORE_CORTEX_M4"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexA9.JLinkScript"
+            Name="MCIMX6X4_A9"
+            Core="JLINK_CORE_CORTEX_A9"/>
+    </Device>
+    <Device>
+        <ChipInfo Vendor="NXP"
+            JLinkScriptFile="Devices\NXP\iMX6SoloX_Connect_CortexM4.JLinkScript"
+            Name="MCIMX6X4_M4"
+            Core="JLINK_CORE_CORTEX_M4"/>
+    </Device>
+</DataBase>

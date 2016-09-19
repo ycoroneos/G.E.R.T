@@ -1,0 +1,106 @@
+#
+# This file is going to be stored at /etc/udev/rules.d on installation of the J-Link package
+# It makes sure that non-superuser have access to the connected J-Links, so JLinkExe etc. can be executed as non-superuser and can work with J-Link
+#
+#
+# Matches are AND combined, meaning: a==b,c==d,do stuff
+# results in:                        if (a == b) && (c == d) -> do stuff
+#
+ACTION!="add", SUBSYSTEM!="usb_device", GOTO="jlink_rules_end"
+#
+# Give all users read and write access.
+# Note: NOT all combinations are supported by J-Link right now. Some are reserved for future use, but already added here
+#
+# 0x0101 - J-Link (default)
+# 0x0102 - J-Link USBAddr = 1 (obsolete) 
+# 0x0103 - J-Link USBAddr = 2 (obsolete) 
+# 0x0104 - J-Link USBAddr = 3 (obsolete) 
+# 0x0105 - CDC + J-Link
+# 0x0106 - CDC
+# 0x0107 - RNDIS  + J-Link
+# 0x0108 - J-Link + MSD
+# 0x1000 - MSD
+#
+# ATTR{filename}
+#                  Match sysfs attribute values of the event device. Trailing
+#                  whitespace in the attribute values is ignored unless the specified
+#                  match value itself contains trailing whitespace.
+#
+# ATTRS{filename}
+#                  Search the devpath upwards for a device with matching sysfs
+#                  attribute values. If multiple ATTRS matches are specified, all of
+#                  them must match on the same device. Trailing whitespace in the
+#                  attribute values is ignored unless the specified match value itself
+#                  contains trailing whitespace.
+#
+# How to find out about udev attributes of device:
+# Connect J-Link to PC
+# Terminal: cat /var/log/syslog
+# Find path to where J-Link device has been "mounted"
+# sudo udevadm info --query=all --attribute-walk --path=<PathExtractedFromSyslog>
+#
+ATTR{idProduct}=="0101", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0102", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0103", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0104", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0105", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0107", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="0108", ATTR{idVendor}=="1366", MODE="666"
+#
+# 0x1000 not added yet
+#
+# New PID scheme, for all possible combinations
+# 0x1001: MSD
+# 0x1002: RNDIS
+# 0x1003: RNDIS  + MSD
+# 0x1004: CDC
+# 0x1005: CDC    + MSD
+# 0x1006: RNDIS  + CDC
+# 0x1007: RNDIS  + CDC    + MSD
+# 0x1008: HID
+# 0x1009: MSD    + HID
+# 0x100a: RNDIS  + HID
+# 0x100b: RNDIS  + MSD    + HID
+# 0x100c: CDC    + HID
+# 0x100d: CDC    + MSD    + HID
+# 0x100e: RNDIS  + CDC    + HID
+# 0x100f: RNDIS  + CDC    + MSD + HID
+# 0x1010: J_LINK
+# 0x1011: J_LINK + MSD
+# 0x1012: RNDIS  + J_LINK
+# 0x1013: RNDIS  + J_LINK + MSD
+# 0x1014: CDC    + J_LINK
+# 0x1015: CDC    + J_LINK + MSD
+# 0x1016: RNDIS  + CDC    + J_LINK
+# 0x1017: RNDIS  + CDC    + J_LINK + MSD
+# 0x1018: J_LINK + HID
+# 0x1019: J_LINK + MSD    + HID
+# 0x101a: RNDIS  + J_LINK + HID
+# 0x101b: RNDIS  + J_LINK + MSD    + HID
+# 0x101c: CDC    + J_LINK + HID
+# 0x101d: CDC    + J_LINK + MSD    + HID
+# 0x101e: RNDIS  + CDC    + J_LINK + HID
+# 0x101f: RNDIS  + CDC    + J_LINK + MSD + HID
+#
+# 0x1001 - 0x100f not added yet
+#
+ATTR{idProduct}=="1010", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1011", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1012", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1013", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1014", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1015", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1016", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1017", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1018", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="1019", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101A", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101B", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101C", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101D", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101E", ATTR{idVendor}=="1366", MODE="666"
+ATTR{idProduct}=="101F", ATTR{idVendor}=="1366", MODE="666"
+#
+# End of list
+#
+LABEL="jlink_rules_end"

@@ -1,0 +1,61 @@
+Important - Read carefully:
+
+DEFINITIONS: 
+For the purpose of this agreement, the terms shall have the following meaning when the entire word is marked bold:
+
+The „software“ means all J-Link related software components included in the  J-Link software & documentation pack provided by SEGGER which can be downloaded at: http://www.segger.com/jlink-software.html 
+
+"Licensor" shall mean SEGGER except under the following circumstances:
+If Licensee acquired the software as a bundled component of a third party product or service, then such third party shall either include this license terms or be Licensor and provide similar terms  which will not exceed those set forth in this agreement.
+
+1. LICENSE AGREEMENT
+This license is a legal agreement between YOU (either an individual or a single entity) and SEGGER Microcontroller GmbH & Co. KG (called SEGGER).
+By downloading and/or using J-Link software, you agree to be bound by the terms of this agreement. 
+
+2. LICENSE GRANT
+These terms apply to the entire J-Link software & documentation pack, especially to its  software components, developed by SEGGER Microcontroller GmbH & Co. KG, which can be downloaded at: http://www.segger.com/jlink-software.html or as beta version at: http://www.segger.com/jlink-software-beta-version.html.
+The software consists of proprietary, unpublished products of SEGGER, protected under copyright and trade secret laws.
+All rights, title and interest in the software are and shall remain with SEGGER.
+Licensor grants Licensee a non-exclusive and non-transferable License to use the software or parts thereof with SEGGERs J-Link family of debug probes or authorized OEM products only.  Additional info on the original SEGGER J-Link family of debug probes or authorized OEM products can be obtained at: http://www.segger.com/terms-of-use.html.  Any other use of the software package is prohibited without prior written authorization from SEGGER.
+The use of the licensed software to operate J-Link clones is prohibited and illegal; SEGGER may hold Licensee liable, if Licensee fails to comply with this restriction. 
+Any (re)distribution or shipment of the software  requires the prior written authorization from SEGGER in each instance. 
+Licensee is entitled to make copies of the software for backup purposes only. 
+All copies of the software, including modifications to the software, must bear all copyright, trademarks and other proprietary notices included thereon by SEGGER.
+This License does not entitle Licensee to receive from SEGGER hard-copy documentation, technical support, telephone assistance, or enhancements or updates for the software  unless a specific agreement clearly states otherwise.
+
+3. RESTRICTIONS
+Licensee may not:
+(a) decompile, disassemble, reverse engineer, or otherwise attempt to derive the source code of the software, 
+(b) redistribute, encumber, sell, rent, lease, sublicense, or otherwise transfer rights of the software,
+(c) remove or alter any trademark, logo, copyright or other proprietary notices, legends, symbols or labels of the software, 
+(d) install or use the software with unauthorized debug probes.
+
+4. FEES
+All features of the software which are functional without request for a license key can be used free of charge, at least for evaluation purposes.
+
+5. TERMINATION
+Without prejudice to any other rights, Licensor may terminate this agreement if Licensee breaches any term or condition of this agreement. In such event SEGGER is entitled to also claim monetary damages.  
+
+6. PROPRIETARY RIGHTS
+Title, ownership rights, and intellectual property rights in the software shall remain by SEGGER and/or its suppliers. Licensee acknowledges such ownership and intellectual property rights and will not take any action to jeopardize, limit or interfere in any manner with SEGGER or its suppliers' ownership of or rights with respect to the software. The software is protected by copyright and other intellectual property laws and by international treaties. 
+
+7. DISCLAIMER OF WARRANTY
+The software is provided on an "as is" basis, without warranty of any kind, including without limitation the warranties that it is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the software is borne by Licensee. Should the software prove defective in any respect, Licensee and not Licensor or its suppliers or resellers assumes the entire cost of any service and repair. In addition Licensee must determine that the software sufficiently meets its requirements. This disclaimer of warranty constitutes an essential part of this agreement. No use of the software is authorized hereunder except under this disclaimer.
+
+8. LIMITATION OF LIABILITY
+To the maximum extent permitted by applicable law, in no event will Licensor or its suppliers or resellers be liable for any indirect, special, incidental or consequential damages arising out of the use of or inability to use the software, including, without limitation, damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses, even if advised of the possibility thereof, and regardless of the legal or equitable theory (contract, tort or otherwise) upon which the claim is based. In any case, Licensor's entire liability under any provision of this agreement shall not exceed in the aggregate the sum of the fees Licensee paid for this license (if any), with the exception of death or personal injury caused by the negligence of Licensor to the extent applicable law prohibits the limitation of damages in such cases. Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages, so this exclusion and limitation may not be applicable. SEGGER is not responsible for any liability arising out of content provided by Licensee or a third party that is accessed through the product and/or any material linked through such content.
+
+9. HIGH RISK ACTIVITIES
+The software is not designed for use in hazardous environments requiring fail-safe performance, such as in the operation of nuclear facilities, aircraft navigation or communication systems, air traffic control, direct life support machines, or weapons systems, in which the failure of the software could lead directly to death, personal injury, or severe physical or environmental damage ("High Risk Activities"). Accordingly, Licensor and its suppliers specifically disclaim any express or implied warranty of fitness for High Risk Activities. 
+
+10. MISCELLANEOUS
+(a) This agreement constitutes the entire agreement between the parties concerning the subject matter hereof. 
+(b) This agreement may be changed only by an amendment in writing, signed by both parties.
+(c) If any provision in this agreement should be held illegal or unenforceable by a court having jurisdiction, such provision shall be modified to the extent necessary to render it enforceable without losing its intent, or severed from this agreement if no such modification is possible, and other provisions of this agreement shall remain in full force and effect.
+(d) This agreement shall be governed by the laws of the Federal Republic of Germany.
+(e) This agreement shall be binding upon and shall inure to the benefit of the parties, their successors and permitted assigns.
+(f) Neither party shall be in default or be liable for any delay, failure in performance (excepting the obligation to pay) or interruption of service resulting directly or indirectly from any cause beyond its reasonable control.
+(g) The relationship between Licensor and Licensee is that of independent contractors and neither Licensee nor its agents shall have any authority to bind Licensor in any way.
+(h) If any SEGGER  professional services are being provided, then such professional services are provided pursuant to the terms of a separate professional services agreement between the parties. The parties acknowledge that such services are acquired independently of the product licensed hereunder, and that provision of such services is not essential to the functionality of such product.
+
+© 2004-2014 SEGGER Microcontroller GmbH & Co. KG
