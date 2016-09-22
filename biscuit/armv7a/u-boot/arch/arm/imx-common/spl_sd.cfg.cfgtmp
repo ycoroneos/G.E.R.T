@@ -1,0 +1,19 @@
+# 1 "arch/arm/imx-common/spl_sd.cfg"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "././include/linux/kconfig.h" 1
+
+
+
+# 1 "include/generated/autoconf.h" 1
+# 5 "././include/linux/kconfig.h" 2
+# 1 "<command-line>" 2
+# 1 "arch/arm/imx-common/spl_sd.cfg"
+
+
+
+
+
+
+IMAGE_VERSION 2
+BOOT_FROM sd

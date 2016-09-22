@@ -1,0 +1,9 @@
+spl.c:62:13:spl_board_prepare_for_linux	0	static
+spl.c:67:6:spl_set_header_raw_uboot	0	static
+spl.c:76:6:spl_parse_image_header	0	static
+spl.c:123:24:jump_to_image_no_args	8	static
+spl.c:153:5:spl_init	0	static
+spl.c:193:13:board_boot_order	8	static
+spl.c:343:6:board_init_r	8	static
+spl.c:410:6:preloader_console_init	8	static
+spl.c:439:7:spl_relocate_stack_gd	0	static

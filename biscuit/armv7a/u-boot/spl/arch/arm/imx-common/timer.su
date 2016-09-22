@@ -1,0 +1,3 @@
+timer.c:70:5:timer_init	8	static
+timer.c:114:15:timer_read_counter	0	static
+timer.c:123:7:get_tbclk	8	static

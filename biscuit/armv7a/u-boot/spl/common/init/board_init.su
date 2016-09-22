@@ -1,0 +1,2 @@
+board_init.c:26:13:arch_setup_gd	0	static
+board_init.c:32:7:board_init_f_mem	8	static

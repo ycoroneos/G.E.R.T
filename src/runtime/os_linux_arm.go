@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -38,6 +39,9 @@ func checkgoarm() {
 
 func sysargs(argc int32, argv **byte) {
 	printstring("sysargs\n")
+	armArch = 7
+	hwcap = 0xFFFFFFFF
+	return
 	// skip over argv, envv to get to auxv
 	n := argc + 1
 	for argv_index(argv, n) != nil {
@@ -79,8 +83,123 @@ func cputicks() int64 {
 func SWIcall()
 func Runtime_main()
 
+type Spinlock_t struct {
+	v uint32
+}
+
+//go:nosplit
+func Splock(l *Spinlock_t) {
+	for {
+		if atomic.Xchg(&l.v, 1) == 1 {
+			break
+		}
+		//for l.v != 0 {
+		//htpause()
+		//}
+	}
+}
+
+//go:nosplit
+func Spunlock(l *Spinlock_t) {
+	//atomic.Store(&l.v, 0)
+	l.v = 0
+}
+
 func mktrap(a int) {
+	print("mktrap")
 }
 
 func trapcheck(pp *p) {
+	print("trapcheck")
 }
+
+func printtest() {
+	throw("help")
+}
+
+func cascheck() {
+	var z uint32
+	z = 1
+	if !atomic.Cas(&z, 1, 2) {
+		throw("cascheck 1")
+	}
+	if z != 2 {
+		throw("cascheck z not 2")
+	}
+
+	z = 3
+	if !atomic.Cas(&z, 3, 4) {
+		throw("cascheck 2")
+	}
+	writeUnsafe([]byte("cascheck pass\n"))
+}
+
+//func hack_mmap(va, _sz uintptr, _prot uint32, _flags uint32,
+//	fd int32, offset int32) uintptr {
+//	//	fl := Pushcli()
+//	Splock(maplock)
+//	print("hack_mmap: ", hex(va), " ", hex(_sz), " ", hex(_prot), " ", hex(_flags), "\n")
+//	Spunlock(maplock)
+//	return 0
+//	//	MAP_ANON := uintptr(0x20)
+//	//	MAP_PRIVATE := uintptr(0x2)
+//	//	PROT_NONE := uintptr(0x0)
+//	//	PROT_WRITE := uintptr(0x2)
+//	//
+//	//	prot := uintptr(_prot)
+//	//	flags := uintptr(_flags)
+//	//	var vaend uintptr
+//	//	var perms uintptr
+//	//	var ret uintptr
+//	//	var t uintptr
+//	//	pgleft := pglast - pgfirst
+//	//	sz := pgroundup(_sz)
+//	//	if sz > pgleft {
+//	//		ret = ^uintptr(0)
+//	//		goto out
+//	//	}
+//	//	sz = pgroundup(va + _sz)
+//	//	sz -= pgrounddown(va)
+//	//	if va == 0 {
+//	//		va = find_empty(sz)
+//	//	}
+//	//	vaend = caddr(VUEND, 0, 0, 0, 0)
+//	//	if va >= vaend || va+sz >= vaend {
+//	//		pancake("va space exhausted", va)
+//	//	}
+//	//
+//	//	t = MAP_ANON | MAP_PRIVATE
+//	//	if flags&t != t {
+//	//		pancake("unexpected flags", flags)
+//	//	}
+//	//	perms = PTE_P
+//	//	if prot == PROT_NONE {
+//	//		prot_none(va, sz)
+//	//		ret = va
+//	//		goto out
+//	//	}
+//	//
+//	//	if prot&PROT_WRITE != 0 {
+//	//		perms |= PTE_W
+//	//	}
+//	//
+//	//	if _nopml4 {
+//	//		eidx := pml4x(va + sz - 1)
+//	//		for sidx := pml4x(va); sidx <= eidx; sidx++ {
+//	//			pml4 := caddr(VREC, VREC, VREC, VREC, sidx)
+//	//			pml4e := (*uintptr)(unsafe.Pointer(pml4))
+//	//			if *pml4e&PTE_P == 0 {
+//	//				pancake("new pml4 entry to kernel pmap", va)
+//	//			}
+//	//		}
+//	//	}
+//	//
+//	//	for i := uintptr(0); i < sz; i += PGSIZE {
+//	//		alloc_map(va+i, perms, true)
+//	//	}
+//	//	ret = va
+//	//out:
+//	//	Spunlock(maplock)
+//	//	Popcli(fl)
+//	//	return ret
+//}

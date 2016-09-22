@@ -1,0 +1,4 @@
+cmd_dm.c:36:12:do_dm_dump_devres	0	static
+cmd_dm.c:60:12:do_dm	16	static
+cmd_dm.c:28:12:do_dm_dump_uclass	8	static
+cmd_dm.c:20:12:do_dm_dump_all	8	static

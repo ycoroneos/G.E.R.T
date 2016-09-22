@@ -1,0 +1,113 @@
+/dts-v1/;
+
+#include "tegra20.dtsi"
+
+/ {
+	model = "NVIDIA Tegra20 Harmony evaluation board";
+	compatible = "nvidia,harmony", "nvidia,tegra20";
+
+	chosen {
+		stdout-path = &uartd;
+	};
+
+	aliases {
+		usb0 = "/usb@c5008000";
+		usb1 = "/usb@c5004000";
+		sdhci0 = "/sdhci@c8000600";
+		sdhci1 = "/sdhci@c8000200";
+	};
+
+	memory {
+		reg = <0x00000000 0x40000000>;
+	};
+
+	host1x {
+		status = "okay";
+		dc@54200000 {
+			status = "okay";
+			rgb {
+				status = "okay";
+				nvidia,panel = <&lcd_panel>;
+			};
+		};
+	};
+
+	serial@70006300 {
+		clock-frequency = < 216000000 >;
+	};
+
+	nand-controller@70008000 {
+		nvidia,wp-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_HIGH>;
+		nvidia,width = <8>;
+		nvidia,timing = <26 100 20 80 20 10 12 10 70>;
+		nand@0 {
+			reg = <0>;
+			compatible = "hynix,hy27uf4g2b", "nand-flash";
+		};
+	};
+
+	i2c@7000c000 {
+		status = "disabled";
+	};
+
+	i2c@7000c400 {
+		status = "disabled";
+	};
+
+	i2c@7000c500 {
+		status = "disabled";
+	};
+
+	i2c@7000d000 {
+		status = "disabled";
+	};
+
+	usb@c5000000 {
+		status = "disabled";
+	};
+
+	usb@c5004000 {
+		nvidia,phy-reset-gpio = <&gpio TEGRA_GPIO(V, 1) 0>;
+	};
+
+	sdhci@c8000200 {
+		status = "okay";
+		cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
+		wp-gpios = <&gpio TEGRA_GPIO(H, 1) GPIO_ACTIVE_HIGH>;
+		power-gpios = <&gpio TEGRA_GPIO(T, 3) GPIO_ACTIVE_HIGH>;
+		bus-width = <4>;
+	};
+
+	sdhci@c8000600 {
+		status = "okay";
+		cd-gpios = <&gpio TEGRA_GPIO(H, 2) GPIO_ACTIVE_LOW>;
+		wp-gpios = <&gpio TEGRA_GPIO(H, 3) GPIO_ACTIVE_HIGH>;
+		power-gpios = <&gpio TEGRA_GPIO(I, 6) GPIO_ACTIVE_HIGH>;
+		bus-width = <8>;
+	};
+
+	lcd_panel: panel {
+		clock = <42430000>;
+		xres = <1024>;
+		yres = <600>;
+		left-margin = <138>;
+		right-margin = <34>;
+		hsync-len = <136>;
+		lower-margin = <4>;
+		upper-margin = <21>;
+		vsync-len = <4>;
+		hsync-active-high;
+		vsyncx-active-high;
+		nvidia,bits-per-pixel = <16>;
+		nvidia,pwm = <&pwm 0 0>;
+		nvidia,backlight-enable-gpios = <&gpio TEGRA_GPIO(B, 5)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,lvds-shutdown-gpios = <&gpio TEGRA_GPIO(B, 2)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,backlight-vdd-gpios = <&gpio TEGRA_GPIO(W, 0)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,panel-vdd-gpios = <&gpio TEGRA_GPIO(C, 6)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,panel-timings = <0 0 200 0 0>;
+	};
+};

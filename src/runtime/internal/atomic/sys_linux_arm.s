@@ -7,31 +7,72 @@
 // Use kernel version instead of native armcas in asm_arm.s.
 // See ../../../sync/atomic/asm_linux_arm.s for details.
 TEXT cas<>(SB), NOSPLIT, $0
-	B    runtime∕internal∕atomic·armcas(SB)
-	SWI  $0x0
-	MOVW $0xffff0fc0, R15                   // R15 is hardware PC.
+	B runtime∕internal∕atomic·armcas(SB)
 
-TEXT runtime∕internal∕atomic·Cas(SB), NOSPLIT, $0
-	MOVW ptr+0(FP), R2
-	MOVW old+4(FP), R0
+	//	SWI  $0x0
+	//	MOVW $0xffff0fc0, R15                   // R15 is hardware PC.
 
-loop:
-	MOVW new+8(FP), R1
-	BL   cas<>(SB)
-	BCC  check
+	// TEXT runtime∕internal∕atomic·Cas(SB), NOSPLIT, $0
+	// TEXT runtime∕internal∕atomic·Cas(SB), NOSPLIT, $0-13
+	//	B    cas<>(SB)
+	//	MOVW ptr+0(FP), R2
+	//	MOVW old+4(FP), R0
+	//
+	// loop:
+	//	MOVW new+8(FP), R1
+	//	BL   cas<>(SB)
+	//	BCC  check
+	//	MOVW $1, R0
+	//
+	//	// MOVB R0, ret+12(FP)
+	//	RET
+	//
+	// check:
+	//	// Kernel lies; double-check.
+	//	MOVW ptr+0(FP), R2
+	//	MOVW old+4(FP), R0
+	//	MOVW 0(R2), R3
+	//	CMP  R0, R3
+	//	BEQ  loop
+	//	MOVW $0, R0
+	//
+	//	// MOVB R0, ret+12(FP)
+	//	RET
+
+TEXT runtime∕internal∕atomic·Cas(SB), NOSPLIT, $0-13
+	MOVW valptr+0(FP), R1
+	MOVW old+4(FP), R2
+	MOVW new+8(FP), R3
+
+casl:
+	LDREX (R1), R0
+	CMP   R0, R2
+	BNE   casfail
+
+	MOVB runtime·goarm(SB), R11
+	CMP  $7, R11
+	BLT  2(PC)
+	WORD $0xf57ff05a            // dmb ishst
+
+	STREX R3, (R1), R0
+	CMP   $0, R0
+	BNE   casl
+	MOVW  $1, R0
+
+	MOVB runtime·goarm(SB), R11
+	CMP  $7, R11
+	BLT  2(PC)
+	WORD $0xf57ff05b            // dmb ish
+
 	MOVW $1, R0
-	MOVB R0, ret+12(FP)
+
+	MOVW R0, ret+12(FP)
 	RET
 
-check:
-	// Kernel lies; double-check.
-	MOVW ptr+0(FP), R2
-	MOVW old+4(FP), R0
-	MOVW 0(R2), R3
-	CMP  R0, R3
-	BEQ  loop
+casfail:
 	MOVW $0, R0
-	MOVB R0, ret+12(FP)
+
+	MOVW R0, ret+12(FP)
 	RET
 
 TEXT runtime∕internal∕atomic·Casp1(SB), NOSPLIT, $0

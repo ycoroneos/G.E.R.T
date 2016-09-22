@@ -1,0 +1,4 @@
+fdt_region.c:30:12:fdt_add_region	20	static
+fdt_region.c:67:5:fdt_add_alias_regions	40	static
+fdt_region.c:272:5:fdt_next_region	104	static
+fdt_region.c:181:5:fdt_first_region	16	static

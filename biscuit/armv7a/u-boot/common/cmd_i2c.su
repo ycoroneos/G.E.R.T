@@ -1,0 +1,17 @@
+cmd_i2c.c:1967:12:do_i2c	24	static
+cmd_i2c.c:1897:12:do_i2c_reset	8	static
+cmd_i2c.c:941:12:do_i2c_probe	16	static
+cmd_i2c.c:1826:12:do_i2c_bus_speed	8	static
+cmd_i2c.c:1689:12:do_i2c_show_bus	24	static
+cmd_i2c.c:1776:12:do_i2c_bus_num	8	static
+cmd_i2c.c:242:13:get_alen.constprop	0	static
+cmd_i2c.c:708:12:do_i2c_crc	48	static
+cmd_i2c.c:793:1:mod_i2c_mem.isra.4	48	static
+cmd_i2c.c:1883:12:do_i2c_nm	0	static
+cmd_i2c.c:1868:12:do_i2c_mm	0	static
+cmd_i2c.c:503:12:do_i2c_md	64	static
+cmd_i2c.c:284:12:do_i2c_read	32	static
+cmd_i2c.c:622:12:do_i2c_mw	40	static
+cmd_i2c.c:337:12:do_i2c_write	40	static
+cmd_i2c.c:1016:12:do_i2c_loop	56	static
+cmd_i2c.c:185:6:i2c_init_board	0	static

@@ -1,0 +1,2 @@
+mmc_write.c:68:15:mmc_berase	72	static
+mmc_write.c:168:7:mmc_bwrite	80	static

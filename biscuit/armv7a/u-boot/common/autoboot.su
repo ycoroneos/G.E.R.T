@@ -1,0 +1,2 @@
+autoboot.c:305:13:bootdelay_process	8	static
+autoboot.c:357:6:autoboot_command	24	static

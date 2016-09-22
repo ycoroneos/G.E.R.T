@@ -1,0 +1,4 @@
+cmd_setexpr.c:81:14:substitute	40	static
+cmd_setexpr.c:17:14:get_arg	8	static
+cmd_setexpr.c:129:12:regex_sub	21120	dynamic
+cmd_setexpr.c:293:12:do_setexpr	32	static

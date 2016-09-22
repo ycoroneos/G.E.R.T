@@ -1,0 +1,8 @@
+xyzModem.c:72:1:CYGACC_COMM_IF_GETC_TIMEOUT.isra.0	16	static
+xyzModem.c:304:1:xyzModem_flush	16	static
+xyzModem.c:317:1:xyzModem_get_hdr	32	static
+xyzModem.c:477:1:xyzModem_stream_open	40	static
+xyzModem.c:582:1:xyzModem_stream_read	40	static
+xyzModem.c:707:1:xyzModem_stream_close	16	static
+xyzModem.c:719:1:xyzModem_stream_terminate	8	static
+xyzModem.c:775:1:xyzModem_error	0	static

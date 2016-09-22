@@ -1,0 +1,4 @@
+bootm.c:225:5:bootm_find_images	40	static
+bootm.c:328:5:bootm_decomp_image	24	static
+bootm.c:473:7:bootm_disable_interrupts	8	static
+bootm.c:591:5:do_bootm_states	88	static

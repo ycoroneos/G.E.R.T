@@ -1,0 +1,12 @@
+lmb.c:109:13:lmb_add_region	32	static
+lmb.c:15:6:lmb_dump_all	0	static
+lmb.c:91:6:lmb_init	0	static
+lmb.c:176:6:lmb_add	0	static
+lmb.c:183:6:lmb_free	20	static
+lmb.c:232:6:lmb_reserve	0	static
+lmb.c:283:13:__lmb_alloc_base	48	static
+lmb.c:260:13:lmb_alloc_base	16	static
+lmb.c:255:13:lmb_alloc	0	static
+lmb.c:325:5:lmb_is_reserved	12	static
+lmb.c:338:13:board_lmb_reserve	0	static
+lmb.c:343:13:arch_lmb_reserve	0	static

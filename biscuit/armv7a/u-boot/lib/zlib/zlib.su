@@ -1,0 +1,10 @@
+zutil.c:56:8:zcalloc	0	static
+zutil.c:64:7:zcfree	0	static
+inffast.c:69:6:inflate_fast	88	static
+inftrees.c:32:5:inflate_table	152	static
+inflate.c:8:13:inflateReset	0	static
+inflate.c:33:13:inflateInit2_	16	static
+inflate.c:73:13:inflateInit_	0	static
+inflate.c:929:13:inflateEnd	8	static
+adler32.c:57:15:adler32	64	static
+inflate.c:328:13:inflate	88	static

@@ -1,0 +1,12 @@
+soc.c:59:5:get_nr_cpus	0	static
+soc.c:65:5:get_cpu_rev	8	static
+soc.c:110:5:get_cpu_speed_grade_hz	8	static
+soc.c:149:5:get_cpu_temp_grade	0	static
+soc.c:180:12:get_board_rev	8	static
+soc.c:313:5:arch_cpu_init	8	static
+soc.c:352:5:board_postclk_init	8	static
+soc.c:360:6:imx_get_mac_from_fuse	0	static
+soc.c:403:6:reset_misc	0	static
+soc.c:410:6:s_init	8	static
+soc.c:455:6:imx_enable_hdmi_phy	16	static
+soc.c:471:6:imx_setup_hdmi	0	static

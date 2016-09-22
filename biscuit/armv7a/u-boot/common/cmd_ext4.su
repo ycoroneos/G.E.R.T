@@ -1,0 +1,4 @@
+cmd_ext4.c:45:5:do_ext4_size	16	static
+cmd_ext4.c:51:5:do_ext4_load	16	static
+cmd_ext4.c:57:5:do_ext4_ls	16	static
+cmd_ext4.c:63:5:do_ext4_write	16	static

@@ -1,0 +1,2 @@
+cmd_ext2.c:33:5:do_ext2load	16	static
+cmd_ext2.c:25:12:do_ext2ls	16	static

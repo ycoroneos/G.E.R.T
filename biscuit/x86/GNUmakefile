@@ -1,0 +1,206 @@
+QEMU := qemu-system-x86_64
+PYTHON ?= python2
+
+TOP := .
+
+BASEFLAGS := -Wall -Werror -MMD -MP -O -g
+ASFLAGS := $(BASEFLAGS) -nostdlib -nostdinc -I$(TOP)
+CFLAGS := $(BASEFLAGS) -nostdlib -nostdinc -fno-stack-protector -fno-builtin
+CXXFLAGS := $(BASEFLAGS) -ffreestanding -nostdlib -fno-stack-protector \
+	    -fno-builtin
+
+# bootloader sources
+ASMS := boot.S
+CS   := bootmain.c main.c chentry.c
+SRCS := $(ASMS) $(CS)
+
+# kernel sources
+KSRC := main.go syscall.go pmap.go fs.go hw.go
+
+OBJS := $(patsubst %.S,%.o,$(patsubst %.c,%.o,$(SRCS)))
+
+CBINS := hello fault fork getpid fstest fswrite fsmkdir fscreat fsbigwrite \
+	  fslink fsunlink fsfree ls bmwrite bmread conio lsh bmopen cls \
+	  fault2 echo cat bmgc bmsmallfile bmgc2 sfork unlink touch mkdir \
+	  pipetest kill killtest mmaptest usertests thtests pthtests \
+	  mknodtest sockettest mv sleep time true init sync reboot ebizzy \
+	  uname pwd rmtree halp
+FSCPROGS := $(addprefix fsdir/bin/,$(CBINS))
+CPROGS := $(addprefix user/c/,$(CBINS))
+
+CXXBINS := mail-enqueue mail-qman mail-deliver mailbench
+FSCXXPROGS := $(addprefix fsdir/bin/,$(CXXBINS))
+CXXPROGS := $(addprefix user/cxx/,$(CXXBINS))
+
+FSPROGS := $(FSCPROGS) $(FSCXXPROGS)
+
+BGOS := mpentry.bin.bgo
+
+RFS  := $(patsubst %.c,%.d,$(CS))
+RFS  += $(addsuffix .d,$(CPROGS))
+RFS  += $(addsuffix .d,$(CXXPROGS))
+RFS  += user/c/litc.d
+
+GOBIN := ../bin/go
+SKEL := fsdir
+SKELDEPS := $(shell find $(SKEL))
+
+CPUS := $(shell echo $${CPUS:-1})
+QOPTS := -m 512M -smp cpus=$(CPUS) -cpu Nehalem
+
+OS := $(shell uname -s)
+
+ifeq ($(OS), OpenBSD)
+	ASFLAGS += -nopie
+endif
+
+all: go.img net.img
+
+-include $(RFS)
+
+boot: boot.o bootmain.o
+	$(LD) --omagic -o $@.elf -m elf_i386 -static -e start -Ttext 0x7c00 $^
+	objcopy -O binary $@.elf $@.bin
+	$(PYTHON) stamp.py $@.bin
+	mv $@.bin $@
+
+boot.o: ASFLAGS += -m32
+
+bootmain.o: CFLAGS += -I$(TOP)
+bootmain.o: bootmain.c
+	@# don't use -Os because it rearranges code in .text such that start
+	@# isn't first. htf do i force ld to put a specific function first in
+	@# the section?
+	@#$(CC) -c $(CFLAGS) -Os $<
+	$(CC) -m32 -c $(CFLAGS) $<
+
+d.img: main boot
+	cat boot main > $@
+
+go.img: boot main.gobin $(SKELDEPS) $(FSPROGS) mkbdisk.py
+	$(PYTHON) mkbdisk.py boot main.gobin $@ $(SKEL) || { rm -f $@; false; }
+
+net.img: boot main.gobin $(SKELDEPS) $(FSPROGS) mkbdisk.py
+	$(PYTHON) mkbdisk.py -n boot main.gobin $@ $(SKEL) || \
+	    { rm -f $@; false; }
+
+BHW := bhw.pdos.csail.mit.edu
+
+net: net.img
+	@echo; echo waiting for client copy...
+	@sha1sum net.img
+	until nc $(BHW) 31337 -q1 < $^; do \
+		echo timed out. trying again...; \
+		sleep 1; \
+	done
+	@sha1sum net.img
+	@echo; echo copied Biscuit image to $(BHW) ; echo
+
+$(GOBIN):
+	@echo; echo; echo; \
+		echo 'You need to build go:'; \
+		echo 'cd ../src && ./all.bash'; \
+		echo; echo; echo; \
+		false
+
+main.gobin: chentry $(GOBIN) bins.go $(KSRC)
+	$(GOBIN) build -o _$@ bins.go $(KSRC)
+	ADDR=0x`nm _$@ |grep _rt0_hack |cut -f1 -d' '`; \
+		if test "$$ADDR" = "0x"; then echo no _rt0_hack; false; \
+		else ./chentry _$@ $$ADDR; fi
+	./rewrite.py _$@ $@
+
+# the user/% prereq is built by the CPROGS target
+$(FSCPROGS): fsdir/bin/% : user/c/%
+	objcopy -S $^ $@
+
+$(CPROGS): CFLAGS += -I user/c/include -fPIC
+$(CPROGS): % : %.c user/c/litc.o
+	$(CC) $(CFLAGS) -Wl,-T user/c/linker.ld -Wl,--build-id=none \
+	    -o $@ user/c/litc.o $<
+
+$(FSCXXPROGS): fsdir/bin/% : user/cxx/%
+	objcopy -S $^ $@
+
+CXXRT := $(shell $(CC) -print-file-name=libgcc_eh.a) \
+	 $(shell $(CC) -print-file-name=libsupc++.a)
+
+CXXLOBJS := user/cxx/libutil.o user/cxx/shutil.o user/cxx/cxxrt.o \
+	user/cxx/threads.o
+$(CXXLOBJS): user/cxx/sysroot
+
+CXXBEGIN := user/cxx/cxxrtbegin.o
+CXXEND := user/cxx/cxxrtend.o
+$(CXXPROGS): CXXFLAGS += -I user/cxx/ -I user/c/include/ \
+	-isysroot user/cxx/sysroot -fPIC -DXV6_USER -std=c++11
+$(CXXPROGS): % : %.cc  $(CXXLOBJS) $(CXXBEGIN) $(CXXEND) user/cxx/sysroot \
+	    user/c/litc.o
+	$(CXX) $(CXXFLAGS) -Wl,-T user/cxx/linker.ld -Wl,--build-id=none \
+	    -o $@ $(CXXBEGIN) $< $(CXXLOBJS) user/c/litc.o $(CXXRT) $(CXXEND)
+
+user/cxx/sysroot: user/cxx/host_hdrs.hh
+	rm -rf $@.tmp $@
+	mkdir -p $@.tmp
+	tar c $$($(CXX) -E -H -std=c++0x -ffreestanding $< -o /dev/null 2>&1 \
+		| awk '/^[.]/ {print $$2}') | tar xC $@.tmp
+	mv $@.tmp $@
+
+LINS := $(addprefix user/cxx/linux/,$(CXXBINS))
+$(LINS) : user/cxx/linux/% : user/cxx/%.cc
+	g++ -std=c++11 -Wall -Werror -static -o $@ $< user/cxx/libutil.cc \
+		user/cxx/shutil.cc -Wl,--whole-archive -lpthread \
+		-Wl,--no-whole-archive
+
+linux: $(LINS)
+
+mpentry.bin: mpentry.S
+	$(CC) -o mpentry.elf -Ttext 0x8000 -Wl,-n -nostdlib $^
+	objcopy -O binary -j.text mpentry.elf $@
+
+$(BGOS): %.bgo : %
+	./bin2go.sh $< > $@
+
+bins.go: $(BGOS) prepbins.py
+	$(PYTHON) prepbins.py $(BGOS) > _$@
+	mv _$@ $@
+
+main: main.o
+	$(LD) -static -e main -o $@ $<
+
+chentry: chentry.c
+	$(CC) $(BASEFLAGS) -o $@ chentry.c
+
+clean:
+	rm -f $(BGOS) $(OBJS) $(RFS) boot.elf d.img main boot main.gobin \
+	    go.img chentry mpentry.elf mpentry.bin _bins.go bins.go \
+	    user/c/litc.o $(FSPROGS) $(CPROGS) $(CXXPROGS) btest btest.elf \
+	    $(CXXBEGIN) $(CXXEND) $(CXXLOBJS) $(LINS) _main.gobin
+	rm -rf user/cxx/sysroot
+
+qemu: gqemu
+qemux: gqemux
+qemu-gdb: gqemu-gdb
+
+old_qemu: d.img
+	$(QEMU) $(QOPTS) -hda d.img
+
+old_qemu-gdb: d.img
+	$(QEMU) $(QOPTS) -S -s -hda d.img
+
+gqemu: go.img
+	$(QEMU) $(QOPTS) -nographic -hda go.img
+
+gqemux: go.img
+	$(QEMU) $(QOPTS) -serial stdio -hda go.img
+
+gqemu-gdb: go.img
+	$(QEMU) $(QOPTS) -nographic -S -s -hda go.img
+
+gqemux-gdb: go.img
+	$(QEMU) $(QOPTS) -S -s -serial stdio -hda go.img
+
+btest: btest.c
+	gcc -Os -m32 -I./ -o $@.elf $^ -nostdlib -nostdinc -e main -Ttext 0x7c00
+	objcopy -O binary -j.text $@.elf $@
+
+.PHONY: clean qemu qemu-gdb gqemu gqemux gqemu-gdb gqemux-gdb net linux net

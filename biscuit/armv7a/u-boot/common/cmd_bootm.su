@@ -1,0 +1,7 @@
+cmd_bootm.c:97:5:do_bootm	56	static
+cmd_bootm.c:205:5:do_bootd	8	static
+cmd_bootm.c:248:12:image_info	16	static
+cmd_bootm.c:230:12:do_iminfo	24	static
+cmd_bootm.c:141:5:bootm_maybe_autostart	24	static
+cmd_bootm.c:542:12:bootz_setup	8	static
+cmd_bootm.c:589:5:do_bootz	56	static

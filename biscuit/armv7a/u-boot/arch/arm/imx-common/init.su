@@ -1,0 +1,4 @@
+init.c:14:6:init_aips	8	static
+init.c:68:6:imx_set_wdog_powerdown	16	static
+init.c:91:6:init_src	0	static
+init.c:106:6:boot_mode_apply	0	static

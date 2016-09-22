@@ -1,0 +1,5 @@
+file.c:33:1:file_getfsname	0	static
+file.c:68:1:file_cd	24	static
+file.c:128:1:file_detectfs	16	static
+file.c:146:1:file_ls	1040	static
+file.c:165:5:file_read	1048	static

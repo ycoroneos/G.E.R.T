@@ -15,7 +15,6 @@ TEXT runtime·SWIcall(SB), NOSPLIT, $0
 // using frame size $-4 means do not save LR on stack.
 TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW $0xcafebabe, R12
-	SWI  $0x0
 
 	// copy arguments forward on an even stack
 	// use R13 instead of SP to avoid linker rewriting the offsets
@@ -44,13 +43,10 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW R0, g_stackguard1(g)
 	MOVW R0, (g_stack+stack_lo)(g)
 	MOVW R13, (g_stack+stack_hi)(g)
-	SWI  $0x0
 
-	BL  runtime·emptyfunc(SB) // fault if stack check is wrong
-	SWI $0x0
+	BL runtime·emptyfunc(SB) // fault if stack check is wrong
 
 	// BL  runtime·_initcgo(SB) // will clobber R0-R3
-	SWI $0x0
 
 	// update stackguard after _cgo_init
 	MOVW (g_stack+stack_lo)(g), R0
@@ -58,22 +54,19 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW R0, g_stackguard0(g)
 	MOVW R0, g_stackguard1(g)
 
-	SWI $0x0
-
-	BL  runtime·check(SB)
-	SWI $0x0
+	BL runtime·cascheck(SB)
+	BL runtime·check(SB)
 
 	// saved argc, argv
 	MOVW 60(R13), R0
 	MOVW R0, 4(R13)
 	MOVW 64(R13), R1
 	MOVW R1, 8(R13)
-	BL   runtime·args(SB)
-	SWI  $0x0
-	BL   runtime·checkgoarm(SB)
-	BL   runtime·osinit(SB)
-	BL   runtime·schedinit(SB)
-	SWI  $0x0
+
+	BL runtime·args(SB)
+	BL runtime·checkgoarm(SB)
+	BL runtime·osinit(SB)
+	BL runtime·schedinit(SB)
 
 	// create a new goroutine to start program
 	MOVW   $runtime·mainPC(SB), R0

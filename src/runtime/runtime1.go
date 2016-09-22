@@ -293,7 +293,7 @@ func check() {
 		throw("float32nan3")
 	}
 
-	testAtomic64()
+	//testAtomic64()
 
 	if _FixedStack != round2(_FixedStack) {
 		throw("FixedStack is not power-of-2")

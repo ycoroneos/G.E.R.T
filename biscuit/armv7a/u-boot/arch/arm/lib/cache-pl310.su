@@ -1,0 +1,5 @@
+cache-pl310.c:22:13:pl310_background_op_all_ways	0	static
+cache-pl310.c:42:6:v7_outer_cache_inval_all	0	static
+cache-pl310.c:47:6:v7_outer_cache_flush_all	0	static
+cache-pl310.c:53:6:v7_outer_cache_flush_range	0	static
+cache-pl310.c:71:6:v7_outer_cache_inval_range	16	static

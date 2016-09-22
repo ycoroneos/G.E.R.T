@@ -1,0 +1,2 @@
+i2c-mxv7.c:15:5:force_idle_bus	32	static
+i2c-mxv7.c:76:5:setup_i2c	48	static

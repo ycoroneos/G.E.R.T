@@ -1,0 +1,5 @@
+fdt_wip.c:17:5:fdt_setprop_inplace	16	static
+fdt_wip.c:42:5:fdt_nop_property	16	static
+fdt_wip.c:56:5:_fdt_node_end_offset	24	static
+fdt_wip.c:66:5:fdt_nop_node	16	static
+fdt_wip.c:92:5:fdt_find_regions	200	static

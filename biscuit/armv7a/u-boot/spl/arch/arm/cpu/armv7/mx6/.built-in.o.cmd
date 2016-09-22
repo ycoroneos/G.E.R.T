@@ -1,0 +1,1 @@
+cmd_spl/arch/arm/cpu/armv7/mx6/built-in.o :=  arm-none-eabi-ld.bfd     -r -o spl/arch/arm/cpu/armv7/mx6/built-in.o spl/arch/arm/cpu/armv7/mx6/soc.o spl/arch/arm/cpu/armv7/mx6/clock.o spl/arch/arm/cpu/armv7/mx6/ddr.o spl/arch/arm/cpu/armv7/mx6/mp.o 

@@ -1,0 +1,1 @@
+cmd_examples/standalone/hello_world := arm-none-eabi-ld.bfd   -g -Ttext 0xc100000 -o examples/standalone/hello_world -e hello_world examples/standalone/hello_world.o examples/standalone/libstubs.o -L /usr/lib/gcc/arm-none-eabi/5.4.0/thumb -lgcc

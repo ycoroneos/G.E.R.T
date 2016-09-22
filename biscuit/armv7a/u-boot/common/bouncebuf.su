@@ -1,0 +1,2 @@
+bouncebuf.c:34:5:bounce_buffer_start	16	static
+bouncebuf.c:65:5:bounce_buffer_stop	8	static

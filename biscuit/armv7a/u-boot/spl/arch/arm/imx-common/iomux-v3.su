@@ -1,0 +1,3 @@
+iomux-v3.c:22:6:imx_iomux_v3_setup_pad	32	static
+iomux-v3.c:77:6:imx_iomux_v3_setup_multiple_pads	16	static
+iomux-v3.c:97:6:imx_iomux_set_gpr_register	20	static

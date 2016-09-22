@@ -1,0 +1,3 @@
+misc.c:19:5:mxs_wait_mask_set	16	static
+misc.c:31:5:mxs_wait_mask_clr	16	static
+misc.c:43:5:mxs_reset_block	16	static

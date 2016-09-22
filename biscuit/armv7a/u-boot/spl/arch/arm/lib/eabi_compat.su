@@ -1,0 +1,5 @@
+eabi_compat.c:11:5:raise	0	static
+eabi_compat.c:21:6:__aeabi_unwind_cpp_pr0	0	static
+eabi_compat.c:25:6:__aeabi_unwind_cpp_pr1	0	static
+eabi_compat.c:30:6:__aeabi_memcpy	0	static
+eabi_compat.c:35:6:__aeabi_memset	0	static

@@ -1,0 +1,15 @@
+i2c_core.c:14:21:i2c_get_adapter	8	static
+i2c_core.c:217:13:i2c_init_bus	16	static
+i2c_core.c:42:6:i2c_reloc_fixup	0	static
+i2c_core.c:232:13:i2c_init_board	0	static
+i2c_core.c:257:14:i2c_get_bus_num	0	static
+i2c_core.c:276:5:i2c_set_bus_num	16	static
+i2c_core.c:244:6:i2c_init_all	8	static
+i2c_core.c:313:5:i2c_probe	16	static
+i2c_core.c:330:5:i2c_read	32	static
+i2c_core.c:336:5:i2c_write	32	static
+i2c_core.c:342:14:i2c_set_bus_speed	16	static
+i2c_core.c:355:14:i2c_get_bus_speed	8	static
+i2c_core.c:361:9:i2c_reg_read	24	static
+i2c_core.c:380:6:i2c_reg_write	24	static
+i2c_core.c:396:13:i2c_init	0	static

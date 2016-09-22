@@ -1,0 +1,2 @@
+video.c:9:5:board_video_skip	24	static
+video.c:61:5:detect_hdmi	0	static

@@ -1,0 +1,8 @@
+strto.c:16:15:simple_strtoul	20	static
+strto.c:48:5:strict_strtoul	32	static
+strto.c:72:6:simple_strtol	8	static
+strto.c:80:15:ustrtoul	8	static
+strto.c:126:20:simple_strtoull	32	static
+strto.c:103:20:ustrtoull	8	static
+strto.c:157:6:trailing_strtoln	16	static
+strto.c:171:6:trailing_strtol	0	static

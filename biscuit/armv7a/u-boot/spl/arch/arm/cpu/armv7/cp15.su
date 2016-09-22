@@ -1,0 +1,2 @@
+cp15.c:18:13:v7_arch_cp15_set_l2aux_ctrl	0	static
+cp15.c:25:13:v7_arch_cp15_set_acr	0	static

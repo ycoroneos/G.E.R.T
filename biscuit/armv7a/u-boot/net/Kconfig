@@ -1,0 +1,35 @@
+#
+# Network configuration
+#
+
+menuconfig NET
+	bool "Networking support"
+
+if NET
+
+config NET_RANDOM_ETHADDR
+	bool "Random ethaddr if unset"
+	select LIB_RAND
+	help
+	  Selecting this will allow the Ethernet interface to function
+	  even when the ethaddr variable for that interface is unset.
+	  A new MAC address will be generated on every boot and it will
+	  not be added to the environment.
+
+config NETCONSOLE
+	bool "NetConsole support"
+	help
+	  Support the 'nc' input/output device for networked console.
+	  See README.NetConsole for details.
+
+config NET_TFTP_VARS
+	bool "Control TFTP timeout and count through environment"
+	default y
+	help
+	  If set, allows controlling the TFTP timeout through the
+	  environment variable tftptimeout, and the TFTP maximum
+	  timeout count through the variable tftptimeoutcountmax.
+	  If unset, timeout and maximum are hard-defined as 1 second
+	  and 10 timouts per TFTP transfer.
+
+endif   # if NET

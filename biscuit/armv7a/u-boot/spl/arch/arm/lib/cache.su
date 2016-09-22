@@ -1,0 +1,6 @@
+cache.c:35:13:enable_caches	0	static
+cache.c:40:13:invalidate_dcache_range	0	static
+cache.c:44:13:flush_dcache_range	0	static
+cache.c:17:13:flush_cache	0	static
+cache.c:26:13:flush_dcache_all	0	static
+cache.c:93:6:invalidate_l2_cache	0	static

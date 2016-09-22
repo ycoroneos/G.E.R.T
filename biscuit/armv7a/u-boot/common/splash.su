@@ -1,0 +1,2 @@
+splash.c:27:12:splash_screen_prepare	0	static
+splash.c:33:6:splash_get_pos	16	static

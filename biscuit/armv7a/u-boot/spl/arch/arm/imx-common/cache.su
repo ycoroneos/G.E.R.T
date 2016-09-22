@@ -1,0 +1,3 @@
+cache.c:13:6:enable_caches	8	static
+cache.c:39:6:v7_outer_cache_enable	0	static
+cache.c:96:6:v7_outer_cache_disable	0	static

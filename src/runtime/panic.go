@@ -538,7 +538,7 @@ func dopanic(unused int) {
 
 //go:nosplit
 func throw(s string) {
-	writeUnsafe([]byte("fatal error: "))
+	writeUnsafe([]byte("\n[unsafe] fatal error: "))
 	writeUnsafe([]byte(s))
 	writeUnsafe([]byte("\n"))
 	print("fatal error: ", s, "\n")
