@@ -30,21 +30,23 @@ var debuglock mutex
 // For both these reasons, let a thread acquire the printlock 'recursively'.
 
 func printlock() {
-	mp := getg().m
-	mp.locks++ // do not reschedule between printlock++ and lock(&debuglock).
-	mp.printlock++
-	if mp.printlock == 1 {
-		lock(&debuglock)
-	}
-	mp.locks-- // now we know debuglock is held and holding up mp.locks for us.
+	//	writeUnsafe([]byte("print lock"))
+	//	mp := getg().m
+	//	mp.locks++ // do not reschedule between printlock++ and lock(&debuglock).
+	//	mp.printlock++
+	//	if mp.printlock == 1 {
+	//		lock(&debuglock)
+	//	}
+	//	mp.locks-- // now we know debuglock is held and holding up mp.locks for us.
 }
 
 func printunlock() {
-	mp := getg().m
-	mp.printlock--
-	if mp.printlock == 0 {
-		unlock(&debuglock)
-	}
+	//	writeUnsafe([]byte("print unlock"))
+	//	mp := getg().m
+	//	mp.printlock--
+	//	if mp.printlock == 0 {
+	//		unlock(&debuglock)
+	//	}
 }
 
 // write to goroutine-local buffer if diverting output,

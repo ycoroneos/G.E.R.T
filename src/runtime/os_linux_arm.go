@@ -25,6 +25,7 @@ var armArch uint8 = 6 // we default to ARMv6
 var hwcap uint32      // set by setup_auxv
 
 func checkgoarm() {
+	//printstring("checkgoarm\n")
 	if goarm > 5 && hwcap&_HWCAP_VFP == 0 {
 		print("runtime: this CPU has no floating point hardware, so it cannot run\n")
 		print("this GOARM=", goarm, " binary. Recompile using GOARM=5.\n")
@@ -132,6 +133,7 @@ func cascheck() {
 		throw("cascheck 2")
 	}
 	writeUnsafe([]byte("cascheck pass\n"))
+	//print("kernel start: ", hex(kernelstart), " kernel size: ", hex(kernelsize), "\n")
 }
 
 //func hack_mmap(va, _sz uintptr, _prot uint32, _flags uint32,

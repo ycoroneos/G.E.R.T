@@ -22,7 +22,7 @@ ELF Header:
 Section Headers:
   [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
   [ 0]                   NULL            00000000 000000 000000 00      0   0  0
-  [ 1] .text             PROGBITS        50000000 010000 13e764 00  AX  0   0 4096
+  [ 1] .text             PROGBITS        50000000 010000 13e7d4 00  AX  0   0 4096
   [ 2] .rodata           PROGBITS        5013f000 14f000 000203 00   A  0   0  4
   [ 3] .ARM.exidx        ARM_EXIDX       5013f204 14f204 000008 00  AL  1   0  4
   [ 4] .data             PROGBITS        50140000 150000 00002c 00  WA  0   0  4
@@ -65,7 +65,7 @@ There are no relocations in this file.
 
 Unwind table index '.ARM.exidx' at offset 0x14f204 contains 1 entries:
 
-0x5013e504 <__divdi3>: 0x1 [cantunwind]
+0x5013e574 <__divdi3>: 0x1 [cantunwind]
 
 
 Symbol table '.symtab' contains 141 entries:
@@ -130,87 +130,87 @@ Symbol table '.symtab' contains 141 entries:
     57: 5013d8f0   108 FUNC    LOCAL  DEFAULT    1 boot_memcpy
     58: 5013d95c   100 FUNC    LOCAL  DEFAULT    1 boot_memset
     59: 5013f074     0 NOTYPE  LOCAL  DEFAULT    2 $d
-    60: 5013db60   420 FUNC    LOCAL  DEFAULT    1 load_go
+    60: 5013db6c   460 FUNC    LOCAL  DEFAULT    1 load_go
     61: 00000000     0 FILE    LOCAL  DEFAULT  ABS imx_uart.c
-    62: 5013dd84     0 NOTYPE  LOCAL  DEFAULT    1 $a
+    62: 5013ddf0     0 NOTYPE  LOCAL  DEFAULT    1 $a
     63: 00000000     0 FILE    LOCAL  DEFAULT  ABS _udivsi3.o
-    64: 5013df48     0 NOTYPE  LOCAL  DEFAULT    1 $t
-    65: 5013df48     0 NOTYPE  LOCAL  DEFAULT    1 .udivsi3_skip_div0_test
+    64: 5013dfb8     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    65: 5013dfb8     0 NOTYPE  LOCAL  DEFAULT    1 .udivsi3_skip_div0_test
     66: 00000000     0 NOTYPE  LOCAL  DEFAULT  ABS shift
     67: 00000010     0 NOTYPE  LOCAL  DEFAULT    8 $d
     68: 0000000c     0 NOTYPE  LOCAL  DEFAULT   12 $d
     69: 00000000     0 FILE    LOCAL  DEFAULT  ABS _divsi3.o
-    70: 5013e1c0     0 NOTYPE  LOCAL  DEFAULT    1 $t
-    71: 5013e1c6     0 NOTYPE  LOCAL  DEFAULT    1 .divsi3_skip_div0_test
+    70: 5013e230     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    71: 5013e236     0 NOTYPE  LOCAL  DEFAULT    1 .divsi3_skip_div0_test
     72: 00000000     0 NOTYPE  LOCAL  DEFAULT  ABS shift
     73: 00000030     0 NOTYPE  LOCAL  DEFAULT    8 $d
     74: 0000002c     0 NOTYPE  LOCAL  DEFAULT   12 $d
     75: 00000000     0 FILE    LOCAL  DEFAULT  ABS _dvmd_tls.o
-    76: 5013e470     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    76: 5013e4e0     0 NOTYPE  LOCAL  DEFAULT    1 $t
     77: 0000004c     0 NOTYPE  LOCAL  DEFAULT   12 $d
     78: 00000000     0 FILE    LOCAL  DEFAULT  ABS _aeabi_uldivmod.o
-    79: 5013e474     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    79: 5013e4e4     0 NOTYPE  LOCAL  DEFAULT    1 $t
     80: 00000050     0 NOTYPE  LOCAL  DEFAULT    8 $d
     81: 0000006c     0 NOTYPE  LOCAL  DEFAULT   12 $d
     82: 00000000     0 FILE    LOCAL  DEFAULT  ABS bpabi.c
-    83: 5013e4a4     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    83: 5013e514     0 NOTYPE  LOCAL  DEFAULT    1 $t
     84: 00000078     0 NOTYPE  LOCAL  DEFAULT    8 $d
     85: 00000000     0 FILE    LOCAL  DEFAULT  ABS libgcc2.c
-    86: 5013e504     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    86: 5013e574     0 NOTYPE  LOCAL  DEFAULT    1 $t
     87: 5013f204     0 NOTYPE  LOCAL  DEFAULT    3 $d
     88: 000000cc     0 NOTYPE  LOCAL  DEFAULT    8 $d
     89: 00000000     0 FILE    LOCAL  DEFAULT  ABS libgcc2.c
-    90: 5013e65c     0 NOTYPE  LOCAL  DEFAULT    1 $t
+    90: 5013e6cc     0 NOTYPE  LOCAL  DEFAULT    1 $t
     91: 5013f20c     0 NOTYPE  LOCAL  DEFAULT    3 $d
     92: 00000104     0 NOTYPE  LOCAL  DEFAULT    8 $d
-    93: 5013e4d5    48 FUNC    GLOBAL HIDDEN     1 __gnu_uldivmod_helper
-    94: 5013dd84   276 FUNC    GLOBAL DEFAULT    1 uart_setup
-    95: 5013e505   342 FUNC    GLOBAL HIDDEN     1 __divdi3
+    93: 5013e545    48 FUNC    GLOBAL HIDDEN     1 __gnu_uldivmod_helper
+    94: 5013ddf0   276 FUNC    GLOBAL DEFAULT    1 uart_setup
+    95: 5013e575   342 FUNC    GLOBAL HIDDEN     1 __divdi3
     96: 5013cf1c   488 FUNC    GLOBAL DEFAULT    1 csprintf
     97: 5013d140  1432 FUNC    GLOBAL DEFAULT    1 vprintfmt
     98: 5013d9c0    24 FUNC    GLOBAL DEFAULT    1 reset_interrupt
     99: 5013d9d8    52 FUNC    GLOBAL DEFAULT    1 undefined_interrupt
    100: 5013d718    64 FUNC    GLOBAL DEFAULT    1 cprintf
-   101: 5013e475     0 FUNC    GLOBAL HIDDEN     1 __aeabi_uldivmod
+   101: 5013e4e5     0 FUNC    GLOBAL HIDDEN     1 __aeabi_uldivmod
    102: 5013f203     0 NOTYPE  GLOBAL DEFAULT    2 __rodata_end
-   103: 5013df49   604 FUNC    GLOBAL HIDDEN     1 __udivsi3
+   103: 5013dfb9   604 FUNC    GLOBAL HIDDEN     1 __udivsi3
    104: 50140028     4 OBJECT  GLOBAL DEFAULT    4 go_load_addr
    105: 50141008     0 NOTYPE  GLOBAL DEFAULT    5 __bss_end
-   106: 5013e65d   262 FUNC    GLOBAL HIDDEN     1 __udivdi3
+   106: 5013e6cd   262 FUNC    GLOBAL HIDDEN     1 __udivdi3
    107: 5013c978   112 FUNC    GLOBAL DEFAULT    1 strnlen
    108: 5013ca10    68 FUNC    GLOBAL DEFAULT    1 bufputc
-   109: 5013de98    80 FUNC    GLOBAL DEFAULT    1 uart_tx
-   110: 5013e1c1     0 FUNC    GLOBAL HIDDEN     1 __aeabi_idiv
-   111: 5013dae8    60 FUNC    GLOBAL DEFAULT    1 irq_interrupt
+   109: 5013df04    80 FUNC    GLOBAL DEFAULT    1 uart_tx
+   110: 5013e231     0 FUNC    GLOBAL HIDDEN     1 __aeabi_idiv
+   111: 5013daf4    60 FUNC    GLOBAL DEFAULT    1 irq_interrupt
    112: 5013f000     0 NOTYPE  GLOBAL DEFAULT    2 __rodata_start
    113: 5014002c     0 NOTYPE  GLOBAL DEFAULT    4 __data_end
    114: 5013da0c    88 FUNC    GLOBAL DEFAULT    1 svc_interrupt
    115: 50141000     0 NOTYPE  GLOBAL DEFAULT    5 bss
    116: 5013d758   164 FUNC    GLOBAL DEFAULT    1 panic
-   117: 5013e471     2 FUNC    WEAK   HIDDEN     1 __aeabi_ldiv0
-   118: 5013e764     0 NOTYPE  GLOBAL DEFAULT    1 __text_end
+   117: 5013e4e1     2 FUNC    WEAK   HIDDEN     1 __aeabi_ldiv0
+   118: 5013e7d4     0 NOTYPE  GLOBAL DEFAULT    1 __text_end
    119: 50141000     0 NOTYPE  GLOBAL DEFAULT    5 __bss_start
-   120: 5013dd04   128 FUNC    GLOBAL DEFAULT    1 main
+   120: 5013dd38   184 FUNC    GLOBAL DEFAULT    1 main
    121: 50001000     0 NOTYPE  GLOBAL DEFAULT    1 gobin_start
    122: 5013c978     0 NOTYPE  GLOBAL DEFAULT    1 gobin_end
-   123: 5013df49     0 FUNC    GLOBAL HIDDEN     1 __aeabi_uidiv
-   124: 5013dee8    96 FUNC    GLOBAL DEFAULT    1 imx_puts
+   123: 5013dfb9     0 FUNC    GLOBAL HIDDEN     1 __aeabi_uidiv
+   124: 5013df54    96 FUNC    GLOBAL DEFAULT    1 imx_puts
    125: 5013d104    60 FUNC    GLOBAL DEFAULT    1 printfmt
-   126: 5013e1c1   660 FUNC    GLOBAL HIDDEN     1 __divsi3
+   126: 5013e231   660 FUNC    GLOBAL HIDDEN     1 __divsi3
    127: 5013ca54    20 FUNC    GLOBAL DEFAULT    1 switchuart
    128: 5013da64    60 FUNC    GLOBAL DEFAULT    1 prefetch_abort_interrupt
    129: 5013d864    16 FUNC    GLOBAL DEFAULT    1 consoleinit
    130: 5013c9e8    40 FUNC    GLOBAL DEFAULT    1 uartputc
-   131: 5013e1a5    26 FUNC    GLOBAL HIDDEN     1 __aeabi_uidivmod
+   131: 5013e215    26 FUNC    GLOBAL HIDDEN     1 __aeabi_uidivmod
    132: 5013d6d8    64 FUNC    GLOBAL DEFAULT    1 vcprintf
    133: 5013d874    32 FUNC    GLOBAL DEFAULT    1 cputs
-   134: 5013e471     2 FUNC    WEAK   HIDDEN     1 __aeabi_idiv0
-   135: 5013daa0    72 FUNC    GLOBAL DEFAULT    1 data_abort_interrupt
+   134: 5013e4e1     2 FUNC    WEAK   HIDDEN     1 __aeabi_idiv0
+   135: 5013daa0    84 FUNC    GLOBAL DEFAULT    1 data_abort_interrupt
    136: 50000000     0 NOTYPE  GLOBAL DEFAULT    1 _init_vectors
-   137: 5013e4a5    48 FUNC    GLOBAL HIDDEN     1 __gnu_ldivmod_helper
+   137: 5013e515    48 FUNC    GLOBAL HIDDEN     1 __gnu_ldivmod_helper
    138: 50140000     0 NOTYPE  GLOBAL DEFAULT    4 __data_start
-   139: 5013e455    26 FUNC    GLOBAL HIDDEN     1 __aeabi_idivmod
-   140: 5013db24    60 FUNC    GLOBAL DEFAULT    1 fiq_interrupt
+   139: 5013e4c5    26 FUNC    GLOBAL HIDDEN     1 __aeabi_idivmod
+   140: 5013db30    60 FUNC    GLOBAL DEFAULT    1 fiq_interrupt
 
 No version information found in this file.
 Attribute Section: aeabi

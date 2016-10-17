@@ -12,12 +12,56 @@ TEXT runtime·SWIcall(SB), NOSPLIT, $0
 	SWI  $0x0
 	B    (R6)
 
+TEXT runtime·loadvbar(SB), NOSPLIT, $0-4
+	MOVW vbar_addr+0(FP), R0
+	MOVW LR, R6
+
+	// load vbar from R0
+	WORD $0xee0c0f10
+
+	B (R6)
+
+TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
+	MOVW l1base+0(FP), R0
+	MOVW runtime·l1_table(SB), R0
+	MOVW LR, R6
+
+	// invalidate instruction tlb
+	WORD $0xee080f15
+
+	// invalidate data tlb
+	WORD $0xee080f16
+
+	// invalidate whole tlb
+	WORD $0xee080f17
+
+	// put r0 into ttbr0
+	WORD $0xee020f10
+
+	// all domain access
+	MOVW $0x3, R0
+	WORD $0xee030f10
+
+	// read mmu config into R0
+	WORD $0xee110f10
+
+	ORR $0x1, R0
+
+	WORD $0xee010f10
+	B    (R6)
+
 // using frame size $-4 means do not save LR on stack.
 TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW $0xcafebabe, R12
 
 	// copy arguments forward on an even stack
 	// use R13 instead of SP to avoid linker rewriting the offsets
+	MOVW R0, runtime·kernelstart(SB)
+	MOVW R1, runtime·kernelsize(SB)
+
+	MOVW $1, R0
+	MOVW R0, runtime·hackmode(SB)
+
 	MOVW 0(R13), R0  // argc
 	MOVW 4(R13), R1  // argv
 	SUB  $64, R13    // plenty of scratch
@@ -64,8 +108,11 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW R1, 8(R13)
 
 	BL runtime·args(SB)
-	BL runtime·checkgoarm(SB)
+	BL runtime·checkgoarm(SB) // os_linux_arm.go
 	BL runtime·osinit(SB)
+	BL runtime·mem_init(SB)
+	BL runtime·page_init(SB)
+	BL runtime·map_kernel(SB)
 	BL runtime·schedinit(SB)
 
 	// create a new goroutine to start program
