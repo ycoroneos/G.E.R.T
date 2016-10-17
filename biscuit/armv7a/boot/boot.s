@@ -62,7 +62,7 @@ L_start:
 	// enable full access for p10,11
 	ORR r1, r1, #(0xf << 20)
 
-	// ccess Control Register = r1
+	// access Control Register = r1
 	MCR p15, #0, r1, c1, c0, #2
 	MOV r1, #0
 

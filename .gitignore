@@ -52,3 +52,5 @@ VERSION.cache
 
 bin/
 pkg/
+
+/biscuit/armv7a/obj/

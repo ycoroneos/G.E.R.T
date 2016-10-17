@@ -26,6 +26,12 @@ TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
 	MOVW runtime·l1_table(SB), R0
 	MOVW LR, R6
 
+	// instruction barrier
+	WORD $0xf57ff06f
+
+	// data barrier
+	WORD $0xf57ff04f
+
 	// invalidate instruction tlb
 	WORD $0xee080f15
 
@@ -38,6 +44,10 @@ TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
 	// put r0 into ttbr0
 	WORD $0xee020f10
 
+	// clear TTBCR
+	MOVW $0x0, R0
+	WORD $0xee020f50
+
 	// all domain access
 	MOVW $0x3, R0
 	WORD $0xee030f10
@@ -45,8 +55,10 @@ TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
 	// read mmu config into R0
 	WORD $0xee110f10
 
+	// enable MMU
 	ORR $0x1, R0
 
+	// put R0 into mmu config
 	WORD $0xee010f10
 	B    (R6)
 

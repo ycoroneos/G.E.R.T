@@ -105,7 +105,7 @@ func mem_init() {
 	print("\t npages: ", npages, "\n")
 
 	//find the pointer to the start of free space
-	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), PGSIZE))
+	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
 	print("\t boot_end: ", hex(boot_end), "\n")
 
 	//allocate the l1 table
@@ -183,7 +183,7 @@ func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 	va = va & 0xFFF00000
 	perms = perms | 0x2
 	//realsize := roundup(size, PGSIZE)
-	realsize := size
+	realsize := roundup(size, PGSIZE)
 	print("realsize is ", hex(realsize), "\n")
 	for i := uint32(0); i < realsize; i += PGSIZE {
 		//pgnum := pa2pgnum(physaddr(i + pa))
@@ -201,15 +201,15 @@ func map_kernel() {
 	//install the kernel page table
 
 	//map the uart
-	//map_region(0x02000000, 0x02000000, PGSIZE, 0x0)
+	map_region(0x02000000, 0x02000000, PGSIZE, 0x0)
 
 	//identity map [kernelstart, boot_alloc(0))
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
 	//map_region(0x10000000, 0x10000000, 0x10000000, 0x0)
-	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
+	map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//map_region(0x200000, 0x200000, 0xFFD00000, 0x0)
-	map_region(0x0, 0x0, 0x30000000, 0x0)
+	//map_region(0x0, 0x0, 0x30000000, 0x0)
 	showl1table()
 	loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
@@ -222,7 +222,7 @@ func map_kernel() {
 
 //go:nosplit
 func showl1table() {
-	print("l1 table:\n")
+	print("l1 table: ", hex(uint32(l1_table)), "\n")
 	print("__________________________\n")
 	for i := uint32(0); i < 4096; i += 1 {
 		entry := *(*uint32)(unsafe.Pointer((uintptr(l1_table)) + uintptr(i*4)))

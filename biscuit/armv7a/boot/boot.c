@@ -98,7 +98,7 @@ static void load_go()
 {
   size_t binsize = gobin_end - gobin_start;
   cprintf("go bin size : 0x%x\r\n", binsize);
-  boot_memset((char *)go_load_addr, 0, binsize*2);
+  //boot_memset((char *)go_load_addr, 0, binsize);
   boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
   cprintf("loaded at 0x%x\r\n", go_load_addr);
   cprintf("first 10 words are:\r\n");
@@ -146,6 +146,18 @@ int main()
       :
       :"r"(kernel_size)
       :"r0"
+      );
+  //sub sp, 16
+  asm volatile("sub sp, #16"
+      :
+      :
+      :
+      );
+  //and sp -16
+  asm volatile("and sp, #-16"
+      :
+      :
+      :
       );
   ((void (*)(void)) (go_load_addr))();
   panic("should not be here");
