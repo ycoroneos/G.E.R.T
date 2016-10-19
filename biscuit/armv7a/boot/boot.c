@@ -4,6 +4,26 @@
 #include <stdlib.h>
 #include "console.h"
 
+struct trapframe {
+  uint32_t trapno;
+  uint32_t lr;
+  uint32_t sp;
+  uint32_t r12;
+  uint32_t fp;
+  uint32_t r10;
+  uint32_t r9;
+  uint32_t r8;
+  uint32_t r7;
+  uint32_t r6;
+  uint32_t r5;
+  uint32_t r4;
+  uint32_t r3;
+  uint32_t r2;
+  uint32_t r1;
+  uint32_t r0;
+};
+
+
 // go elf kernel
 extern char gobin_start[], gobin_end[];
 
@@ -11,16 +31,19 @@ extern char gobin_start[], gobin_end[];
 uintptr_t go_load_addr=(uintptr_t)0x10000000;
 
 
-static void backtrace(uint32_t *fp)
+static void backtrace(struct trapframe *tf)
 {
+  uint32_t *fp = (uint32_t *)(tf->fp);
   unsigned i=0;
+  cprintf("backtrace: \r\n");
   while (*fp)
   {
     uint32_t *lr = fp-1;
-    uint32_t *newfp = fp-3;
-    //cprintf("frame %d: lr 0x%x
+    cprintf("\t|stack frame at 0x%x, lr=0x%x\r\n", fp, *lr);
+    fp = fp-3;
     ++i;
   }
+  cprintf("backtrace done\r\n");
 }
 
 static void boot_memcpy(char *dst, char *src, size_t size)
@@ -39,60 +62,138 @@ static void boot_memset(char *dst, char val, size_t size)
   }
 }
 
-void reset_interrupt()
+void trap(struct trapframe *tf)
 {
-  panic("unintended reset");
+  switch (tf->trapno)
+  {
+    //undefined
+    case 1:
+      cprintf("undefined trap\r\n");
+      break;
+    //svc
+    case 2:
+      cprintf("svc from addr 0x%x\r\n", tf->lr-4);
+      break;
+    //prefetch abort
+    case 3:
+      cprintf("prefetch abort\r\n");
+      break;
+    //data abort
+    case 4:
+      cprintf("data abort from addr 0x%x\r\n", tf->lr-8);
+      break;
+    //irq
+    case 5:
+      cprintf("irq trap\r\n");
+      break;
+    //fiq
+    case 6:
+      cprintf("fiq trap\r\n");
+      break;
+    default:
+      cprintf("unknown trap %d\r\n", tf->trapno);
+  }
+  uint32_t sctlr;
+  asm volatile("MRC p15, 0, %[a], c1, c0, 0" : [a] "=r" (sctlr) :);
+  cprintf("\t sctlr: 0x%x\r\n", sctlr);
+  cprintf("\t r0: 0x%x\r\n", tf->r0);
+  cprintf("\t r1: 0x%x\r\n", tf->r1);
+  cprintf("\t r2: 0x%x\r\n", tf->r2);
+  cprintf("\t r3: 0x%x\r\n", tf->r3);
+  cprintf("\t r4: 0x%x\r\n", tf->r4);
+  cprintf("\t r5: 0x%x\r\n", tf->r5);
+  cprintf("\t r6: 0x%x\r\n", tf->r6);
+  cprintf("\t r7: 0x%x\r\n", tf->r7);
+  cprintf("\t r8: 0x%x\r\n", tf->r8);
+  cprintf("\t r9: 0x%x\r\n", tf->r9);
+  cprintf("\t r10: 0x%x\r\n", tf->r10);
+  cprintf("\t fp: 0x%x\r\n", tf->fp);
+  cprintf("\t lr: 0x%x\r\n", tf->lr);
+  cprintf("\t sp: 0x%x\r\n", tf->sp);
+ // backtrace(tf);
   volatile short stub=1;
   while (stub) {};
 }
 
-void undefined_interrupt()
-{
-  volatile short stub=1;
-  while (stub) {};
-}
-
-void svc_interrupt()
-{
-  uint32_t lr;
-  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
-  lr;
-  cprintf("svc from addr 0x%x\r\n", lr-4);
-  ((void (*)(void)) (lr))();
-  volatile short stub=1;
-  while (stub) {};
-}
-
-void prefetch_abort_interrupt()
-{
-  cprintf("prefetch abort");
-  volatile short stub=1;
-  while (stub) {};
-}
-
-void data_abort_interrupt()
-{
-  uint32_t lr;
-  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
-  lr-=8;
-  cprintf("data abort from addr 0x%x\r\n", lr);
-  volatile short stub=1;
-  while (stub) {};
-}
-
-void irq_interrupt()
-{
-  cprintf("irq");
-  volatile short stub=1;
-  while (stub) {};
-}
-
-void fiq_interrupt()
-{
-  cprintf("fiq");
-  volatile short stub=1;
-  while (stub) {};
-}
+//void reset_interrupt()
+//{
+//  panic("unintended reset");
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//void undefined_interrupt()
+//{
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//void svc_interrupt()
+//{
+//  uint32_t lr;
+//  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
+//  lr;
+//  cprintf("svc from addr 0x%x\r\n", lr-4);
+//  ((void (*)(void)) (lr))();
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//void prefetch_abort_interrupt()
+//{
+//  cprintf("prefetch abort");
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//#pragma GCC push_options
+//#pragma GCC optimize ("O0")
+//
+//void data_abort_interrupt()
+//{
+//  uint32_t lr, r0, r1, r2, r3, r4, r5, r6, r7, r8, sctlr;
+//  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
+//  asm volatile("mov %[a], r0" : [a] "=r" (r0) :);
+//  asm volatile("mov %[a], r1" : [a] "=r" (r1) :);
+//  asm volatile("mov %[a], r2" : [a] "=r" (r2) :);
+//  asm volatile("mov %[a], r3" : [a] "=r" (r3) :);
+//  asm volatile("mov %[a], r4" : [a] "=r" (r4) :);
+//  asm volatile("mov %[a], r5" : [a] "=r" (r5) :);
+//  asm volatile("mov %[a], r6" : [a] "=r" (r6) :);
+//  asm volatile("mov %[a], r7" : [a] "=r" (r7) :);
+//  asm volatile("mov %[a], r8" : [a] "=r" (r8) :);
+//  asm volatile("MRC p15, 0, %[a], c1, c0, 0" : [a] "=r" (sctlr) :);
+//  lr-=8;
+//  cprintf("data abort from addr 0x%x\r\n", lr);
+//  cprintf("\t sctlr: 0x%x\r\n", sctlr);
+//  cprintf("\t r0: 0x%x\r\n", r0);
+//  cprintf("\t r1: 0x%x\r\n", r1);
+//  cprintf("\t r2: 0x%x\r\n", r2);
+//  cprintf("\t r3: 0x%x\r\n", r3);
+//  cprintf("\t r4: 0x%x\r\n", r4);
+//  cprintf("\t r5: 0x%x\r\n", r5);
+//  cprintf("\t r6: 0x%x\r\n", r6);
+//  cprintf("\t r7: 0x%x\r\n", r7);
+//  cprintf("\t r8: 0x%x\r\n", r8);
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//#pragma GCC pop_options
+//
+//void irq_interrupt()
+//{
+//  cprintf("irq");
+//  volatile short stub=1;
+//  while (stub) {};
+//}
+//
+//void fiq_interrupt()
+//{
+//  cprintf("fiq");
+//  volatile short stub=1;
+//  while (stub) {};
+//}
 
 static void load_go()
 {
@@ -135,8 +236,9 @@ int main()
   cprintf("float multiplication %x\r\n", b);
   //load our kernel
   load_go();
+  uint32_t stacksize = 0x4000;
   uint32_t kernel_start = go_load_addr;
-  uint32_t kernel_size = gobin_end - gobin_start;
+  uint32_t kernel_size = gobin_end - gobin_start + stacksize;
   asm volatile("mov r0, %0"
       :
       :"r"(kernel_start)
@@ -146,6 +248,11 @@ int main()
       :
       :"r"(kernel_size)
       :"r0"
+      );
+  asm volatile("mov sp, %0"
+      :
+      :"r"(kernel_start + kernel_size)
+      :"sp"
       );
   //sub sp, 16
   asm volatile("sub sp, #16"

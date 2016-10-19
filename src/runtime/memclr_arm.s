@@ -23,65 +23,91 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "go_asm.h"
+#include "go_tls.h"
+#include "funcdata.h"
 #include "textflag.h"
 
 #define TO	R8
 #define TOE	R11
 #define N	R12
-#define TMP	R12				/* N and TMP don't overlap */
+#define TMP	R12 // N and TMP don't overlap
 
-TEXT runtime·memclr(SB),NOSPLIT,$0-8
-	MOVW	ptr+0(FP), TO
-	MOVW	n+4(FP), N
-	MOVW	$0, R0
+TEXT runtime·memclrbytes(SB), NOSPLIT, $0-8
+	MOVW ptr+0(FP), TO
+	MOVW n+4(FP), N
+	MOVW $0, R0
+	MOVW LR, R6
 
-	ADD	N, TO, TOE	/* to end pointer */
+	ADD N, TO, TOE // to end pointer
+	CMP TOE, TO
+	BLT _zero
 
-	CMP	$4, N		/* need at least 4 bytes to copy */
-	BLT	_1tail
+	// return if nothing to do
+	B (R6)
 
-_4align:				/* align on 4 */
-	AND.S	$3, TO, TMP
-	BEQ	_4aligned
+_zero:
+	MOVB R0, (TO)
+	ADD  $0x1, TO, TO
+	CMP  TOE, TO
+	BLT  _zero
 
-	MOVBU.P	R0, 1(TO)		/* implicit write back */
-	B	_4align
+	// return
+	B (R6)
+
+TEXT runtime·memclr(SB), NOSPLIT, $0-8
+	MOVW ptr+0(FP), TO
+	MOVW n+4(FP), N
+	MOVW $0, R0
+
+	ADD N, TO, TOE // to end pointer
+
+	CMP $4, N  // need at least 4 bytes to copy
+	BLT _1tail
+
+_4align: // align on 4
+	AND.S $3, TO, TMP
+	BEQ   _4aligned
+
+	MOVBU.P R0, 1(TO) // implicit write back
+	B       _4align
 
 _4aligned:
-	SUB	$31, TOE, TMP	/* do 32-byte chunks if possible */
-	CMP	TMP, TO
-	BHS	_4tail
+	SUB $31, TOE, TMP // do 32-byte chunks if possible
+	CMP TMP, TO
+	BHS _4tail
 
-	MOVW	R0, R1			/* replicate */
-	MOVW	R0, R2
-	MOVW	R0, R3
-	MOVW	R0, R4
-	MOVW	R0, R5
-	MOVW	R0, R6
-	MOVW	R0, R7
+	MOVW R0, R1 // replicate
+	MOVW R0, R2
+	MOVW R0, R3
+	MOVW R0, R4
+	MOVW R0, R5
+	MOVW R0, R6
+	MOVW R0, R7
 
 _f32loop:
-	CMP	TMP, TO
-	BHS	_4tail
+	CMP TMP, TO
+	BHS _4tail
 
 	MOVM.IA.W [R0-R7], (TO)
-	B	_f32loop
+	B         _f32loop
 
 _4tail:
-	SUB	$3, TOE, TMP	/* do remaining words if possible */
-_4loop:
-	CMP	TMP, TO
-	BHS	_1tail
+	SUB $3, TOE, TMP // do remaining words if possible
 
-	MOVW.P	R0, 4(TO)		/* implicit write back */
-	B	_4loop
+_4loop:
+	CMP TMP, TO
+	BHS _1tail
+
+	MOVW.P R0, 4(TO) // implicit write back
+	B      _4loop
 
 _1tail:
-	CMP	TO, TOE
-	BEQ	_return
+	CMP TO, TOE
+	BEQ _return
 
-	MOVBU.P	R0, 1(TO)		/* implicit write back */
-	B	_1tail
+	MOVBU.P R0, 1(TO) // implicit write back
+	B       _1tail
 
 _return:
 	RET

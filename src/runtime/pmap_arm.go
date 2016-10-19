@@ -26,6 +26,7 @@ const VBAR_ALIGNMENT = uint32(0x20)
 
 var kernelstart physaddr
 var kernelsize physaddr
+var bootstack physaddr
 
 var boot_end physaddr
 
@@ -74,6 +75,9 @@ func roundup(val, upto uint32) uint32 {
 }
 
 //go:nosplit
+func memclrbytes(ptr unsafe.Pointer, n uintptr)
+
+//go:nosplit
 func clear(loc uintptr, size uint32) {
 	for i := uint32(0); i < size; i += 4 {
 		addr := (*uint32)(unsafe.Pointer(loc + uintptr(i)))
@@ -90,7 +94,7 @@ func boot_alloc(size uint32) physaddr {
 	boot_end = boot_end + physaddr(newsize)
 	print("boot alloc clearing ", hex(uint32(result)), " up to ", hex(uint32(boot_end)), "\n")
 	//clear(([]byte)(unsafe.Pointer(uintptr(result))), newsize)
-	memclr(unsafe.Pointer(uintptr(result)), uintptr(newsize))
+	memclrbytes(unsafe.Pointer(uintptr(result)), uintptr(newsize))
 	//memclr(unsafe.Pointer(uintptr(result)), 1)
 	//	clear(uintptr(result), newsize)
 	return result
@@ -100,19 +104,17 @@ func boot_alloc(size uint32) physaddr {
 func mem_init() {
 	print("mem init: ", hex(RAM_SIZE), " bytes of ram\n")
 	print("mem init: kernel start: ", hex(kernelstart), " kernel end: ", hex(kernelstart+kernelsize), "\n")
+	print("stack at: ", hex(uint32(bootstack)), "\n")
 	//calculate how many pages we can have
 	npages = RAM_SIZE / PGSIZE
 	print("\t npages: ", npages, "\n")
-
-	//find the pointer to the start of free space
-	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
-	print("\t boot_end: ", hex(boot_end), "\n")
 
 	//allocate the l1 table
 	//4 bytes each and 4096 entries
 	//l1_table = boot_end
 	//memclr(unsafe.Pointer(uintptr(l1_table)), uintptr(4*4096))
 	//boot_end = boot_end + physaddr(4*4096)
+	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
 	l1_table = boot_alloc(4 * 4096)
 	//print("\tl1 page table at: ", hex(uintptr(unsafe.Pointer(l1_table))), "\n")
 	print("\tl1 page table at: ", hex(l1_table), "\n")
@@ -207,10 +209,11 @@ func map_kernel() {
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
 	//map_region(0x10000000, 0x10000000, 0x10000000, 0x0)
 	map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
+	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(0x30000000), 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//map_region(0x200000, 0x200000, 0xFFD00000, 0x0)
 	//map_region(0x0, 0x0, 0x30000000, 0x0)
-	showl1table()
+	//	showl1table()
 	loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	print("mapped kernel identity\n")

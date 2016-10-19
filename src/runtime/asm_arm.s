@@ -58,6 +58,12 @@ TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
 	// enable MMU
 	ORR $0x1, R0
 
+	// instruction barrier
+	WORD $0xf57ff06f
+
+	// data barrier
+	WORD $0xf57ff04f
+
 	// put R0 into mmu config
 	WORD $0xee010f10
 	B    (R6)
@@ -119,13 +125,14 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW 64(R13), R1
 	MOVW R1, 8(R13)
 
-	BL runtime·args(SB)
-	BL runtime·checkgoarm(SB) // os_linux_arm.go
-	BL runtime·osinit(SB)
-	BL runtime·mem_init(SB)
-	BL runtime·page_init(SB)
-	BL runtime·map_kernel(SB)
-	BL runtime·schedinit(SB)
+	BL   runtime·args(SB)
+	BL   runtime·checkgoarm(SB)     // os_linux_arm.go
+	BL   runtime·osinit(SB)
+	MOVW R13, runtime·bootstack(SB)
+	BL   runtime·mem_init(SB)
+	BL   runtime·page_init(SB)
+	BL   runtime·map_kernel(SB)
+	BL   runtime·schedinit(SB)
 
 	// create a new goroutine to start program
 	MOVW   $runtime·mainPC(SB), R0
