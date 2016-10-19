@@ -102,8 +102,8 @@ func Splock(l *Spinlock_t) {
 
 //go:nosplit
 func Spunlock(l *Spinlock_t) {
-	//atomic.Store(&l.v, 0)
-	l.v = 0
+	atomic.Store(&l.v, 0)
+	//	l.v = 0
 }
 
 func mktrap(a int) {

@@ -17,10 +17,12 @@ func loadvbar(vbar_addr unsafe.Pointer)
 const RAM_START = physaddr(0x10000000)
 const RAM_SIZE = uint32(0x80000000)
 
-//const PGSIZE = uint32(0x1000)
+const PERIPH_START = physaddr(0x0)
+const PERIPH_SIZE = uint32(0x0FFFFFFF)
 
 //1MB pages
 const PGSIZE = uint32(0x100000)
+const PGSHIFT = uint32(20)
 const L1_ALIGNMENT = uint32(0x4000)
 const VBAR_ALIGNMENT = uint32(0x20)
 
@@ -39,7 +41,7 @@ type PageInfo struct {
 
 //linear array of struct PageInfos
 var npages uint32
-var pages physaddr
+var pages uintptr
 var pgnfosize uint32 = uint32(8)
 
 //pointer to the next PageInfo to give away
@@ -65,7 +67,7 @@ type vector_table struct {
 var vectab physaddr
 
 //linear array of page directory entries that form the kernel pgdir
-var kernpgdir *uint32
+var kernpgdir uintptr
 
 //go:nosplit
 func roundup(val, upto uint32) uint32 {
@@ -78,25 +80,13 @@ func roundup(val, upto uint32) uint32 {
 func memclrbytes(ptr unsafe.Pointer, n uintptr)
 
 //go:nosplit
-func clear(loc uintptr, size uint32) {
-	for i := uint32(0); i < size; i += 4 {
-		addr := (*uint32)(unsafe.Pointer(loc + uintptr(i)))
-		//print("zero: ", hex(uintptr(unsafe.Pointer(addr))), "\n")
-		*addr = 0
-	}
-}
-
-//go:nosplit
 func boot_alloc(size uint32) physaddr {
 	//allocate ROUNDUP(size, PGSIZE) bytes from the boot region
 	result := boot_end
 	newsize := uint32(roundup(uint32(size), 0x4))
 	boot_end = boot_end + physaddr(newsize)
-	print("boot alloc clearing ", hex(uint32(result)), " up to ", hex(uint32(boot_end)), "\n")
-	//clear(([]byte)(unsafe.Pointer(uintptr(result))), newsize)
+	//print("boot alloc clearing ", hex(uint32(result)), " up to ", hex(uint32(boot_end)), "\n")
 	memclrbytes(unsafe.Pointer(uintptr(result)), uintptr(newsize))
-	//memclr(unsafe.Pointer(uintptr(result)), 1)
-	//	clear(uintptr(result), newsize)
 	return result
 }
 
@@ -116,19 +106,21 @@ func mem_init() {
 	//boot_end = boot_end + physaddr(4*4096)
 	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
 	l1_table = boot_alloc(4 * 4096)
-	//print("\tl1 page table at: ", hex(uintptr(unsafe.Pointer(l1_table))), "\n")
 	print("\tl1 page table at: ", hex(l1_table), "\n")
 
 	//allocate the vector table
 	boot_end = physaddr(roundup(uint32(boot_end), VBAR_ALIGNMENT))
 	vectab = boot_alloc(uint32(unsafe.Sizeof(vector_table{})))
-	//memclr(unsafe.Pointer(uintptr(vectab)), uintptr(8*4))
 	print("\tvector table at: ", hex(vectab), " \n")
+
+	//allocate the spinlock for mmap
+	maplock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
+	print("\tmap spinlock at: ", hex(uintptr(unsafe.Pointer(maplock))), " \n")
 
 	//allocate pages array outside the runtime's knowledge
 	//boot_end = boot_end + physaddr(8*4)
 	//boot_end = physaddr(roundup(uint32(boot_end), PGSIZE))
-	pages = physaddr(boot_alloc(npages * 8))
+	pages = uintptr(boot_alloc(npages * 8))
 	//print("pages at: ", hex(uintptr(unsafe.Pointer(pages))), " sizeof(struct PageInfo) is ", hex(unsafe.Sizeof(*pages)), "\n")
 	print("pages at: ", hex(pages), "\n")
 }
@@ -151,31 +143,60 @@ func pa2pgnum(pa physaddr) uint32 {
 }
 
 //go:nosplit
+func pageinfo2pa(pgnfo *PageInfo) physaddr {
+	pgnum := uint32((uintptr(unsafe.Pointer(pgnfo)) - pages) / unsafe.Sizeof(PageInfo{}))
+	return pgnum2pa(pgnum)
+}
+
+//go:nosplit
+func check_page_free(pgnfo *PageInfo) bool {
+	curpage := (*PageInfo)(unsafe.Pointer(nextfree))
+	for {
+		if pgnfo == curpage {
+			return true
+		}
+		if curpage.next_pageinfo == 0 {
+			break
+		}
+		curpage = (*PageInfo)(unsafe.Pointer(curpage.next_pageinfo))
+	}
+	return false
+}
+
+//go:nosplit
+func walk_pgdir(pgdir uintptr, va uint32) *uint32 {
+	table_index := va >> PGSHIFT
+	pte := (*uint32)(unsafe.Pointer(pgdir + uintptr(4*table_index)))
+	return pte
+}
+
+//go:nosplit
 func page_init() {
 	//construct a linked-list of free pages
-	//	nfree := uint32(0)
-	//	nextfree = 0
-	//	for i := pa2pgnum(RAM_START); i < pa2pgnum(physaddr(uint32(RAM_START)+RAM_SIZE)); i++ {
-	//		pa := pgnum2pa(i)
-	//		pagenfo := pa2page(pa)
-	//		//print("on page: ", i, " pa ", hex(pa), "\n")
-	//		if pa >= physaddr(RAM_START) && pa < kernelstart {
-	//			pagenfo.next_pageinfo = nextfree
-	//			pagenfo.ref = 0
-	//			nextfree = uintptr(unsafe.Pointer(pagenfo))
-	//			nfree += 1
-	//		} else if pa >= boot_alloc(0) && pa < (RAM_START+physaddr(RAM_SIZE)) {
-	//			pagenfo.next_pageinfo = nextfree
-	//			pagenfo.ref = 0
-	//			nextfree = uintptr(unsafe.Pointer(pagenfo))
-	//			nfree += 1
-	//		} else {
-	//			pagenfo.ref = 0
-	//			pagenfo.next_pageinfo = 0
-	//		}
-	//	}
-	//	print("page init done\n")
-	//	print("free pages: ", nfree, "\n")
+	nfree := uint32(0)
+	nextfree = 0
+	for i := pa2pgnum(RAM_START); i < pa2pgnum(physaddr(uint32(RAM_START)+RAM_SIZE)); i++ {
+		pa := pgnum2pa(i)
+		pagenfo := pa2page(pa)
+		if pa >= physaddr(RAM_START) && pa < kernelstart {
+			pagenfo.next_pageinfo = nextfree
+			pagenfo.ref = 0
+			nextfree = uintptr(unsafe.Pointer(pagenfo))
+			nfree += 1
+		} else if pa >= boot_alloc(0) && pa < (RAM_START+physaddr(RAM_SIZE)) {
+			pagenfo.next_pageinfo = nextfree
+			pagenfo.ref = 0
+			nextfree = uintptr(unsafe.Pointer(pagenfo))
+			nfree += 1
+		} else {
+			pagenfo.ref = 1
+			pagenfo.next_pageinfo = 0
+		}
+	}
+	print("page init done\n")
+	print("free pages: ", nfree, "\n")
+	npagenfo := (*PageInfo)(unsafe.Pointer(nextfree))
+	print("next free page is for pa: ", hex(pageinfo2pa(npagenfo)), "\n")
 }
 
 //go:nosplit
@@ -207,20 +228,13 @@ func map_kernel() {
 
 	//identity map [kernelstart, boot_alloc(0))
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
-	//map_region(0x10000000, 0x10000000, 0x10000000, 0x0)
 	map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
-	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(0x30000000), 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
-	//map_region(0x200000, 0x200000, 0xFFD00000, 0x0)
-	//map_region(0x0, 0x0, 0x30000000, 0x0)
 	//	showl1table()
 	loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
+	kernpgdir = (uintptr)(unsafe.Pointer(uintptr(l1_table)))
 	print("mapped kernel identity\n")
-	print("trying to dereference 0x30000000\n")
-	zero := (*uint32)(unsafe.Pointer(uintptr(0x30000000)))
-	*zero = 0xcafebabe
-	print("success (oh no) \n")
 }
 
 //go:nosplit
