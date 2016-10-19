@@ -429,8 +429,17 @@ func schedinit() {
 
 	tracebackinit()
 	moduledataverify()
+	if armhackmode > 0 {
+		print("init stack\n")
+	}
 	stackinit()
+	if armhackmode > 0 {
+		print("init malloc\n")
+	}
 	mallocinit()
+	if armhackmode > 0 {
+		print("init mcommon\n")
+	}
 	mcommoninit(_g_.m)
 
 	msigsave(_g_.m)
@@ -439,6 +448,9 @@ func schedinit() {
 	goargs()
 	goenvs()
 	parsedebugvars()
+	if armhackmode > 0 {
+		print("gc init\n")
+	}
 	gcinit()
 
 	sched.lastpoll = uint64(nanotime())

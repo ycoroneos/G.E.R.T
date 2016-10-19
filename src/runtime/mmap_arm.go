@@ -26,21 +26,36 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 	print("mmap_arm: ", hex(va), " ", hex(n), " ", hex(prot), " ", hex(flags), "\n")
 
 	//if fixed mapping check that those addresses are not in use
-	if (uint32(flags) & MMAP_FIXED) > 0 {
-		for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
-			pte := walk_pgdir(kernpgdir, uint32(start))
-			if *pte&0x10 > 0 {
-				print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
-			}
-		}
-	} else {
-		throw("mmap_arm: cant handle non-fixed mappings yet\n")
-	}
-	//
-	//	for i := uintptr(0); i < n; i++ {
-	//		base := (*byte)(unsafe.Pointer(uintptr(addr) + i))
-	//		*base = 0
+	//	if (uint32(flags) & MMAP_FIXED) > 0 {
+	//		for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
+	//			pte := walk_pgdir(kernpgdir, uint32(start))
+	//			if *pte&0x10 > 0 {
+	//				print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
+	//			}
+	//		}
+	//	} else {
+	//		throw("mmap_arm: cant handle non-fixed mappings yet\n")
 	//	}
+	for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
+		pte := walk_pgdir(kernpgdir, uint32(start))
+		if *pte&0x10 > 0 {
+			print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
+		}
+		page := page_alloc()
+		//print("got page\n")
+		if page == nil {
+			throw("mmap_arm: out of memory\n")
+		}
+		pa := pageinfo2pa(page) & 0xFFF00000
+		*pte = uint32(pa) | 0x2
+		//print("mapped va: ", hex(start), " to pa: ", hex(pa), "\n")
+	}
+	//showl1table()
+	print("reloading page table\n")
+	invallpages()
+	//memclrbytes(unsafe.Pointer(va), uintptr(size))
+	memclr(unsafe.Pointer(va), uintptr(size))
 	Spunlock(maplock)
+	print("updated page tables\n")
 	return addr
 }

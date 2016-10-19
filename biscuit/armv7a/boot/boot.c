@@ -23,6 +23,8 @@ struct trapframe {
   uint32_t r0;
 };
 
+//stack for go
+uint32_t stacksize = 0x4000;
 
 // go elf kernel
 extern char gobin_start[], gobin_end[];
@@ -199,7 +201,7 @@ static void load_go()
 {
   size_t binsize = gobin_end - gobin_start;
   cprintf("go bin size : 0x%x\r\n", binsize);
-  //boot_memset((char *)go_load_addr, 0, binsize);
+  boot_memset((char *)go_load_addr, 0, binsize+stacksize);
   boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
   cprintf("loaded at 0x%x\r\n", go_load_addr);
   cprintf("first 10 words are:\r\n");
@@ -236,7 +238,6 @@ int main()
   cprintf("float multiplication %x\r\n", b);
   //load our kernel
   load_go();
-  uint32_t stacksize = 0x4000;
   uint32_t kernel_start = go_load_addr;
   uint32_t kernel_size = gobin_end - gobin_start + stacksize;
   asm volatile("mov r0, %0"

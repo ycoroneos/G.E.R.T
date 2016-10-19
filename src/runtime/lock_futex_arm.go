@@ -48,8 +48,10 @@ func lock(l *mutex) {
 	print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
 	if gp.m.locks < 0 {
 		writeUnsafe([]byte("invalid lock count"))
-		gp.m.locks = 0
-		//throw("runtime·lock: lock count")
+		//gp.m.locks = 0
+		startpanic()
+		dopanic(0)
+		*(*int)(nil) = 0 // not reached
 	}
 	gp.m.locks++
 

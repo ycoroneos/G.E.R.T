@@ -10,6 +10,9 @@ func loadttbr0(l1base unsafe.Pointer)
 //go:nosplit
 func loadvbar(vbar_addr unsafe.Pointer)
 
+//go:nosplit
+func invallpages()
+
 //This file will have all the things to do with the arm MMU and page tables
 //assume we will be addressing 4gb of memory
 //using the short descriptor page format
@@ -200,6 +203,13 @@ func page_init() {
 }
 
 //go:nosplit
+func page_alloc() *PageInfo {
+	freepage := (*PageInfo)(unsafe.Pointer(nextfree))
+	nextfree = freepage.next_pageinfo
+	return freepage
+}
+
+//go:nosplit
 func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 	//section entry bits
 	pa = pa & 0xFFF00000
@@ -233,6 +243,7 @@ func map_kernel() {
 	//	showl1table()
 	loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
+	//loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	kernpgdir = (uintptr)(unsafe.Pointer(uintptr(l1_table)))
 	print("mapped kernel identity\n")
 }

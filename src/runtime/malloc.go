@@ -358,10 +358,23 @@ func mallocinit() {
 		throw("misrounded allocation in mallocinit")
 	}
 
+	if armhackmode > 0 {
+		print("malloc.go: mheap_.init\n")
+	}
 	// Initialize the rest of the allocator.
+	//mheap.go
 	mheap_.init(spansSize)
+	if armhackmode > 0 {
+		print("malloc.go: getg\n")
+	}
 	_g_ := getg()
+	if armhackmode > 0 {
+		print("malloc.go: allocmcache\n")
+	}
 	_g_.m.mcache = allocmcache()
+	if armhackmode > 0 {
+		print("malloc.go: all done\n")
+	}
 }
 
 // sysReserveHigh reserves space somewhere high in the address space.

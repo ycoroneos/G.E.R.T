@@ -68,6 +68,25 @@ TEXT runtime·loadttbr0(SB), NOSPLIT, $0-4
 	WORD $0xee010f10
 	B    (R6)
 
+TEXT runtime·invallpages(SB), NOSPLIT, $0
+	MOVW LR, R6
+
+	// instruction barrier
+	WORD $0xf57ff06f
+
+	// data barrier
+	WORD $0xf57ff04f
+
+	// invalidate instruction tlb
+	WORD $0xee080f15
+
+	// invalidate data tlb
+	WORD $0xee080f16
+
+	// invalidate whole tlb
+	WORD $0xee080f17
+	B    (R6)
+
 // using frame size $-4 means do not save LR on stack.
 TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW $0xcafebabe, R12
@@ -78,7 +97,7 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW R1, runtime·kernelsize(SB)
 
 	MOVW $1, R0
-	MOVW R0, runtime·hackmode(SB)
+	MOVW R0, runtime·armhackmode(SB)
 
 	MOVW 0(R13), R0  // argc
 	MOVW 4(R13), R1  // argv
