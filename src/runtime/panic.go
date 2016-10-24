@@ -588,12 +588,21 @@ func startpanic_m() {
 		_g_.m.mcache = allocmcache()
 	}
 
+	if armhackmode > 0 {
+		writeUnsafe([]byte("startpanic_m... "))
+	}
 	switch _g_.m.dying {
 	case 0:
 		_g_.m.dying = 1
 		_g_.writebuf = nil
 		atomic.Xadd(&panicking, 1)
+		if armhackmode > 0 {
+			writeUnsafe([]byte("get panic lock... "))
+		}
 		lock(&paniclk)
+		if armhackmode > 0 {
+			print("done\n")
+		}
 		if debug.schedtrace > 0 || debug.scheddetail > 0 {
 			schedtrace(true)
 		}

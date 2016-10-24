@@ -47,7 +47,7 @@ func lock(l *mutex) {
 
 	print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
 	if gp.m.locks < 0 {
-		writeUnsafe([]byte("invalid lock count"))
+		writeUnsafe([]byte("invalid lock count, dieing"))
 		//gp.m.locks = 0
 		startpanic()
 		dopanic(0)
@@ -60,7 +60,9 @@ func lock(l *mutex) {
 	if v == mutex_unlocked {
 		return
 	}
-
+	if armhackmode > 0 {
+		print("lock: waiting for lock\n")
+	}
 	// wait is either MUTEX_LOCKED or MUTEX_SLEEPING
 	// depending on whether there is a thread sleeping
 	// on this mutex.  If we ever change l->key from
@@ -84,6 +86,9 @@ func lock(l *mutex) {
 					return
 				}
 			}
+			if armhackmode > 0 {
+				print("lock: procyield\n")
+			}
 			procyield(active_spin_cnt)
 		}
 
@@ -94,6 +99,9 @@ func lock(l *mutex) {
 					return
 				}
 			}
+			if armhackmode > 0 {
+				print("lock: osyield\n")
+			}
 			osyield()
 		}
 
@@ -101,6 +109,9 @@ func lock(l *mutex) {
 		v = atomic.Xchg(key32(&l.key), mutex_sleeping)
 		if v == mutex_unlocked {
 			return
+		}
+		if armhackmode > 0 {
+			print("lock: futexsleep\n")
 		}
 		wait = mutex_sleeping
 		futexsleep(key32(&l.key), mutex_sleeping, -1)

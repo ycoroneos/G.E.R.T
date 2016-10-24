@@ -136,72 +136,7 @@ func cascheck() {
 	//print("kernel start: ", hex(kernelstart), " kernel size: ", hex(kernelsize), "\n")
 }
 
-//func hack_mmap(va, _sz uintptr, _prot uint32, _flags uint32,
-//	fd int32, offset int32) uintptr {
-//	//	fl := Pushcli()
-//	Splock(maplock)
-//	print("hack_mmap: ", hex(va), " ", hex(_sz), " ", hex(_prot), " ", hex(_flags), "\n")
-//	Spunlock(maplock)
-//	return 0
-//	//	MAP_ANON := uintptr(0x20)
-//	//	MAP_PRIVATE := uintptr(0x2)
-//	//	PROT_NONE := uintptr(0x0)
-//	//	PROT_WRITE := uintptr(0x2)
-//	//
-//	//	prot := uintptr(_prot)
-//	//	flags := uintptr(_flags)
-//	//	var vaend uintptr
-//	//	var perms uintptr
-//	//	var ret uintptr
-//	//	var t uintptr
-//	//	pgleft := pglast - pgfirst
-//	//	sz := pgroundup(_sz)
-//	//	if sz > pgleft {
-//	//		ret = ^uintptr(0)
-//	//		goto out
-//	//	}
-//	//	sz = pgroundup(va + _sz)
-//	//	sz -= pgrounddown(va)
-//	//	if va == 0 {
-//	//		va = find_empty(sz)
-//	//	}
-//	//	vaend = caddr(VUEND, 0, 0, 0, 0)
-//	//	if va >= vaend || va+sz >= vaend {
-//	//		pancake("va space exhausted", va)
-//	//	}
-//	//
-//	//	t = MAP_ANON | MAP_PRIVATE
-//	//	if flags&t != t {
-//	//		pancake("unexpected flags", flags)
-//	//	}
-//	//	perms = PTE_P
-//	//	if prot == PROT_NONE {
-//	//		prot_none(va, sz)
-//	//		ret = va
-//	//		goto out
-//	//	}
-//	//
-//	//	if prot&PROT_WRITE != 0 {
-//	//		perms |= PTE_W
-//	//	}
-//	//
-//	//	if _nopml4 {
-//	//		eidx := pml4x(va + sz - 1)
-//	//		for sidx := pml4x(va); sidx <= eidx; sidx++ {
-//	//			pml4 := caddr(VREC, VREC, VREC, VREC, sidx)
-//	//			pml4e := (*uintptr)(unsafe.Pointer(pml4))
-//	//			if *pml4e&PTE_P == 0 {
-//	//				pancake("new pml4 entry to kernel pmap", va)
-//	//			}
-//	//		}
-//	//	}
-//	//
-//	//	for i := uintptr(0); i < sz; i += PGSIZE {
-//	//		alloc_map(va+i, perms, true)
-//	//	}
-//	//	ret = va
-//	//out:
-//	//	Spunlock(maplock)
-//	//	Popcli(fl)
-//	//	return ret
-//}
+func trap(arg1, arg2, arg3, arg4, arg5, arg6, arg7, syscallno uint32) uint32 {
+	print("trap: ", syscallno, "\n")
+	return 0
+}

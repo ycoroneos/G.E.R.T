@@ -23,7 +23,11 @@ struct trapframe {
   uint32_t r0;
 };
 
-//stack for go
+const uint32_t RAM_START = 0x10000000;
+const uint32_t RAM_SIZE = 0x80000000;
+const uint32_t ONE_MEG = 0x00100000;
+
+  //stack for go
 uint32_t stacksize = 0x4000;
 
 // go elf kernel
@@ -117,85 +121,6 @@ void trap(struct trapframe *tf)
   while (stub) {};
 }
 
-//void reset_interrupt()
-//{
-//  panic("unintended reset");
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//void undefined_interrupt()
-//{
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//void svc_interrupt()
-//{
-//  uint32_t lr;
-//  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
-//  lr;
-//  cprintf("svc from addr 0x%x\r\n", lr-4);
-//  ((void (*)(void)) (lr))();
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//void prefetch_abort_interrupt()
-//{
-//  cprintf("prefetch abort");
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//#pragma GCC push_options
-//#pragma GCC optimize ("O0")
-//
-//void data_abort_interrupt()
-//{
-//  uint32_t lr, r0, r1, r2, r3, r4, r5, r6, r7, r8, sctlr;
-//  asm volatile("mov %[a], lr" : [a] "=r" (lr) :);
-//  asm volatile("mov %[a], r0" : [a] "=r" (r0) :);
-//  asm volatile("mov %[a], r1" : [a] "=r" (r1) :);
-//  asm volatile("mov %[a], r2" : [a] "=r" (r2) :);
-//  asm volatile("mov %[a], r3" : [a] "=r" (r3) :);
-//  asm volatile("mov %[a], r4" : [a] "=r" (r4) :);
-//  asm volatile("mov %[a], r5" : [a] "=r" (r5) :);
-//  asm volatile("mov %[a], r6" : [a] "=r" (r6) :);
-//  asm volatile("mov %[a], r7" : [a] "=r" (r7) :);
-//  asm volatile("mov %[a], r8" : [a] "=r" (r8) :);
-//  asm volatile("MRC p15, 0, %[a], c1, c0, 0" : [a] "=r" (sctlr) :);
-//  lr-=8;
-//  cprintf("data abort from addr 0x%x\r\n", lr);
-//  cprintf("\t sctlr: 0x%x\r\n", sctlr);
-//  cprintf("\t r0: 0x%x\r\n", r0);
-//  cprintf("\t r1: 0x%x\r\n", r1);
-//  cprintf("\t r2: 0x%x\r\n", r2);
-//  cprintf("\t r3: 0x%x\r\n", r3);
-//  cprintf("\t r4: 0x%x\r\n", r4);
-//  cprintf("\t r5: 0x%x\r\n", r5);
-//  cprintf("\t r6: 0x%x\r\n", r6);
-//  cprintf("\t r7: 0x%x\r\n", r7);
-//  cprintf("\t r8: 0x%x\r\n", r8);
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//#pragma GCC pop_options
-//
-//void irq_interrupt()
-//{
-//  cprintf("irq");
-//  volatile short stub=1;
-//  while (stub) {};
-//}
-//
-//void fiq_interrupt()
-//{
-//  cprintf("fiq");
-//  volatile short stub=1;
-//  while (stub) {};
-//}
 
 static void load_go()
 {
@@ -250,22 +175,15 @@ int main()
       :"r"(kernel_size)
       :"r0"
       );
+//  asm volatile("mov sp, %0"
+//      :
+//      :"r"((kernel_start + kernel_size) & 0xFFFFFFF0)
+//      :"sp"
+//      );
   asm volatile("mov sp, %0"
       :
-      :"r"(kernel_start + kernel_size)
+      :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
       :"sp"
-      );
-  //sub sp, 16
-  asm volatile("sub sp, #16"
-      :
-      :
-      :
-      );
-  //and sp -16
-  asm volatile("and sp, #-16"
-      :
-      :
-      :
       );
   ((void (*)(void)) (go_load_addr))();
   panic("should not be here");

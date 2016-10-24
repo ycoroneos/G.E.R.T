@@ -25,30 +25,32 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 	size := uint32(roundup(uint32(n), PGSIZE))
 	print("mmap_arm: ", hex(va), " ", hex(n), " ", hex(prot), " ", hex(flags), "\n")
 
-	//if fixed mapping check that those addresses are not in use
-	//	if (uint32(flags) & MMAP_FIXED) > 0 {
-	//		for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
-	//			pte := walk_pgdir(kernpgdir, uint32(start))
-	//			if *pte&0x10 > 0 {
-	//				print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
-	//			}
-	//		}
-	//	} else {
-	//		throw("mmap_arm: cant handle non-fixed mappings yet\n")
-	//	}
+	if va == 0 {
+		//throw("cowardly refusing to map 0\n")
+		//need to find a contiguous amount of virtual mem with size
+		//find the first chunk of contiguous free space in virtual memory
+		for pgnum := uint32(KERNEL_END >> PGSHIFT); pgnum < 4096; pgnum += 1 {
+			if checkcontiguousfree(kernpgdir, uint32(pgnum<<PGSHIFT), size) == true {
+				va = uintptr(pgnum << PGSHIFT)
+				break
+			}
+		}
+		if va == 0 {
+			throw("cant find large enough chunk of contiguous virtual memory\n")
+		}
+	}
+
 	for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
 		pte := walk_pgdir(kernpgdir, uint32(start))
 		if *pte&0x10 > 0 {
 			print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
 		}
 		page := page_alloc()
-		//print("got page\n")
 		if page == nil {
 			throw("mmap_arm: out of memory\n")
 		}
 		pa := pageinfo2pa(page) & 0xFFF00000
 		*pte = uint32(pa) | 0x2
-		//print("mapped va: ", hex(start), " to pa: ", hex(pa), "\n")
 	}
 	//showl1table()
 	print("reloading page table\n")
@@ -57,5 +59,5 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 	memclr(unsafe.Pointer(va), uintptr(size))
 	Spunlock(maplock)
 	print("updated page tables\n")
-	return addr
+	return unsafe.Pointer(va)
 }

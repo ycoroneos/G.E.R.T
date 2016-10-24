@@ -29,7 +29,8 @@ _init_vectors:
 L_start:
 	// load vbar
 	adr r0, _init_vectors
-	mcr p15, 0, r0, c12, c0, 0
+
+	//	mcr p15, 0, r0, c12, c0, 0
 
 	// Setup the stack.
 	adr sp, _init_vectors

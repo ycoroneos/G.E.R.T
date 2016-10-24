@@ -442,11 +442,26 @@ func schedinit() {
 	}
 	mcommoninit(_g_.m)
 
+	if armhackmode > 0 {
+		print("msigsave\n")
+	}
 	msigsave(_g_.m)
+	if armhackmode > 0 {
+		print("init sigmask\n")
+	}
 	initSigmask = _g_.m.sigmask
 
+	if armhackmode > 0 {
+		print("goargs\n")
+	}
 	goargs()
+	if armhackmode > 0 {
+		print("goenvs\n")
+	}
 	goenvs()
+	if armhackmode > 0 {
+		print("parsedebugvars\n")
+	}
 	parsedebugvars()
 	if armhackmode > 0 {
 		print("gc init\n")
@@ -492,15 +507,25 @@ func checkmcount() {
 func mcommoninit(mp *m) {
 	_g_ := getg()
 
+	if armhackmode > 0 {
+		print("mcommoninit: gotg\n")
+	}
 	// g0 stack won't make sense for user (and is not necessary unwindable).
 	if _g_ != _g_.m.g0 {
+		if armhackmode > 0 {
+			print("mcommoninit: mp.createstack\n")
+		}
 		callers(1, mp.createstack[:])
 	}
 
-	mp.fastrand = 0x49f6428a + uint32(mp.id) + uint32(cputicks())
-	if mp.fastrand == 0 {
-		mp.fastrand = 0x49f6428a
+	if armhackmode > 0 {
+		print("mcommoninit: fastrand\n")
 	}
+	//	mp.fastrand = 0x49f6428a + uint32(mp.id) + uint32(cputicks())
+	//	if mp.fastrand == 0 {
+	//		mp.fastrand = 0x49f6428a
+	//	}
+	mp.fastrand = 0x49f6428a
 
 	lock(&sched.lock)
 	mp.id = sched.mcount

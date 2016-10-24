@@ -19,6 +19,7 @@ func invallpages()
 
 const RAM_START = physaddr(0x10000000)
 const RAM_SIZE = uint32(0x80000000)
+const ONE_MEG = uint32(0x00100000)
 
 const PERIPH_START = physaddr(0x0)
 const PERIPH_SIZE = uint32(0x0FFFFFFF)
@@ -32,6 +33,8 @@ const VBAR_ALIGNMENT = uint32(0x20)
 var kernelstart physaddr
 var kernelsize physaddr
 var bootstack physaddr
+
+const KERNEL_END = physaddr(0x10200000)
 
 var boot_end physaddr
 
@@ -107,7 +110,8 @@ func mem_init() {
 	//l1_table = boot_end
 	//memclr(unsafe.Pointer(uintptr(l1_table)), uintptr(4*4096))
 	//boot_end = boot_end + physaddr(4*4096)
-	boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
+	//boot_end = physaddr(roundup(uint32(kernelstart+kernelsize), L1_ALIGNMENT))
+	boot_end = physaddr(roundup(uint32(bootstack), L1_ALIGNMENT))
 	l1_table = boot_alloc(4 * 4096)
 	print("\tl1 page table at: ", hex(l1_table), "\n")
 
@@ -186,7 +190,7 @@ func page_init() {
 			pagenfo.ref = 0
 			nextfree = uintptr(unsafe.Pointer(pagenfo))
 			nfree += 1
-		} else if pa >= boot_alloc(0) && pa < (RAM_START+physaddr(RAM_SIZE)) {
+		} else if pa >= physaddr(KERNEL_END) && pa < physaddr(uint32(RAM_START)+uint32(RAM_SIZE)-uint32(ONE_MEG)) {
 			pagenfo.next_pageinfo = nextfree
 			pagenfo.ref = 0
 			nextfree = uintptr(unsafe.Pointer(pagenfo))
@@ -210,6 +214,21 @@ func page_alloc() *PageInfo {
 }
 
 //go:nosplit
+func checkcontiguousfree(pgdir uintptr, va, size uint32) bool {
+	for start := va; start < va+size; start += PGSIZE {
+		//print("checkcontiguous va: ", hex(start), " size: ", hex(size), "\n")
+		pgnum := start >> PGSHIFT
+		pde := (*uint32)(unsafe.Pointer(pgdir + uintptr(pgnum*4)))
+		if *pde&0x2 > 0 {
+			//print("\tfalse: ", hex(*pde), "\n")
+			return false
+		}
+	}
+	//print("found contiguous\n")
+	return true
+}
+
+//go:nosplit
 func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 	//section entry bits
 	pa = pa & 0xFFF00000
@@ -223,6 +242,8 @@ func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 		nextpa := pa + i
 		l1offset := nextpa >> 18
 		//entry := (*uint32)(unsafe.Pointer((uintptr(unsafe.Pointer(l1_table))) + uintptr(pgnum*4)))
+		print("l1_table: ", hex(uintptr(l1_table)), " offset: ", hex(uint32(l1offset)), "\n")
+		print("entry addr: ", hex(uintptr(l1_table+physaddr(l1offset))), "\n")
 		entry := (*uint32)(unsafe.Pointer(uintptr(l1_table + physaddr(l1offset))))
 		base_addr := (va + i)
 		*entry = base_addr | perms
@@ -238,7 +259,9 @@ func map_kernel() {
 
 	//identity map [kernelstart, boot_alloc(0))
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
-	map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
+	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
+	map_region(uint32(kernelstart), uint32(kernelstart), uint32(KERNEL_END-kernelstart), 0x0)
+	map_region(uint32(uint32(RAM_START)+RAM_SIZE-ONE_MEG), uint32(RAM_START)+RAM_SIZE-ONE_MEG, PGSIZE, 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//	showl1table()
 	loadvbar(unsafe.Pointer(uintptr(vectab)))
