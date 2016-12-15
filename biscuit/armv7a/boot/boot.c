@@ -126,7 +126,8 @@ static void load_go()
 {
   size_t binsize = gobin_end - gobin_start;
   cprintf("go bin size : 0x%x\r\n", binsize);
-  boot_memset((char *)go_load_addr, 0, binsize+stacksize);
+  boot_memset((char *)(RAM_START + RAM_SIZE - ONE_MEG), 0, ONE_MEG);
+  boot_memset((char *)go_load_addr, 0, binsize+stacksize+ONE_MEG);
   boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
   cprintf("loaded at 0x%x\r\n", go_load_addr);
   cprintf("first 10 words are:\r\n");

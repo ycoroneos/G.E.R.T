@@ -774,7 +774,14 @@ func (h *mheap) freeSpanLocked(s *mspan, acctinuse, acctidle bool, unusedsince i
 	// info to potentially give back some pages to the OS.
 	s.unusedsince = unusedsince
 	if unusedsince == 0 {
+		//		if armhackmode > 0 {
+		//			print("skipping nanotime\n")
+		//		} else {
+		if armhackmode > 0 {
+			print("doing nanotime\n")
+		}
 		s.unusedsince = nanotime()
+		//		}
 	}
 	s.npreleased = 0
 

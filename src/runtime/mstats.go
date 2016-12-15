@@ -391,6 +391,9 @@ func mSysStatInc(sysStat *uint64, n uintptr) {
 	}
 	if val := atomic.Xadduintptr((*uintptr)(unsafe.Pointer(sysStat)), n); val < n {
 		print("runtime: stat overflow: val ", val, ", n ", n, "\n")
+		if armhackmode > 0 {
+			throw("panic")
+		}
 		exit(2)
 	}
 }

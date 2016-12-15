@@ -7,6 +7,42 @@
 #include "funcdata.h"
 #include "textflag.h"
 
+TEXT runtime·PutR0(SB), NOSPLIT, $0-4
+	MOVW ret+4(FP), R0
+	RET
+
+TEXT runtime·RR0(SB), NOSPLIT, $0
+	MOVW R0, ret+0(FP)
+	RET
+
+TEXT runtime·RR1(SB), NOSPLIT, $0
+	MOVW R1, ret+0(FP)
+	RET
+
+TEXT runtime·RR2(SB), NOSPLIT, $0
+	MOVW R2, ret+0(FP)
+	RET
+
+TEXT runtime·RR3(SB), NOSPLIT, $0
+	MOVW R3, ret+0(FP)
+	RET
+
+TEXT runtime·RR4(SB), NOSPLIT, $0
+	MOVW R4, ret+0(FP)
+	RET
+
+TEXT runtime·RR5(SB), NOSPLIT, $0
+	MOVW R5, ret+0(FP)
+	RET
+
+TEXT runtime·RR6(SB), NOSPLIT, $0
+	MOVW R6, ret+0(FP)
+	RET
+
+TEXT runtime·RR7(SB), NOSPLIT, $0
+	MOVW R7, ret+0(FP)
+	RET
+
 TEXT runtime·SWIcall(SB), NOSPLIT, $0
 	MOVW LR, R6
 	SWI  $0x0
@@ -172,6 +208,8 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 
 DATA runtime·mainPC+0(SB)/4, $runtime·main(SB)
 GLOBL runtime·mainPC(SB), RODATA, $4
+
+	CALL runtime·trap_debug(SB)
 
 TEXT runtime·breakpoint(SB), NOSPLIT, $0-0
 	// gdb won't skip this breakpoint instruction automatically,

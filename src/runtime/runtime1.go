@@ -79,12 +79,26 @@ func goenvs_unix() {
 	// TODO(austin): ppc64 in dynamic linking mode doesn't
 	// guarantee env[] will immediately follow argv.  Might cause
 	// problems.
+	if armhackmode > 0 {
+		envs = make([]string, 1)
+		return
+	}
 	n := int32(0)
 	for argv_index(argv, argc+1+n) != nil {
 		n++
+		if armhackmode > 0 {
+			print(n, " \n")
+		}
+	}
+
+	if armhackmode > 0 {
+		print("goenvs: ", n, " args\n")
 	}
 
 	envs = make([]string, n)
+	if armhackmode > 0 {
+		print("made envs array\n")
+	}
 	for i := int32(0); i < n; i++ {
 		envs[i] = gostring(argv_index(argv, argc+1+i))
 	}

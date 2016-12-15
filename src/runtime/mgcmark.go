@@ -79,6 +79,9 @@ func gcMarkRootCheck() {
 		throw("left over markroot jobs")
 	}
 
+	if armhackmode > 0 {
+		print("mgcmcark lock allg\n")
+	}
 	lock(&allglock)
 	// Check that gc work is done.
 	for i := 0; i < work.nStackRoots; i++ {
@@ -88,6 +91,9 @@ func gcMarkRootCheck() {
 		}
 	}
 	unlock(&allglock)
+	if armhackmode > 0 {
+		print("mgcmcark unlock allg\n")
+	}
 }
 
 // ptrmask for an allocation containing a single pointer.

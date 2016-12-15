@@ -135,8 +135,3 @@ func cascheck() {
 	writeUnsafe([]byte("cascheck pass\n"))
 	//print("kernel start: ", hex(kernelstart), " kernel size: ", hex(kernelsize), "\n")
 }
-
-func trap(arg1, arg2, arg3, arg4, arg5, arg6, arg7, syscallno uint32) uint32 {
-	print("trap: ", syscallno, "\n")
-	return 0
-}

@@ -394,9 +394,15 @@ func allgadd(gp *g) {
 		throw("allgadd: bad status Gidle")
 	}
 
+	if armhackmode > 0 {
+		print("lock allg lock\n")
+	}
 	lock(&allglock)
 	allgs = append(allgs, gp)
 	allglen = uintptr(len(allgs))
+	if armhackmode > 0 {
+		print("unlock allg lock\n")
+	}
 	unlock(&allglock)
 }
 
@@ -429,60 +435,51 @@ func schedinit() {
 
 	tracebackinit()
 	moduledataverify()
-	if armhackmode > 0 {
-		print("init stack\n")
-	}
 	stackinit()
-	if armhackmode > 0 {
-		print("init malloc\n")
-	}
 	mallocinit()
-	if armhackmode > 0 {
-		print("init mcommon\n")
-	}
 	mcommoninit(_g_.m)
 
 	if armhackmode > 0 {
 		print("msigsave\n")
 	}
 	msigsave(_g_.m)
-	if armhackmode > 0 {
-		print("init sigmask\n")
-	}
 	initSigmask = _g_.m.sigmask
 
-	if armhackmode > 0 {
-		print("goargs\n")
-	}
 	goargs()
 	if armhackmode > 0 {
 		print("goenvs\n")
 	}
 	goenvs()
-	if armhackmode > 0 {
-		print("parsedebugvars\n")
-	}
 	parsedebugvars()
 	if armhackmode > 0 {
-		print("gc init\n")
+		print("gcinit\n")
 	}
 	gcinit()
 
+	if armhackmode > 0 {
+		print("gcinit done, nanotime\n")
+	}
 	sched.lastpoll = uint64(nanotime())
-	procs := int(ncpu)
-	if procs > _MaxGomaxprocs {
-		procs = _MaxGomaxprocs
-	}
-	if n := atoi(gogetenv("GOMAXPROCS")); n > 0 {
-		if n > _MaxGomaxprocs {
-			n = _MaxGomaxprocs
+	if armhackmode > 0 {
+		procresize(1)
+	} else {
+		procs := int(ncpu)
+		if procs > _MaxGomaxprocs {
+			procs = _MaxGomaxprocs
 		}
-		procs = n
+		if n := atoi(gogetenv("GOMAXPROCS")); n > 0 {
+			if n > _MaxGomaxprocs {
+				n = _MaxGomaxprocs
+			}
+			procs = n
+		}
+		if procresize(int32(procs)) != nil {
+			throw("unknown runnable goroutine during bootstrap")
+		}
 	}
-	if procresize(int32(procs)) != nil {
-		throw("unknown runnable goroutine during bootstrap")
+	if armhackmode > 0 {
+		print("done procresize\n")
 	}
-
 	if buildVersion == "" {
 		// Condition should never trigger.  This code just serves
 		// to ensure runtime·buildVersion is kept in the resulting binary.
@@ -518,9 +515,6 @@ func mcommoninit(mp *m) {
 		callers(1, mp.createstack[:])
 	}
 
-	if armhackmode > 0 {
-		print("mcommoninit: fastrand\n")
-	}
 	//	mp.fastrand = 0x49f6428a + uint32(mp.id) + uint32(cputicks())
 	//	if mp.fastrand == 0 {
 	//		mp.fastrand = 0x49f6428a
@@ -530,7 +524,13 @@ func mcommoninit(mp *m) {
 	lock(&sched.lock)
 	mp.id = sched.mcount
 	sched.mcount++
+	if armhackmode > 0 {
+		print("mcommoninit: checkmcount\n")
+	}
 	checkmcount()
+	if armhackmode > 0 {
+		print("mcommoninit: mpreinit\n")
+	}
 	mpreinit(mp)
 	if mp.gsignal != nil {
 		mp.gsignal.stackguard1 = mp.gsignal.stack.lo + _StackGuard
@@ -540,6 +540,9 @@ func mcommoninit(mp *m) {
 	// when it is just in a register or thread-local storage.
 	mp.alllink = allm
 
+	if armhackmode > 0 {
+		print("mcommoninit: atomicstorep\n")
+	}
 	// NumCgoCall() iterates over allm w/o schedlock,
 	// so we need to publish it safely.
 	atomicstorep(unsafe.Pointer(&allm), unsafe.Pointer(mp))
@@ -1118,7 +1121,7 @@ func mstart1() {
 	gosave(&_g_.m.g0.sched)
 	_g_.m.g0.sched.pc = ^uintptr(0) // make sure it is never used
 	asminit()
-	minit()
+	//minit()
 
 	// Install signal handlers; after minit so that minit can
 	// prepare the thread to be able to handle the signals.
@@ -1128,7 +1131,7 @@ func mstart1() {
 			cgoHasExtraM = true
 			newextram()
 		}
-		initsig(false)
+		//initsig(false)
 	}
 
 	if fn := _g_.m.mstartfn; fn != nil {
@@ -1550,6 +1553,9 @@ func newm(fn func(), _p_ *p) {
 		asmcgocall(_cgo_thread_start, unsafe.Pointer(&ts))
 		return
 	}
+	//	if armhackmode > 0 {
+	//		print("newm: about to clone\n")
+	//	}
 	newosproc(mp, unsafe.Pointer(mp.g0.stack.hi))
 }
 
@@ -1797,10 +1803,10 @@ func execute(gp *g, inheritTime bool) {
 	gp.m = _g_.m
 
 	// Check whether the profiler needs to be turned on or off.
-	hz := sched.profilehz
-	if _g_.m.profilehz != hz {
-		resetcpuprofiler(hz)
-	}
+	//	hz := sched.profilehz
+	//	if _g_.m.profilehz != hz {
+	//		resetcpuprofiler(hz)
+	//	}
 
 	if trace.enabled {
 		// GoSysExit has to happen when we have a P, but before GoStart.
@@ -1827,7 +1833,13 @@ func execute(gp *g, inheritTime bool) {
 		traceGoStart()
 	}
 
+	if armhackmode > 0 {
+		print("gogo\n")
+	}
 	gogo(&gp.sched)
+	if armhackmode > 0 {
+		print("returned\n")
+	}
 }
 
 // Finds a runnable goroutine to execute.
@@ -2078,17 +2090,29 @@ func schedule() {
 	}
 
 top:
+	if armhackmode > 0 {
+		print("sched top\n")
+	}
 	if sched.gcwaiting != 0 {
+		if armhackmode > 0 {
+			print("sched gcstopm\n")
+		}
 		gcstopm()
 		goto top
 	}
 	if _g_.m.p.ptr().runSafePointFn != 0 {
+		if armhackmode > 0 {
+			print("sched runsafepoint\n")
+		}
 		runSafePointFn()
 	}
 
 	var gp *g
 	var inheritTime bool
 	if trace.enabled || trace.shutdown {
+		if armhackmode > 0 {
+			print("gp trace reader\n")
+		}
 		gp = traceReader()
 		if gp != nil {
 			casgstatus(gp, _Gwaiting, _Grunnable)
@@ -2132,6 +2156,9 @@ top:
 		goto top
 	}
 
+	if armhackmode > 0 {
+		print("sched execute\n")
+	}
 	execute(gp, inheritTime)
 }
 
@@ -2677,6 +2704,9 @@ func syscall_runtime_AfterFork() {
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
 func malg(stacksize int32) *g {
+	if armhackmode > 0 {
+		print("making new g\n")
+	}
 	newg := new(g)
 	if stacksize >= 0 {
 		stacksize = round2(_StackSystem + stacksize)
@@ -2710,6 +2740,9 @@ func newproc(siz int32, fn *funcval) {
 // address of the go statement that created this.  The new g is put
 // on the queue of g's waiting to run.
 func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr) *g {
+	if armhackmode > 0 {
+		print("newproc1 \n")
+	}
 	_g_ := getg()
 
 	if fn == nil {
@@ -2728,11 +2761,23 @@ func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr
 		throw("newproc: function arguments too large for new goroutine")
 	}
 
+	if armhackmode > 0 {
+		print("newproc1 make a g\n")
+	}
 	_p_ := _g_.m.p.ptr()
 	newg := gfget(_p_)
 	if newg == nil {
+		if armhackmode > 0 {
+			print("newproc1 malg\n")
+		}
 		newg = malg(_StackMin)
+		if armhackmode > 0 {
+			print("casgstatus\n")
+		}
 		casgstatus(newg, _Gidle, _Gdead)
+		if armhackmode > 0 {
+			print("allgadd\n")
+		}
 		allgadd(newg) // publishes with a g->status of Gdead so GC scanner doesn't look at uninitialized stack.
 	}
 	if newg.stack.hi == 0 {
@@ -2743,6 +2788,9 @@ func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr
 		throw("newproc1: new g is not Gdead")
 	}
 
+	if armhackmode > 0 {
+		print("newproc1 made a g\n")
+	}
 	totalSize := 4*sys.RegSize + uintptr(siz) + sys.MinFrameSize // extra space in case of reads slightly beyond frame
 	totalSize += -totalSize & (sys.SpAlign - 1)                  // align to spAlign
 	sp := newg.stack.hi - totalSize
@@ -3200,19 +3248,35 @@ func setcpuprofilerate_m(hz int32) {
 // Returns list of Ps with local work, they need to be scheduled by the caller.
 func procresize(nprocs int32) *p {
 	old := gomaxprocs
+	if armhackmode > 0 {
+		print("old is ", old, "\n")
+		print("maxgomaxprocs is ", _MaxGomaxprocs, "\n")
+		print("nprocs is ", nprocs, "\n")
+		print("trace ", trace.enabled, "\n")
+	}
 	if old < 0 || old > _MaxGomaxprocs || nprocs <= 0 || nprocs > _MaxGomaxprocs {
 		throw("procresize: invalid arg")
+	}
+	if armhackmode > 0 {
+		print("procresize: traceGomaxprocs\n")
 	}
 	if trace.enabled {
 		traceGomaxprocs(nprocs)
 	}
 
+	if armhackmode > 0 {
+		print("procresize: nanotime\n")
+	}
 	// update statistics
 	now := nanotime()
 	if sched.procresizetime != 0 {
 		sched.totaltime += int64(old) * (now - sched.procresizetime)
 	}
 	sched.procresizetime = now
+
+	if armhackmode > 0 {
+		print("procresize: initialize new P's\n")
+	}
 
 	// initialize new P's
 	for i := int32(0); i < nprocs; i++ {
@@ -3237,6 +3301,9 @@ func procresize(nprocs int32) *p {
 				pp.mcache = allocmcache()
 			}
 		}
+	}
+	if armhackmode > 0 {
+		print("procresize: free unused P's\n")
 	}
 
 	// free unused P's
@@ -3425,6 +3492,10 @@ func checkdead() {
 	}
 
 	grunning := 0
+
+	if armhackmode > 0 {
+		print("checkdead lock allg\n")
+	}
 	lock(&allglock)
 	for i := 0; i < len(allgs); i++ {
 		gp := allgs[i]
@@ -3442,6 +3513,9 @@ func checkdead() {
 			print("runtime: checkdead: find g ", gp.goid, " in status ", s, "\n")
 			throw("checkdead: runnable g")
 		}
+	}
+	if armhackmode > 0 {
+		print("checkdead unlock allg\n")
 	}
 	unlock(&allglock)
 	if grunning == 0 { // possible if main goroutine calls runtime·Goexit()
@@ -3761,6 +3835,9 @@ func schedtrace(detailed bool) {
 		print("  M", mp.id, ": p=", id1, " curg=", id2, " mallocing=", mp.mallocing, " throwing=", mp.throwing, " preemptoff=", mp.preemptoff, ""+" locks=", mp.locks, " dying=", mp.dying, " helpgc=", mp.helpgc, " spinning=", mp.spinning, " blocked=", getg().m.blocked, " lockedg=", id3, "\n")
 	}
 
+	if armhackmode > 0 {
+		print("schedtrace lock allg\n")
+	}
 	lock(&allglock)
 	for gi := 0; gi < len(allgs); gi++ {
 		gp := allgs[gi]
@@ -3775,6 +3852,9 @@ func schedtrace(detailed bool) {
 			id2 = lockedm.id
 		}
 		print("  G", gp.goid, ": status=", readgstatus(gp), "(", gp.waitreason, ") m=", id1, " lockedm=", id2, "\n")
+	}
+	if armhackmode > 0 {
+		print("schedtrace unlock allg\n")
 	}
 	unlock(&allglock)
 	unlock(&sched.lock)

@@ -169,9 +169,15 @@ var failallocatestack = []byte("runtime: failed to allocate stack for the new OS
 var failthreadcreate = []byte("runtime: failed to create new OS thread\n")
 
 func osinit() {
-	if hackmode != 0 || armhackmode != 0 {
+	if hackmode != 0 || armhackmode > 0 {
 		// avoid getproccount which wants an 8k stack
 		ncpu = 1
+		gomaxprocs = 1
+		trace.enabled = false
+		debug.sbrk = 0
+		hackmode = 1
+		armhackmode = 1
+		//	raceenabled = false
 	} else {
 		ncpu = getproccount()
 	}
@@ -239,7 +245,13 @@ func minit() {
 	_g_ := getg()
 
 	var st sigaltstackt
+	if armhackmode > 0 {
+		print("minit sigaltstack\n")
+	}
 	sigaltstack(nil, &st)
+	if armhackmode > 0 {
+		print("minit sigaltstack returns\n")
+	}
 	if st.ss_flags&_SS_DISABLE != 0 {
 		signalstack(&_g_.m.gsignal.stack)
 		_g_.m.newSigstack = true
@@ -259,6 +271,9 @@ func minit() {
 		_g_.m.procid = uint64(gettid())
 	}
 
+	if armhackmode > 0 {
+		print("sigdelset\n")
+	}
 	// restore signal mask from m.sigmask and unblock essential signals
 	nmask := _g_.m.sigmask
 	for i := range sigtable {

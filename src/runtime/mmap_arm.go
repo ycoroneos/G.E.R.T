@@ -42,8 +42,9 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 
 	for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
 		pte := walk_pgdir(kernpgdir, uint32(start))
-		if *pte&0x10 > 0 {
+		if *pte&0x2 > 0 {
 			print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
+			throw("mmap fail")
 		}
 		page := page_alloc()
 		if page == nil {
@@ -57,7 +58,10 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 	invallpages()
 	//memclrbytes(unsafe.Pointer(va), uintptr(size))
 	memclr(unsafe.Pointer(va), uintptr(size))
+	if armhackmode == 0 {
+		print("hackmode nuked\n")
+	}
 	Spunlock(maplock)
-	print("updated page tables\n")
+	print("updated page tables -> ", hex(va), "\n")
 	return unsafe.Pointer(va)
 }

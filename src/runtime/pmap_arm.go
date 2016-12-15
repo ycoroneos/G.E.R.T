@@ -264,7 +264,7 @@ func map_kernel() {
 	map_region(uint32(uint32(RAM_START)+RAM_SIZE-ONE_MEG), uint32(RAM_START)+RAM_SIZE-ONE_MEG, PGSIZE, 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//	showl1table()
-	loadvbar(unsafe.Pointer(uintptr(vectab)))
+	//loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	//loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	kernpgdir = (uintptr)(unsafe.Pointer(uintptr(l1_table)))

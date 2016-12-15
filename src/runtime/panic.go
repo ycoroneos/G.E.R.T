@@ -537,6 +537,17 @@ func dopanic(unused int) {
 }
 
 //go:nosplit
+func dopanic_critical(unused int) {
+	pc := getcallerpc(unsafe.Pointer(&unused))
+	sp := getcallersp(unsafe.Pointer(&unused))
+	gp := getg()
+	systemstack(func() {
+		dopanic_m_critical(gp, pc, sp) // should never return
+	})
+	*(*int)(nil) = 0
+}
+
+//go:nosplit
 func throw(s string) {
 	//	writeUnsafe([]byte("\n[unsafe] fatal error: "))
 	//	writeUnsafe([]byte(s))
@@ -548,6 +559,28 @@ func throw(s string) {
 	}
 	startpanic()
 	dopanic(0)
+	*(*int)(nil) = 0 // not reached
+}
+
+//go:nosplit
+func throwcritical(s string) {
+	//	writeUnsafe([]byte("\n[unsafe] fatal error: "))
+	//	writeUnsafe([]byte(s))
+	//	writeUnsafe([]byte("\n"))
+	var unused int
+	print("fatal error: ", s, "\n")
+	gp := getg()
+	if gp.m.throwing == 0 {
+		gp.m.throwing = 1
+	}
+	pc := getcallerpc(unsafe.Pointer(&unused))
+	sp := getcallersp(unsafe.Pointer(&unused))
+	//gp = getg()
+	systemstack(func() {
+		dopanic_m_critical(gp, pc, sp) // should never return
+	})
+	//startpanic()
+	//dopanic_critical(0)
 	*(*int)(nil) = 0 // not reached
 }
 
@@ -631,6 +664,53 @@ func startpanic_m() {
 
 var didothers bool
 var deadlock mutex
+
+func dopanic_m_critical(gp *g, pc, sp uintptr) {
+	if gp.sig != 0 {
+		print("[signal ", hex(gp.sig), " code=", hex(gp.sigcode0), " addr=", hex(gp.sigcode1), " pc=", hex(gp.sigpc), "]\n")
+	}
+
+	print("\nruntime stack:\n")
+	traceback(pc, sp, 0, gp)
+	crash()
+	exit(2)
+	level, all, docrash := gotraceback()
+	level = 2
+	_g_ := getg()
+	if level > 0 {
+		if gp != gp.m.curg {
+			all = true
+		}
+		if gp != gp.m.g0 {
+			print("\n")
+			goroutineheader(gp)
+			traceback(pc, sp, 0, gp)
+		} else if level >= 2 || _g_.m.throwing > 0 {
+			print("\nruntime stack:\n")
+			traceback(pc, sp, 0, gp)
+		}
+		if !didothers && all {
+			didothers = true
+			tracebackothers(gp)
+		}
+	}
+	unlock(&paniclk)
+
+	if atomic.Xadd(&panicking, -1) != 0 {
+		// Some other m is panicking too.
+		// Let it print what it needs to print.
+		// Wait forever without chewing up cpu.
+		// It will exit when it's done.
+		lock(&deadlock)
+		lock(&deadlock)
+	}
+
+	if docrash {
+		crash()
+	}
+
+	exit(2)
+}
 
 func dopanic_m(gp *g, pc, sp uintptr) {
 	if gp.sig != 0 {

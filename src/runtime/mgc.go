@@ -272,7 +272,7 @@ func setGCPhase(x uint32) {
 					throw("shat upon")
 				}
 				n := nanotime()
-				atomic.Xaddint64(&wbenabledtime, n - _wbstart)
+				atomic.Xaddint64(&wbenabledtime, n-_wbstart)
 				_wbstart = 0
 			}
 		}
@@ -1770,6 +1770,9 @@ func gcCopySpans() {
 func gcResetMarkState() {
 	// This may be called during a concurrent phase, so make sure
 	// allgs doesn't change.
+	if armhackmode > 0 {
+		print("mgc lock allg\n")
+	}
 	lock(&allglock)
 	for _, gp := range allgs {
 		gp.gcscandone = false  // set to true in gcphasework
@@ -1777,6 +1780,9 @@ func gcResetMarkState() {
 		gp.gcAssistBytes = 0
 	}
 	unlock(&allglock)
+	if armhackmode > 0 {
+		print("mgc unlock allg\n")
+	}
 
 	work.bytesMarked = 0
 	work.initialHeapLive = memstats.heap_live

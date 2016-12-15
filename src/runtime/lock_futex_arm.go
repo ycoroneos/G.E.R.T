@@ -45,7 +45,8 @@ func key32(p *uintptr) *uint32 {
 func lock(l *mutex) {
 	gp := getg()
 
-	print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
+	//print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
+	print("lock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
 	if gp.m.locks < 0 {
 		writeUnsafe([]byte("invalid lock count, dieing"))
 		//gp.m.locks = 0
@@ -54,6 +55,21 @@ func lock(l *mutex) {
 		*(*int)(nil) = 0 // not reached
 	}
 	gp.m.locks++
+
+	count := 0
+	if armhackmode > 0 {
+		for {
+			v := atomic.Xchg(key32(&l.key), mutex_locked)
+			if v == mutex_unlocked {
+				return
+			}
+			if count < 3 {
+				print("lock: waiting for lock ", count, "\n")
+				count += 1
+			}
+			procyield(3)
+		}
+	}
 
 	// Speculative grab for lock.
 	v := atomic.Xchg(key32(&l.key), mutex_locked)

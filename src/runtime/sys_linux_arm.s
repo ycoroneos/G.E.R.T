@@ -56,7 +56,7 @@ TEXT runtime·open(SB), NOSPLIT, $0
 	MOVW    mode+4(FP), R1
 	MOVW    perm+8(FP), R2
 	MOVW    $SYS_open, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R1
 	CMP     R1, R0
 	MOVW.HI $-1, R0
@@ -66,7 +66,7 @@ TEXT runtime·open(SB), NOSPLIT, $0
 TEXT runtime·closefd(SB), NOSPLIT, $0
 	MOVW    fd+0(FP), R0
 	MOVW    $SYS_close, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R1
 	CMP     R1, R0
 	MOVW.HI $-1, R0
@@ -78,7 +78,7 @@ TEXT runtime·write(SB), NOSPLIT, $0
 	MOVW    p+4(FP), R1
 	MOVW    n+8(FP), R2
 	MOVW    $SYS_write, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R1
 	CMP     R1, R0
 	MOVW.HI $-1, R0
@@ -90,7 +90,7 @@ TEXT runtime·read(SB), NOSPLIT, $0
 	MOVW    p+4(FP), R1
 	MOVW    n+8(FP), R2
 	MOVW    $SYS_read, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R1
 	CMP     R1, R0
 	MOVW.HI $-1, R0
@@ -101,14 +101,14 @@ TEXT runtime·getrlimit(SB), NOSPLIT, $0
 	MOVW kind+0(FP), R0
 	MOVW limit+4(FP), R1
 	MOVW $SYS_ugetrlimit, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+8(FP)
 	RET
 
 TEXT runtime·exit(SB), NOSPLIT, $-4
 	MOVW code+0(FP), R0
 	MOVW $SYS_exit_group, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW $1234, R0
 	MOVW $1002, R1
 	MOVW R0, (R1)            // fail hard
@@ -116,35 +116,35 @@ TEXT runtime·exit(SB), NOSPLIT, $-4
 TEXT runtime·exit1(SB), NOSPLIT, $-4
 	MOVW code+0(FP), R0
 	MOVW $SYS_exit, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW $1234, R0
 	MOVW $1003, R1
-	MOVW R0, (R1)         // fail hard
+	MOVW R0, (R1)        // fail hard
 
 TEXT runtime·gettid(SB), NOSPLIT, $0-4
 	MOVW $SYS_gettid, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+0(FP)
 	RET
 
 TEXT runtime·raise(SB), NOSPLIT, $-4
 	MOVW $SYS_gettid, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 
 	// arg 1 tid already in R0 from gettid
-	MOVW sig+0(FP), R1    // arg 2 - signal
+	MOVW sig+0(FP), R1   // arg 2 - signal
 	MOVW $SYS_tkill, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 TEXT runtime·raiseproc(SB), NOSPLIT, $-4
 	MOVW $SYS_getpid, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 
 	// arg 1 tid already in R0 from getpid
-	MOVW sig+0(FP), R1    // arg 2 - signal
+	MOVW sig+0(FP), R1   // arg 2 - signal
 	MOVW $SYS_kill, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 // TEXT runtime·mmap(SB), NOSPLIT, $0
@@ -167,7 +167,7 @@ TEXT runtime·munmap(SB), NOSPLIT, $0
 	MOVW    addr+0(FP), R0
 	MOVW    n+4(FP), R1
 	MOVW    $SYS_munmap, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R6
 	CMP     R6, R0
 	MOVW.HI $0, R8          // crash on syscall failure
@@ -179,7 +179,7 @@ TEXT runtime·madvise(SB), NOSPLIT, $0
 	MOVW n+4(FP), R1
 	MOVW flags+8(FP), R2
 	MOVW $SYS_madvise, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 
 	// ignore failure - maybe pages are locked
 	RET
@@ -189,7 +189,7 @@ TEXT runtime·setitimer(SB), NOSPLIT, $0
 	MOVW new+4(FP), R1
 	MOVW old+8(FP), R2
 	MOVW $SYS_setitimer, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 TEXT runtime·mincore(SB), NOSPLIT, $0
@@ -197,7 +197,7 @@ TEXT runtime·mincore(SB), NOSPLIT, $0
 	MOVW n+4(FP), R1
 	MOVW dst+8(FP), R2
 	MOVW $SYS_mincore, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+12(FP)
 	RET
 
@@ -205,7 +205,7 @@ TEXT time·now(SB), NOSPLIT, $32
 	MOVW $0, R0                 // CLOCK_REALTIME
 	MOVW $8(R13), R1            // timespec
 	MOVW $SYS_clock_gettime, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 
 	MOVW 8(R13), R0  // sec
 	MOVW 12(R13), R2 // nsec
@@ -218,22 +218,27 @@ TEXT time·now(SB), NOSPLIT, $32
 
 // int64 nanotime(void)
 TEXT runtime·nanotime(SB), NOSPLIT, $32
-	MOVW $1, R0                 // CLOCK_MONOTONIC
-	MOVW $8(R13), R1            // timespec
-	MOVW $SYS_clock_gettime, R7
-	CALL runtime·trap(SB)
+	MOVW $1, R0      // CLOCK_MONOTONIC
+	MOVW $8(R13), R1 // timespec
+
+	//	MOVW $SYS_clock_gettime, R7
+	//	CALL ·trap_debug(SB)
+	BL runtime·armnanotime(SB)
 
 	MOVW 8(R13), R0  // sec
 	MOVW 12(R13), R2 // nsec
 
-	MOVW  $1000000000, R3
-	MULLU R0, R3, (R1, R0)
-	MOVW  $0, R4
-	ADD.S R2, R0
-	ADC   R4, R1
-
+	//
+	//	MOVW  $1000000000, R3
+	//	MULLU R0, R3, (R1, R0)
+	//	MOVW  $0, R4
+	//	ADD.S R2, R0
+	//	ADC   R4, R1
+	//
+	//	MOVW R0, ret_lo+0(FP)
+	//	MOVW R1, ret_hi+4(FP)
 	MOVW R0, ret_lo+0(FP)
-	MOVW R1, ret_hi+4(FP)
+	MOVW R2, ret_hi+4(FP)
 	RET
 
 // int32 futex(int32 *uaddr, int32 op, int32 val,
@@ -249,7 +254,7 @@ TEXT runtime·futex(SB), NOSPLIT, $0
 	MOVW $SYS_futex, R7
 	CALL ·trap_debug(SB)
 
-	// CALL runtime·trap(SB)
+	// BL runtime·trap(SB)
 	MOVW R0, ret+24(FP)
 	RET
 
@@ -275,7 +280,7 @@ TEXT runtime·clone(SB), NOSPLIT, $0
 	MOVW R6, 12(R1)
 
 	MOVW $SYS_clone, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 
 	// In parent, return.
 	CMP  $0, R0
@@ -309,7 +314,7 @@ TEXT runtime·clone(SB), NOSPLIT, $0
 
 	// Initialize m->procid to Linux tid
 	MOVW $SYS_gettid, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW g_m(g), R8
 	MOVW R0, m_procid(R8)
 
@@ -333,7 +338,7 @@ TEXT runtime·sigaltstack(SB), NOSPLIT, $0
 	MOVW    new+0(FP), R0
 	MOVW    old+4(FP), R1
 	MOVW    $SYS_sigaltstack, R7
-	SWI     $0
+	CALL    ·trap_debug(SB)
 	MOVW    $0xfffff001, R6
 	CMP     R6, R0
 	MOVW.HI $0, R8               // crash on syscall failure
@@ -373,7 +378,7 @@ TEXT runtime·rtsigprocmask(SB), NOSPLIT, $0
 	MOVW old+8(FP), R2
 	MOVW size+12(FP), R3
 	MOVW $SYS_rt_sigprocmask, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 TEXT runtime·rt_sigaction(SB), NOSPLIT, $0
@@ -382,7 +387,7 @@ TEXT runtime·rt_sigaction(SB), NOSPLIT, $0
 	MOVW old+8(FP), R2
 	MOVW size+12(FP), R3
 	MOVW $SYS_rt_sigaction, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+16(FP)
 	RET
 
@@ -397,7 +402,7 @@ TEXT runtime·usleep(SB), NOSPLIT, $12
 	MOVW $0, R3
 	MOVW $4(R13), R4
 	MOVW $SYS_select, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 // As for cas, memory barriers are complicated on ARM, but the kernel
@@ -419,7 +424,7 @@ TEXT ·publicationBarrier(SB), NOSPLIT, $0
 TEXT runtime·osyield(SB), NOSPLIT, $0
 	MOVW $SYS_sched_yield, R7
 
-	// CALL runtime·trap(SB)
+	// BL runtime·trap(SB)
 	RET
 
 TEXT runtime·sched_getaffinity(SB), NOSPLIT, $0
@@ -427,7 +432,7 @@ TEXT runtime·sched_getaffinity(SB), NOSPLIT, $0
 	MOVW len+4(FP), R1
 	MOVW buf+8(FP), R2
 	MOVW $SYS_sched_getaffinity, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+12(FP)
 	RET
 
@@ -435,7 +440,7 @@ TEXT runtime·sched_getaffinity(SB), NOSPLIT, $0
 TEXT runtime·epollcreate(SB), NOSPLIT, $0
 	MOVW size+0(FP), R0
 	MOVW $SYS_epoll_create, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+4(FP)
 	RET
 
@@ -443,7 +448,7 @@ TEXT runtime·epollcreate(SB), NOSPLIT, $0
 TEXT runtime·epollcreate1(SB), NOSPLIT, $0
 	MOVW flags+0(FP), R0
 	MOVW $SYS_epoll_create1, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+4(FP)
 	RET
 
@@ -454,7 +459,7 @@ TEXT runtime·epollctl(SB), NOSPLIT, $0
 	MOVW fd+8(FP), R2
 	MOVW ev+12(FP), R3
 	MOVW $SYS_epoll_ctl, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+16(FP)
 	RET
 
@@ -465,17 +470,17 @@ TEXT runtime·epollwait(SB), NOSPLIT, $0
 	MOVW nev+8(FP), R2
 	MOVW timeout+12(FP), R3
 	MOVW $SYS_epoll_wait, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+16(FP)
 	RET
 
 // void runtime·closeonexec(int32 fd)
 TEXT runtime·closeonexec(SB), NOSPLIT, $0
-	MOVW fd+0(FP), R0     // fd
-	MOVW $2, R1           // F_SETFD
-	MOVW $1, R2           // FD_CLOEXEC
+	MOVW fd+0(FP), R0    // fd
+	MOVW $2, R1          // F_SETFD
+	MOVW $1, R2          // FD_CLOEXEC
 	MOVW $SYS_fcntl, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	RET
 
 // b __kuser_get_tls @ 0xffff0fe0
@@ -487,7 +492,7 @@ TEXT runtime·access(SB), NOSPLIT, $0
 	MOVW name+0(FP), R0
 	MOVW mode+4(FP), R1
 	MOVW $SYS_access, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+8(FP)
 	RET
 
@@ -496,7 +501,7 @@ TEXT runtime·connect(SB), NOSPLIT, $0
 	MOVW addr+4(FP), R1
 	MOVW addrlen+8(FP), R2
 	MOVW $SYS_connect, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+12(FP)
 	RET
 
@@ -505,6 +510,6 @@ TEXT runtime·socket(SB), NOSPLIT, $0
 	MOVW type+4(FP), R1
 	MOVW protocol+8(FP), R2
 	MOVW $SYS_socket, R7
-	CALL runtime·trap(SB)
+	CALL ·trap_debug(SB)
 	MOVW R0, ret+12(FP)
 	RET

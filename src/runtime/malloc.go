@@ -358,23 +358,11 @@ func mallocinit() {
 		throw("misrounded allocation in mallocinit")
 	}
 
-	if armhackmode > 0 {
-		print("malloc.go: mheap_.init\n")
-	}
 	// Initialize the rest of the allocator.
 	//mheap.go
 	mheap_.init(spansSize)
-	if armhackmode > 0 {
-		print("malloc.go: getg\n")
-	}
 	_g_ := getg()
-	if armhackmode > 0 {
-		print("malloc.go: allocmcache\n")
-	}
 	_g_.m.mcache = allocmcache()
-	if armhackmode > 0 {
-		print("malloc.go: all done\n")
-	}
 }
 
 // sysReserveHigh reserves space somewhere high in the address space.
@@ -551,6 +539,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 		}
 	}
 
+	if armhackmode > 0 {
+		print("mallocgc acquire m\n")
+	}
 	// Set mp.mallocing to keep from being preempted by GC.
 	mp := acquirem()
 	if mp.mallocing != 0 {
@@ -563,6 +554,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 
 	shouldhelpgc := false
 	dataSize := size
+	if armhackmode > 0 {
+		print("mallocgc gomcache\n")
+	}
 	c := gomcache()
 	var s *mspan
 	var x unsafe.Pointer
@@ -628,6 +622,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 			}
 			s.freelist = v.ptr().next
 			s.ref++
+			if armhackmode > 0 {
+				print("mallocgc prefetchnta\n")
+			}
 			// prefetchnta offers best performance, see change list message.
 			prefetchnta(uintptr(v.ptr().next))
 			x = unsafe.Pointer(v)
@@ -735,6 +732,10 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 
 	if debug.allocfreetrace != 0 {
 		tracealloc(x, size, typ)
+	}
+
+	if armhackmode > 0 {
+		print("mallocgc mem profile rate\n")
 	}
 
 	if rate := MemProfileRate; rate > 0 {
