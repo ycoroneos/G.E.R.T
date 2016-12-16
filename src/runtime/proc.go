@@ -1553,9 +1553,6 @@ func newm(fn func(), _p_ *p) {
 		asmcgocall(_cgo_thread_start, unsafe.Pointer(&ts))
 		return
 	}
-	//	if armhackmode > 0 {
-	//		print("newm: about to clone\n")
-	//	}
 	newosproc(mp, unsafe.Pointer(mp.g0.stack.hi))
 }
 

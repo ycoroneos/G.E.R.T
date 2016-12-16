@@ -8,5 +8,6 @@ func armnanotime(clocktype int, timespec *int64) {
 	time = time + 1
 	*timespec = time
 	print("done nanotime\n")
+	//throw("right here in nanotime\n")
 	return
 }

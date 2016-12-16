@@ -622,9 +622,6 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 			}
 			s.freelist = v.ptr().next
 			s.ref++
-			if armhackmode > 0 {
-				print("mallocgc prefetchnta\n")
-			}
 			// prefetchnta offers best performance, see change list message.
 			prefetchnta(uintptr(v.ptr().next))
 			x = unsafe.Pointer(v)
@@ -677,6 +674,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 		size = uintptr(s.elemsize)
 	}
 
+	if armhackmode > 0 {
+		print("mallocgc flagnoscan\n")
+	}
 	if flags&flagNoScan != 0 {
 		// All objects are pre-marked as noscan. Nothing to do.
 	} else {
@@ -707,9 +707,15 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 		// collector. Otherwise, on weakly ordered machines,
 		// the garbage collector could follow a pointer to x,
 		// but see uninitialized memory or stale heap bits.
+		if armhackmode > 0 {
+			print("publication barrier\n")
+		}
 		publicationBarrier()
 	}
 
+	if armhackmode > 0 {
+		print("mallocgc mark terminate\n")
+	}
 	// GCmarkterminate allocates black
 	// All slots hold nil so no scanning is needed.
 	// This may be racing with GC so do it atomically if there can be
@@ -728,6 +734,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 	}
 
 	mp.mallocing = 0
+	if armhackmode > 0 {
+		print("mallocgc releasem\n")
+	}
 	releasem(mp)
 
 	if debug.allocfreetrace != 0 {
@@ -792,7 +801,12 @@ func newobject(typ *_type) unsafe.Pointer {
 	if typ.kind&kindNoPointers != 0 {
 		flags |= flagNoScan
 	}
-	return mallocgc(uintptr(typ.size), typ, flags)
+	//return mallocgc(uintptr(typ.size), typ, flags)
+	obj := mallocgc(uintptr(typ.size), typ, flags)
+	if armhackmode > 0 {
+		print("made object\n")
+	}
+	return obj
 }
 
 //go:linkname reflect_unsafe_New reflect.unsafe_New

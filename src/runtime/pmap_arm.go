@@ -262,6 +262,7 @@ func map_kernel() {
 	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
 	map_region(uint32(kernelstart), uint32(kernelstart), uint32(KERNEL_END-kernelstart), 0x0)
 	map_region(uint32(uint32(RAM_START)+RAM_SIZE-ONE_MEG), uint32(RAM_START)+RAM_SIZE-ONE_MEG, PGSIZE, 0x0)
+	//map_region(uint32(0x50000000), uint32(0x50000000), PGSIZE, 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//	showl1table()
 	//loadvbar(unsafe.Pointer(uintptr(vectab)))

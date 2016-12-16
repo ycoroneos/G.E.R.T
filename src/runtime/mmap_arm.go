@@ -40,11 +40,13 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 		}
 	}
 
+	clear := true
 	for start := va; start < (va + uintptr(size)); start += uintptr(PGSIZE) {
 		pte := walk_pgdir(kernpgdir, uint32(start))
 		if *pte&0x2 > 0 {
 			print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
-			throw("mmap fail")
+			clear = false
+			continue
 		}
 		page := page_alloc()
 		if page == nil {
@@ -57,7 +59,9 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 	print("reloading page table\n")
 	invallpages()
 	//memclrbytes(unsafe.Pointer(va), uintptr(size))
-	memclr(unsafe.Pointer(va), uintptr(size))
+	if clear == true {
+		memclr(unsafe.Pointer(va), uintptr(size))
+	}
 	if armhackmode == 0 {
 		print("hackmode nuked\n")
 	}

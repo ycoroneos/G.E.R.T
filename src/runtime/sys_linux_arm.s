@@ -51,6 +51,10 @@
 
 #define ARM_BASE (SYS_BASE + 0x0f0000)
 
+TEXT runtime·record_trap(SB), NOSPLIT, $0
+	CALL ·trap_debug(SB)
+	RET
+
 TEXT runtime·open(SB), NOSPLIT, $0
 	MOVW    name+0(FP), R0
 	MOVW    mode+4(FP), R1
@@ -218,15 +222,19 @@ TEXT time·now(SB), NOSPLIT, $32
 
 // int64 nanotime(void)
 TEXT runtime·nanotime(SB), NOSPLIT, $32
-	MOVW $1, R0      // CLOCK_MONOTONIC
-	MOVW $8(R13), R1 // timespec
+	// MOVW $1, R0      // CLOCK_MONOTONIC
+	// MOVW $8(R13), R1 // timespec
 
 	//	MOVW $SYS_clock_gettime, R7
 	//	CALL ·trap_debug(SB)
-	BL runtime·armnanotime(SB)
+	// CALL ·trap_debug(SB)
+	// BL runtime·armnanotime(SB)
 
-	MOVW 8(R13), R0  // sec
-	MOVW 12(R13), R2 // nsec
+	// MOVW 8(R13), R0  // sec
+	// MOVW 12(R13), R2 // nsec
+
+	MOVW $0x0, R0
+	MOVW $0x0, R2
 
 	//
 	//	MOVW  $1000000000, R3
@@ -415,10 +423,12 @@ TEXT runtime·usleep(SB), NOSPLIT, $12
 
 TEXT publicationBarrier<>(SB), NOSPLIT, $0
 	// void __kuser_memory_barrier(void);
-	MOVW $0xffff0fa0, R15 // R15 is hardware PC.
+	// MOVW $0xffff0fa0, R15 // R15 is hardware PC.
+	WORD $0xf57ff05f // DMB SY
 
 TEXT ·publicationBarrier(SB), NOSPLIT, $0
-	BL publicationBarrier<>(SB)
+	// BL publicationBarrier<>(SB)
+	WORD $0xf57ff05f // DMB SY
 	RET
 
 TEXT runtime·osyield(SB), NOSPLIT, $0

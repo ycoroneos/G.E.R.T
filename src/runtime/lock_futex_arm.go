@@ -32,6 +32,8 @@ const (
 	passive_spin    = 1
 )
 
+var inc = 0
+
 // Possible lock states are mutex_unlocked, mutex_locked and mutex_sleeping.
 // mutex_sleeping means that there is presumably at least one sleeping thread.
 // Note that there can be spinning threads during all states - they do not
@@ -48,13 +50,20 @@ func lock(l *mutex) {
 	//print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
 	print("lock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
 	if gp.m.locks < 0 {
+		throw("gp.m.locks < 0")
 		writeUnsafe([]byte("invalid lock count, dieing"))
-		//gp.m.locks = 0
 		startpanic()
 		dopanic(0)
 		*(*int)(nil) = 0 // not reached
 	}
 	gp.m.locks++
+
+	//	if uintptr(unsafe.Pointer(l)) == 0x101413c0 {
+	//		inc += 1
+	//		if inc > 1 {
+	//			throw("this spot\n")
+	//		}
+	//	}
 
 	count := 0
 	if armhackmode > 0 {
@@ -135,11 +144,13 @@ func lock(l *mutex) {
 }
 
 func unlock(l *mutex) {
+	print("unlock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
 	v := atomic.Xchg(key32(&l.key), mutex_unlocked)
 	if v == mutex_unlocked {
 		throw("unlock of unlocked lock")
 	}
 	if v == mutex_sleeping {
+		print("futexwakeup\n")
 		futexwakeup(key32(&l.key), 1)
 	}
 
@@ -151,6 +162,7 @@ func unlock(l *mutex) {
 	if gp.m.locks == 0 && gp.preempt { // restore the preemption request in case we've cleared it in newstack
 		gp.stackguard0 = stackPreempt
 	}
+	print("unlock finished\n")
 }
 
 // One-time notifications.

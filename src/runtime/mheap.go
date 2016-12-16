@@ -774,21 +774,23 @@ func (h *mheap) freeSpanLocked(s *mspan, acctinuse, acctidle bool, unusedsince i
 	// info to potentially give back some pages to the OS.
 	s.unusedsince = unusedsince
 	if unusedsince == 0 {
-		//		if armhackmode > 0 {
-		//			print("skipping nanotime\n")
-		//		} else {
 		if armhackmode > 0 {
-			print("doing nanotime\n")
+			print("freespanlocked nanotime\n")
 		}
 		s.unusedsince = nanotime()
-		//		}
 	}
 	s.npreleased = 0
+	if armhackmode > 0 {
+		print("freespanlocked nanotime done\n")
+	}
 
 	// Coalesce with earlier, later spans.
 	p := uintptr(s.start)
 	p -= h.arena_start >> _PageShift
 	if p > 0 {
+		if armhackmode > 0 {
+			print("freespanlocked p>0\n")
+		}
 		t := h_spans[p-1]
 		if t != nil && t.state == _MSpanFree {
 			s.start = t.start
@@ -799,10 +801,16 @@ func (h *mheap) freeSpanLocked(s *mspan, acctinuse, acctidle bool, unusedsince i
 			h_spans[p] = s
 			h.freeList(t.npages).remove(t)
 			t.state = _MSpanDead
+			if armhackmode > 0 {
+				print("freespanlocked p>0\n")
+			}
 			h.spanalloc.free(unsafe.Pointer(t))
 		}
 	}
 	if (p+s.npages)*sys.PtrSize < h.spans_mapped {
+		if armhackmode > 0 {
+			print("freespanlocked <h.spans_mapped\n")
+		}
 		t := h_spans[p+s.npages]
 		if t != nil && t.state == _MSpanFree {
 			s.npages += t.npages
@@ -811,12 +819,21 @@ func (h *mheap) freeSpanLocked(s *mspan, acctinuse, acctidle bool, unusedsince i
 			h_spans[p+s.npages-1] = s
 			h.freeList(t.npages).remove(t)
 			t.state = _MSpanDead
+			if armhackmode > 0 {
+				print("freespanlocked <h.spans_mapped\n")
+			}
 			h.spanalloc.free(unsafe.Pointer(t))
 		}
 	}
 
+	if armhackmode > 0 {
+		print("freespanlocked h.freelist\n")
+	}
 	// Insert s into appropriate list.
 	h.freeList(s.npages).insert(s)
+	if armhackmode > 0 {
+		print("freespanlocked h.freelist done\n")
+	}
 }
 
 func (h *mheap) freeList(npages uintptr) *mSpanList {
@@ -938,6 +955,9 @@ func (list *mSpanList) isEmpty() bool {
 }
 
 func (list *mSpanList) insert(span *mspan) {
+	if armhackmode > 0 {
+		print("insert to spanlist\n")
+	}
 	if span.next != nil || span.prev != nil || span.list != nil {
 		println("failed MSpanList_Insert", span, span.next, span.prev, span.list)
 		throw("MSpanList_Insert")

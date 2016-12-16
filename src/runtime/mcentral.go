@@ -33,11 +33,23 @@ func (c *mcentral) init(sizeclass int32) {
 func (c *mcentral) cacheSpan() *mspan {
 	// Deduct credit for this span allocation and sweep if necessary.
 	spanBytes := uintptr(class_to_allocnpages[c.sizeclass]) * _PageSize
+	if armhackmode > 0 {
+		print("deduct sweep credits\n")
+	}
 	deductSweepCredit(spanBytes, 0)
 
+	if armhackmode > 0 {
+		print("cache span lock\n")
+	}
 	lock(&c.lock)
+	if armhackmode > 0 {
+		print("cache span lock acquired\n")
+	}
 	sg := mheap_.sweepgen
 retry:
+	if armhackmode > 0 {
+		print("retry\n")
+	}
 	var s *mspan
 	for s = c.nonempty.first; s != nil; s = s.next {
 		if s.sweepgen == sg-2 && atomic.Cas(&s.sweepgen, sg-2, sg-1) {
@@ -48,6 +60,9 @@ retry:
 			goto havespan
 		}
 		if s.sweepgen == sg-1 {
+			if armhackmode > 0 {
+				print("span swept in background\n")
+			}
 			// the span is being swept by background sweeper, skip
 			continue
 		}
@@ -76,6 +91,9 @@ retry:
 			goto retry
 		}
 		if s.sweepgen == sg-1 {
+			if armhackmode > 0 {
+				print("span swept in background 2\n")
+			}
 			// the span is being swept by background sweeper, skip
 			continue
 		}
@@ -91,6 +109,9 @@ retry:
 		return nil
 	}
 	lock(&c.lock)
+	if armhackmode > 0 {
+		print("insert back (s)\n")
+	}
 	c.empty.insertBack(s)
 	unlock(&c.lock)
 

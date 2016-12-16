@@ -1,5 +1,24 @@
 package runtime
 
+type trapframe struct {
+	pc  uint32
+	sp  uint32
+	lr  uint32
+	r0  uint32
+	r1  uint32
+	r2  uint32
+	r3  uint32
+	r4  uint32
+	r5  uint32
+	r6  uint32
+	r7  uint32
+	r8  uint32
+	r9  uint32
+	r10 uint32
+	r11 uint32
+	r12 uint32
+}
+
 //go:nosplit
 func PutR0(val uint32)
 
@@ -27,6 +46,8 @@ func RR6() uint32
 //go:nosplit
 func RR7() uint32
 
+var firstexit = true
+
 func trap_debug() {
 	arg0 := RR0()
 	arg1 := RR1()
@@ -45,6 +66,12 @@ func trap_debug() {
 	print("\targ5: ", hex(arg5), "\n")
 	print("\targ6: ", hex(arg6), "\n")
 	switch trapno {
+	case 120:
+		print("spoofing clone\n")
+		print("entry point is ", hex(arg0), " stack at ", hex(arg1), "\n")
+		makethread(uintptr(arg0), uintptr(arg1), arg2)
+		PutR0(1)
+		return
 	case 142:
 		print("spoofing select\n")
 		PutR0(0)
@@ -69,12 +96,17 @@ func trap_debug() {
 		print("spoofing tkill\n")
 		PutR0(0)
 		return
+	case 240:
+		print("spoofing futex\n")
+		PutR0(0)
+		return
 	case 248:
-		print("exit")
+		if firstexit == true {
+			firstexit = false
+			throw("exit")
+		}
 		for {
 		}
 	}
-	for {
-	}
-	throwcritical("trap")
+	throw("trap")
 }

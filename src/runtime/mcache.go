@@ -126,6 +126,9 @@ func (c *mcache) refill(sizeclass int32) *mspan {
 	}
 	c.alloc[sizeclass] = s
 	_g_.m.locks--
+	if armhackmode > 0 {
+		print("return refill\n")
+	}
 	return s
 }
 
