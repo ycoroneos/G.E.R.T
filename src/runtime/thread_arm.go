@@ -1,29 +1,39 @@
 package runtime
 
+import "unsafe"
+
+//go:nosplit
+func RecordTrapframe()
+
+//go:nosplit
+func ReplayTrapframe()
+
+var cpunum = 0
+
+const maxcpus = 4
+
+type trapframe struct {
+	lr  uintptr
+	sp  uintptr
+	fp  uintptr
+	r0  uint32
+	r1  uint32
+	r2  uint32
+	r3  uint32
+	r10 uint32
+}
+
 type thread_t struct {
-	pc    uintptr
-	sp    uintptr
-	lr    uintptr
-	state uint32
-	r0    uint32
-	r1    uint32
-	r2    uint32
-	r3    uint32
-	r4    uint32
-	r5    uint32
-	r6    uint32
-	r7    uint32
-	r8    uint32
-	r9    uint32
-	r10   uint32
-	r11   uint32
-	r12   uint32
+	tf      trapframe
+	state   uint32
+	futaddr uintptr
 }
 
 // maximum # of runtime "OS" threads
 const maxthreads = 64
 
 var threads [maxthreads]thread_t
+var curthread *thread_t
 
 // thread states
 const (
@@ -36,7 +46,15 @@ const (
 )
 
 //go:nosplit
-func makethread(entry, stack uintptr, flags uint32) int {
+func thread_init() {
+	threads[0].state = ST_RUNNING
+	curthread = &threads[0]
+	RecordTrapframe()
+	print("made thread 0\n")
+}
+
+//go:nosplit
+func makethread(flags uint32, stack uintptr, entry uintptr) int {
 	CLONE_VM := 0x100
 	CLONE_FS := 0x200
 	CLONE_FILES := 0x400
@@ -45,7 +63,7 @@ func makethread(entry, stack uintptr, flags uint32) int {
 	chk := uint32(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
 		CLONE_THREAD)
 	if flags != chk {
-		print("unexpected clone args", uintptr(flags))
+		print("unexpected clone args ", hex(uintptr(flags)), " expected ", hex(chk))
 		throw("clone error")
 	}
 	i := 0
@@ -57,20 +75,61 @@ func makethread(entry, stack uintptr, flags uint32) int {
 	if i == maxthreads {
 		throw("out of threads to use\n")
 	}
-	threads[i].pc = entry
-	threads[i].sp = stack
 	threads[i].state = ST_RUNNABLE
-	return i
+	threads[i].tf.lr = entry
+	threads[i].tf.sp = stack
+	threads[i].tf.r0 = uint32(i)
+	print("\t\t\t\t new thread ", i, "\n")
+	return 0
 }
 
 var lastrun = 0
 
-//never return
 //go:nosplit
-func schedule_thread() {
+func thread_schedule() {
+	RecordTrapframe()
 	for ; lastrun < maxthreads; lastrun = (lastrun + 1) % maxthreads {
 		if threads[lastrun].state == ST_RUNNABLE {
-			switch_thread(&threads[lastrun])
+			threads[lastrun].state = ST_RUNNING
+			curthread = &threads[lastrun]
+			print("\t\t\t\tschedule thread ", lastrun, "\n")
+			ReplayTrapframe()
+			throw("should never be here\n")
 		}
 	}
+}
+
+//go:nosplit
+func thread_current() uint32 {
+	return uint32(lastrun)
+}
+
+//go:nosplit
+func hack_futex_arm(uaddr *int32, op, val int32, to *timespec, uaddr2 *int32, val2 int32) int32 {
+	FUTEX_WAIT := int32(0)
+	FUTEX_WAKE := int32(1)
+	uaddrn := uintptr(unsafe.Pointer(uaddr))
+	ret := 0
+	switch op {
+	case FUTEX_WAIT:
+		dosleep := *uaddr == val
+		if dosleep {
+			//enter thread scheduler
+			curthread.state = ST_SLEEPING
+			curthread.futaddr = uaddrn
+			thread_schedule()
+			//returns with retval in r0
+			ret = int(RR0())
+		} else {
+			//lost wakeup?
+			eagain := -11
+			ret = eagain
+		}
+	case FUTEX_WAKE:
+		throw("cant handle futex wake yet\n")
+	default:
+		print("futex op ", hex(uintptr(op)))
+		throw("unexpected futex op")
+	}
+	return int32(ret)
 }

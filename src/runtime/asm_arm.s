@@ -43,6 +43,30 @@ TEXT runtime·RR7(SB), NOSPLIT, $0
 	MOVW R7, ret+0(FP)
 	RET
 
+TEXT runtime·RecordTrapframe(SB), NOSPLIT, $0
+	MOVW runtime·curthread(SB), R4
+	MOVW LR, 0(R4)
+	MOVW R13, 4(R4)
+	MOVW R11, 8(R4)
+	MOVW R0, 12(R4)
+	MOVW R1, 16(R4)
+	MOVW R2, 20(R4)
+	MOVW R3, 24(R4)
+	MOVW g, 28(R4)
+	RET
+
+TEXT runtime·ReplayTrapframe(SB), NOSPLIT, $0
+	MOVW runtime·curthread(SB), R4
+	MOVW 0(R4), LR
+	MOVW 4(R4), R13
+	MOVW 8(R4), R11
+	MOVW 12(R4), R0
+	MOVW 16(R4), R1
+	MOVW 20(R4), R2
+	MOVW 24(R4), R3
+	MOVW 28(R4), g
+	RET
+
 TEXT runtime·SWIcall(SB), NOSPLIT, $0
 	MOVW LR, R6
 	SWI  $0x0
@@ -187,6 +211,7 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	BL   runtime·mem_init(SB)
 	BL   runtime·page_init(SB)
 	BL   runtime·map_kernel(SB)
+	BL   runtime·thread_init(SB)
 	BL   runtime·schedinit(SB)
 
 	// create a new goroutine to start program

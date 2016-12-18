@@ -51,10 +51,6 @@
 
 #define ARM_BASE (SYS_BASE + 0x0f0000)
 
-TEXT runtime·record_trap(SB), NOSPLIT, $0
-	CALL ·trap_debug(SB)
-	RET
-
 TEXT runtime·open(SB), NOSPLIT, $0
 	MOVW    name+0(FP), R0
 	MOVW    mode+4(FP), R1
@@ -252,19 +248,20 @@ TEXT runtime·nanotime(SB), NOSPLIT, $32
 // int32 futex(int32 *uaddr, int32 op, int32 val,
 //	struct timespec *timeout, int32 *uaddr2, int32 val2);
 TEXT runtime·futex(SB), NOSPLIT, $0
-	// TODO: Rewrite to use FP references. Vet complains.
-	MOVW 4(R13), R0
-	MOVW 8(R13), R1
-	MOVW 12(R13), R2
-	MOVW 16(R13), R3
-	MOVW 20(R13), R4
-	MOVW 24(R13), R5
-	MOVW $SYS_futex, R7
-	CALL ·trap_debug(SB)
+	JMP ·hack_futex_arm(SB)
 
-	// BL runtime·trap(SB)
-	MOVW R0, ret+24(FP)
-	RET
+//	// TODO: Rewrite to use FP references. Vet complains.
+//	MOVW 4(R13), R0
+//	MOVW 8(R13), R1
+//	MOVW 12(R13), R2
+//	MOVW 16(R13), R3
+//	MOVW 20(R13), R4
+//	MOVW 24(R13), R5
+//	MOVW $SYS_futex, R7
+//	CALL ·trap_debug(SB)
+
+// MOVW R0, ret+24(FP)
+// RET
 
 // int32 clone(int32 flags, void *stack, M *mp, G *gp, void (*fn)(void));
 TEXT runtime·clone(SB), NOSPLIT, $0
@@ -287,6 +284,8 @@ TEXT runtime·clone(SB), NOSPLIT, $0
 	MOVW $1234, R6
 	MOVW R6, 12(R1)
 
+	MOVW R15, R2
+	ADD  $12, R2
 	MOVW $SYS_clone, R7
 	CALL ·trap_debug(SB)
 
