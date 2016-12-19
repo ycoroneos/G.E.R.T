@@ -88,6 +88,7 @@ var lastrun = 0
 //go:nosplit
 func thread_schedule() {
 	RecordTrapframe()
+	print("thread scheduler\n")
 	for ; lastrun < maxthreads; lastrun = (lastrun + 1) % maxthreads {
 		if threads[lastrun].state == ST_RUNNABLE {
 			threads[lastrun].state = ST_RUNNING

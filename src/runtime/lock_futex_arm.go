@@ -48,7 +48,7 @@ func lock(l *mutex) {
 	gp := getg()
 
 	//print("lock: ", hex(gp.m.locks), " ", hex(uintptr(unsafe.Pointer(&gp.m.locks))), "\n")
-	print("lock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
+	//print("lock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
 	if gp.m.locks < 0 {
 		throw("gp.m.locks < 0")
 		writeUnsafe([]byte("invalid lock count, dieing"))
@@ -144,7 +144,7 @@ func lock(l *mutex) {
 }
 
 func unlock(l *mutex) {
-	print("unlock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
+	//print("unlock val: ", l.key, " ", hex(uintptr(unsafe.Pointer(l))), "\n")
 	v := atomic.Xchg(key32(&l.key), mutex_unlocked)
 	if v == mutex_unlocked {
 		throw("unlock of unlocked lock")
@@ -162,7 +162,7 @@ func unlock(l *mutex) {
 	if gp.m.locks == 0 && gp.preempt { // restore the preemption request in case we've cleared it in newstack
 		gp.stackguard0 = stackPreempt
 	}
-	print("unlock finished\n")
+	//print("unlock finished\n")
 }
 
 // One-time notifications.

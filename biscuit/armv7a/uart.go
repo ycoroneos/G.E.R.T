@@ -6,8 +6,8 @@ const UART1_UTXD uint32 = 0x02020040
 const UART1_UTS uint32 = 0x020200B4
 
 //go:nosplit
-func uart_putc(c uint32) {
-	*(*uint32)(unsafe.Pointer(uintptr(UART1_UTXD))) = c
+func uart_putc(c byte) {
+	*(*byte)(unsafe.Pointer(uintptr(UART1_UTXD))) = c
 	for (*(*uint32)(unsafe.Pointer(uintptr(UART1_UTS))) & (0x1 << 6)) <= 0 {
 	}
 	//
@@ -19,11 +19,11 @@ func uart_putc(c uint32) {
 }
 
 //go:nosplit
-func uart_print(data uint32, len int32) int32 {
-	for i := uint32(0); i < uint32(len); i++ {
-		//uart_putc(*(*byte)(unsafe.Pointer(uintptr(data + i))))
+func uart_print(b []byte) {
+	var i = 0
+	for i = 0; i < len(b); i++ {
+		uart_putc(b[i])
 	}
-	return len
 }
 
 //const (

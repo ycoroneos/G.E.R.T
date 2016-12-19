@@ -11,6 +11,10 @@ TEXT runtime·PutR0(SB), NOSPLIT, $0-4
 	MOVW ret+4(FP), R0
 	RET
 
+TEXT runtime·PutR2(SB), NOSPLIT, $0-4
+	MOVW ret+4(FP), R2
+	RET
+
 TEXT runtime·RR0(SB), NOSPLIT, $0
 	MOVW R0, ret+0(FP)
 	RET
@@ -204,6 +208,7 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 	MOVW 64(R13), R1
 	MOVW R1, 8(R13)
 
+	BL   runtime·timer_start(SB)
 	BL   runtime·args(SB)
 	BL   runtime·checkgoarm(SB)     // os_linux_arm.go
 	BL   runtime·osinit(SB)

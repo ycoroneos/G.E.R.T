@@ -26,5 +26,8 @@ func Entry() {
 //go:nosplit
 func main() {
 	fmt.Printf("hello, world\n")
+	for {
+		uart_print([]byte("heloooo\n"))
+	}
 	SWI()
 }

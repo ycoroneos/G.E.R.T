@@ -205,44 +205,51 @@ TEXT time·now(SB), NOSPLIT, $32
 	MOVW $0, R0                 // CLOCK_REALTIME
 	MOVW $8(R13), R1            // timespec
 	MOVW $SYS_clock_gettime, R7
-	CALL ·trap_debug(SB)
+	BL   runtime·armtime(SB)
 
-	MOVW 8(R13), R0  // sec
-	MOVW 12(R13), R2 // nsec
+	// CALL ·trap_debug(SB)
 
+	//	MOVW 8(R13), R0  // sec
+	//	MOVW 12(R13), R2 // nsec
+	//
+	//	MOVW R0, sec+0(FP)
+	//	MOVW $0, R1
+	//	MOVW R1, loc+4(FP)
+	//	MOVW R2, nsec+8(FP)
 	MOVW R0, sec+0(FP)
 	MOVW $0, R1
 	MOVW R1, loc+4(FP)
 	MOVW R2, nsec+8(FP)
+
 	RET
 
 // int64 nanotime(void)
 TEXT runtime·nanotime(SB), NOSPLIT, $32
-	// MOVW $1, R0      // CLOCK_MONOTONIC
-	// MOVW $8(R13), R1 // timespec
+	MOVW $1, R0      // CLOCK_MONOTONIC
+	MOVW $8(R13), R1 // timespec
 
 	//	MOVW $SYS_clock_gettime, R7
 	//	CALL ·trap_debug(SB)
 	// CALL ·trap_debug(SB)
-	// BL runtime·armnanotime(SB)
+	BL runtime·armtime(SB)
 
 	// MOVW 8(R13), R0  // sec
 	// MOVW 12(R13), R2 // nsec
 
-	MOVW $0x0, R0
-	MOVW $0x0, R2
+	// MOVW $0x0, R0
+	// MOVW $0x0, R2
 
-	//
-	//	MOVW  $1000000000, R3
-	//	MULLU R0, R3, (R1, R0)
-	//	MOVW  $0, R4
-	//	ADD.S R2, R0
-	//	ADC   R4, R1
-	//
-	//	MOVW R0, ret_lo+0(FP)
-	//	MOVW R1, ret_hi+4(FP)
+	MOVW  $1000000000, R3
+	MULLU R0, R3, (R1, R0)
+	MOVW  $0, R4
+	ADD.S R2, R0
+	ADC   R4, R1
+
 	MOVW R0, ret_lo+0(FP)
-	MOVW R2, ret_hi+4(FP)
+	MOVW R1, ret_hi+4(FP)
+
+	// MOVW R0, ret_lo+0(FP)
+	// MOVW R2, ret_hi+4(FP)
 	RET
 
 // int32 futex(int32 *uaddr, int32 op, int32 val,
@@ -495,6 +502,8 @@ TEXT runtime·closeonexec(SB), NOSPLIT, $0
 // b __kuser_get_tls @ 0xffff0fe0
 TEXT runtime·read_tls_fallback(SB), NOSPLIT, $-4
 	MOVW $0xffff0fe0, R0
+	MOVW $0xffff0fe0, R7
+	CALL ·trap_debug(SB)
 	B    (R0)
 
 TEXT runtime·access(SB), NOSPLIT, $0

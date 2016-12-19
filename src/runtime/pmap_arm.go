@@ -257,6 +257,9 @@ func map_kernel() {
 	//map the uart
 	map_region(0x02000000, 0x02000000, PGSIZE, 0x0)
 
+	//map the timer
+	map_region(PERIPH_BASE, PERIPH_BASE, PGSIZE, 0x0)
+
 	//identity map [kernelstart, boot_alloc(0))
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
 	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)

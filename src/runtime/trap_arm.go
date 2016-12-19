@@ -6,6 +6,9 @@ import "unsafe"
 func PutR0(val uint32)
 
 //go:nosplit
+func PutR2(val uint32)
+
+//go:nosplit
 func RR0() uint32
 
 //go:nosplit
@@ -48,7 +51,9 @@ func trap_debug() {
 		PutR0(uint32(thread_id))
 		return
 	case 142:
-		print("spoofing select\n")
+		//	print("spoofing select\n")
+		//throw("select")
+		thread_schedule()
 		PutR0(0)
 		return
 	case 174:
@@ -63,8 +68,13 @@ func trap_debug() {
 		print("spoofing sigaltstack\n")
 		PutR0(0)
 		return
+	case 220:
+		print("spoofing madvise\n")
+		PutR0(0)
+		return
 	case 224:
 		print("gettid\n")
+		//throw("gettid")
 		PutR0(thread_current())
 		return
 	case 238:

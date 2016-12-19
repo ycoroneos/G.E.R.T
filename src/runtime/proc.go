@@ -394,15 +394,15 @@ func allgadd(gp *g) {
 		throw("allgadd: bad status Gidle")
 	}
 
-	if armhackmode > 0 {
-		print("lock allg lock\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("lock allg lock\n")
+	//	}
 	lock(&allglock)
 	allgs = append(allgs, gp)
 	allglen = uintptr(len(allgs))
-	if armhackmode > 0 {
-		print("unlock allg lock\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("unlock allg lock\n")
+	//	}
 	unlock(&allglock)
 }
 
@@ -504,14 +504,14 @@ func checkmcount() {
 func mcommoninit(mp *m) {
 	_g_ := getg()
 
-	if armhackmode > 0 {
-		print("mcommoninit: gotg\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("mcommoninit: gotg\n")
+	//	}
 	// g0 stack won't make sense for user (and is not necessary unwindable).
 	if _g_ != _g_.m.g0 {
-		if armhackmode > 0 {
-			print("mcommoninit: mp.createstack\n")
-		}
+		//		if armhackmode > 0 {
+		//			print("mcommoninit: mp.createstack\n")
+		//		}
 		callers(1, mp.createstack[:])
 	}
 
@@ -524,13 +524,13 @@ func mcommoninit(mp *m) {
 	lock(&sched.lock)
 	mp.id = sched.mcount
 	sched.mcount++
-	if armhackmode > 0 {
-		print("mcommoninit: checkmcount\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("mcommoninit: checkmcount\n")
+	//	}
 	checkmcount()
-	if armhackmode > 0 {
-		print("mcommoninit: mpreinit\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("mcommoninit: mpreinit\n")
+	//	}
 	mpreinit(mp)
 	if mp.gsignal != nil {
 		mp.gsignal.stackguard1 = mp.gsignal.stack.lo + _StackGuard
@@ -540,9 +540,9 @@ func mcommoninit(mp *m) {
 	// when it is just in a register or thread-local storage.
 	mp.alllink = allm
 
-	if armhackmode > 0 {
-		print("mcommoninit: atomicstorep\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("mcommoninit: atomicstorep\n")
+	//	}
 	// NumCgoCall() iterates over allm w/o schedlock,
 	// so we need to publish it safely.
 	atomicstorep(unsafe.Pointer(&allm), unsafe.Pointer(mp))
@@ -649,11 +649,17 @@ func freezetheworld() {
 		if !preemptall() {
 			break // no running goroutines
 		}
+		//		if armhackmode > 0 {
+		//			print("usleep freeze the world\n")
+		//		}
 		usleep(1000)
 	}
 	// to be sure
 	usleep(1000)
 	preemptall()
+	//	if armhackmode > 0 {
+	//		print("preempted all goroutines\n")
+	//	}
 	usleep(1000)
 }
 
@@ -1834,9 +1840,9 @@ func execute(gp *g, inheritTime bool) {
 		print("gogo\n")
 	}
 	gogo(&gp.sched)
-	if armhackmode > 0 {
-		print("returned\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("returned\n")
+	//	}
 }
 
 // Finds a runnable goroutine to execute.
@@ -2701,9 +2707,9 @@ func syscall_runtime_AfterFork() {
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
 func malg(stacksize int32) *g {
-	if armhackmode > 0 {
-		print("making new g\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("making new g\n")
+	//	}
 	newg := new(g)
 	if stacksize >= 0 {
 		stacksize = round2(_StackSystem + stacksize)
@@ -2737,9 +2743,9 @@ func newproc(siz int32, fn *funcval) {
 // address of the go statement that created this.  The new g is put
 // on the queue of g's waiting to run.
 func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr) *g {
-	if armhackmode > 0 {
-		print("newproc1 \n")
-	}
+	//	if armhackmode > 0 {
+	//		print("newproc1 \n")
+	//	}
 	_g_ := getg()
 
 	if fn == nil {
@@ -2758,23 +2764,23 @@ func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr
 		throw("newproc: function arguments too large for new goroutine")
 	}
 
-	if armhackmode > 0 {
-		print("newproc1 make a g\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("newproc1 make a g\n")
+	//	}
 	_p_ := _g_.m.p.ptr()
 	newg := gfget(_p_)
 	if newg == nil {
-		if armhackmode > 0 {
-			print("newproc1 malg\n")
-		}
+		//		if armhackmode > 0 {
+		//			print("newproc1 malg\n")
+		//		}
 		newg = malg(_StackMin)
-		if armhackmode > 0 {
-			print("casgstatus\n")
-		}
+		//		if armhackmode > 0 {
+		//			print("casgstatus\n")
+		//		}
 		casgstatus(newg, _Gidle, _Gdead)
-		if armhackmode > 0 {
-			print("allgadd\n")
-		}
+		//		if armhackmode > 0 {
+		//			print("allgadd\n")
+		//		}
 		allgadd(newg) // publishes with a g->status of Gdead so GC scanner doesn't look at uninitialized stack.
 	}
 	if newg.stack.hi == 0 {
@@ -2785,9 +2791,9 @@ func newproc1(fn *funcval, argp *uint8, narg int32, nret int32, callerpc uintptr
 		throw("newproc1: new g is not Gdead")
 	}
 
-	if armhackmode > 0 {
-		print("newproc1 made a g\n")
-	}
+	//	if armhackmode > 0 {
+	//		print("newproc1 made a g\n")
+	//	}
 	totalSize := 4*sys.RegSize + uintptr(siz) + sys.MinFrameSize // extra space in case of reads slightly beyond frame
 	totalSize += -totalSize & (sys.SpAlign - 1)                  // align to spAlign
 	sp := newg.stack.hi - totalSize
@@ -3554,6 +3560,9 @@ var forcegcperiod int64 = 2 * 60 * 1e9
 //
 //go:nowritebarrierrec
 func sysmon() {
+	if armhackmode > 0 {
+		print("sysmon start\n")
+	}
 	// If a heap span goes unused for 5 minutes after a garbage collection,
 	// we hand it back to the operating system.
 	scavengelimit := int64(5 * 60 * 1e9)
@@ -3579,6 +3588,9 @@ func sysmon() {
 		if delay > 10*1000 { // up to 10ms
 			delay = 10 * 1000
 		}
+		if armhackmode > 0 {
+			print("sysmon sleep for ", delay, "\n")
+		}
 		usleep(delay)
 		if debug.schedtrace <= 0 && (sched.gcwaiting != 0 || atomic.Load(&sched.npidle) == uint32(gomaxprocs)) { // TODO: fast atomic
 			lock(&sched.lock)
@@ -3591,6 +3603,9 @@ func sysmon() {
 				if scavengelimit < forcegcperiod {
 					maxsleep = scavengelimit / 2
 				}
+				if armhackmode > 0 {
+					print("sysmon notesleep for \n")
+				}
 				notetsleep(&sched.sysmonnote, maxsleep)
 				lock(&sched.lock)
 				atomic.Store(&sched.sysmonwait, 0)
@@ -3599,6 +3614,9 @@ func sysmon() {
 				delay = 20
 			}
 			unlock(&sched.lock)
+		}
+		if armhackmode > 0 {
+			print("sysmon poll network\n")
 		}
 		// poll network if not polled for more than 10ms
 		lastpoll := int64(atomic.Load64(&sched.lastpoll))
@@ -3620,6 +3638,9 @@ func sysmon() {
 				incidlelocked(1)
 			}
 		}
+		if armhackmode > 0 {
+			print("sysmon retake P's\n")
+		}
 		// retake P's blocked in syscalls
 		// and preempt long running G's
 		if retake(now) != 0 {
@@ -3630,6 +3651,9 @@ func sysmon() {
 		// check if we need to force a GC
 		lastgc := int64(atomic.Load64(&memstats.last_gc))
 		if gcphase == _GCoff && lastgc != 0 && unixnow-lastgc > forcegcperiod && atomic.Load(&forcegc.idle) != 0 {
+			if armhackmode > 0 {
+				print("sysmon force gc\n")
+			}
 			lock(&forcegc.lock)
 			forcegc.idle = 0
 			forcegc.g.schedlink = 0
@@ -3638,6 +3662,9 @@ func sysmon() {
 		}
 		// scavenge heap once in a while
 		if lastscavenge+scavengelimit/2 < now {
+			if armhackmode > 0 {
+				print("sysmon scavenge heap\n")
+			}
 			mheap_.scavenge(int32(nscavenge), uint64(now), uint64(scavengelimit))
 			lastscavenge = now
 			nscavenge++
@@ -3646,6 +3673,9 @@ func sysmon() {
 			lasttrace = now
 			schedtrace(debug.scheddetail > 0)
 		}
+	}
+	if armhackmode > 0 {
+		print("sysmon done\n")
 	}
 }
 
@@ -3670,6 +3700,9 @@ func retake(now int64) uint32 {
 		pd := &pdesc[i]
 		s := _p_.status
 		if s == _Psyscall {
+			if armhackmode > 0 {
+				print("retake found P in syscall\n")
+			}
 			// Retake P from syscall if it's there for more than 1 sysmon tick (at least 20us).
 			t := int64(_p_.syscalltick)
 			if int64(pd.syscalltick) != t {
@@ -3695,6 +3728,9 @@ func retake(now int64) uint32 {
 				}
 				n++
 				_p_.syscalltick++
+				if armhackmode > 0 {
+					print("retake handoff p\n")
+				}
 				handoffp(_p_)
 			}
 			incidlelocked(1)
@@ -3709,8 +3745,14 @@ func retake(now int64) uint32 {
 			if pd.schedwhen+forcePreemptNS > now {
 				continue
 			}
+			if armhackmode > 0 {
+				print("retake preempt long running g\n")
+			}
 			preemptone(_p_)
 		}
+	}
+	if armhackmode > 0 {
+		print("retake done\n")
 	}
 	return uint32(n)
 }
