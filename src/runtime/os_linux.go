@@ -41,4 +41,5 @@ func osyield()
 
 var hackmode int64
 var armhackmode uint32
+var Armhackmode uint32
 var Halt uint32

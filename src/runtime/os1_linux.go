@@ -177,6 +177,8 @@ func osinit() {
 		debug.sbrk = 0
 		hackmode = 1
 		armhackmode = 1
+		Armhackmode = 1
+		MemProfileRate = 0
 		//	raceenabled = false
 	} else {
 		ncpu = getproccount()

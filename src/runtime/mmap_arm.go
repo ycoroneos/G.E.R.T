@@ -45,6 +45,7 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) uns
 		pte := walk_pgdir(kernpgdir, uint32(start))
 		if *pte&0x2 > 0 {
 			print("mmap_fixed failure for va: ", hex(start), " because it's already mapped\n")
+			print("pte addr ", hex(uintptr(unsafe.Pointer(pte))), " contents ", hex(*pte), "\n")
 			clear = false
 			continue
 		}

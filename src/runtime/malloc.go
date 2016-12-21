@@ -766,6 +766,9 @@ func mallocgc(size uintptr, typ *_type, flags uint32) unsafe.Pointer {
 	if shouldhelpgc && gcShouldStart(false) {
 		gcStart(gcBackgroundMode, false)
 	}
+	if armhackmode > 0 {
+		print("mallocgc done\n")
+	}
 
 	return x
 }
@@ -823,7 +826,12 @@ func newarray(typ *_type, n uintptr) unsafe.Pointer {
 	if int(n) < 0 || (typ.size > 0 && n > _MaxMem/uintptr(typ.size)) {
 		panic("runtime: allocation size out of range")
 	}
-	return mallocgc(uintptr(typ.size)*n, typ, flags)
+	//return mallocgc(uintptr(typ.size)*n, typ, flags)
+	obj := mallocgc(uintptr(typ.size)*n, typ, flags)
+	if armhackmode > 0 {
+		print("made array\n")
+	}
+	return obj
 }
 
 //go:linkname reflect_unsafe_NewArray reflect.unsafe_NewArray

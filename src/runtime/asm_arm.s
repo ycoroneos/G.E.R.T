@@ -47,6 +47,10 @@ TEXT runtime·RR7(SB), NOSPLIT, $0
 	MOVW R7, ret+0(FP)
 	RET
 
+TEXT runtime·DMB(SB), NOSPLIT, $0
+	WORD $0xf57ff05e // DMB ST
+	RET
+
 TEXT runtime·RecordTrapframe(SB), NOSPLIT, $0
 	MOVW runtime·curthread(SB), R4
 	MOVW LR, 0(R4)
@@ -69,6 +73,25 @@ TEXT runtime·ReplayTrapframe(SB), NOSPLIT, $0
 	MOVW 20(R4), R2
 	MOVW 24(R4), R3
 	MOVW 28(R4), g
+	RET
+
+TEXT runtime·Threadschedule(SB), NOSPLIT, $0
+	MOVW R13, R5
+	ADD  $4, R5, R5                // undo the push {lr}
+	MOVW runtime·curthread(SB), R4
+	MOVW LR, 0(R4)
+
+	//	MOVW R13, 4(R4)
+	MOVW R5, 4(R4)
+	MOVW R11, 8(R4)
+	MOVW R0, 12(R4)
+	MOVW R1, 16(R4)
+	MOVW R2, 20(R4)
+	MOVW R3, 24(R4)
+	MOVW g, 28(R4)
+	CALL runtime·thread_schedule(SB)
+
+	// this should never happen
 	RET
 
 TEXT runtime·SWIcall(SB), NOSPLIT, $0
@@ -231,6 +254,9 @@ TEXT runtime·rt0_go(SB), NOSPLIT, $-4
 
 	// start this M
 	BL runtime·mstart(SB)
+
+	MOVW $0xbadbabe, R7
+	CALL ·trap_debug(SB)
 
 	MOVW $1234, R0
 	MOVW $1000, R1
@@ -472,6 +498,9 @@ TEXT runtime·morestack(SB), NOSPLIT, $-4-0
 	BL   setg<>(SB)
 	MOVW (g_sched+gobuf_sp)(g), R13
 	BL   runtime·newstack(SB)
+
+	MOVW $0xbadbabe, R7
+	CALL ·trap_debug(SB)
 
 	// Not reached, but make sure the return PC from the call to newstack
 	// is still in this function, and not the beginning of the next.
@@ -872,6 +901,8 @@ TEXT runtime·emptyfunc(SB), 0, $0-0
 TEXT runtime·abort(SB), NOSPLIT, $-4-0
 	MOVW $0, R0
 	MOVW (R0), R1
+	MOVW $0xbadbade, R7
+	CALL ·trap_debug(SB)
 
 // armPublicationBarrier is a native store/store barrier for ARMv7+.
 // On earlier ARM revisions, armPublicationBarrier is a no-op.

@@ -174,6 +174,9 @@ func Read(fd int, p []byte) (n int, err error) {
 }
 
 func Write(fd int, p []byte) (n int, err error) {
+	if runtime.Armhackmode > 0 {
+		print("write:")
+	}
 	if race.Enabled {
 		race.ReleaseMerge(unsafe.Pointer(&ioSync))
 	}

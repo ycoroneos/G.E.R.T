@@ -13,6 +13,9 @@ func loadvbar(vbar_addr unsafe.Pointer)
 //go:nosplit
 func invallpages()
 
+//go:nosplit
+func DMB()
+
 //This file will have all the things to do with the arm MMU and page tables
 //assume we will be addressing 4gb of memory
 //using the short descriptor page format
@@ -34,7 +37,8 @@ var kernelstart physaddr
 var kernelsize physaddr
 var bootstack physaddr
 
-const KERNEL_END = physaddr(0x10200000)
+//const KERNEL_END = physaddr(0x10200000)
+const KERNEL_END = physaddr(0x40200000)
 
 var boot_end physaddr
 
@@ -83,6 +87,17 @@ func roundup(val, upto uint32) uint32 {
 }
 
 //go:nosplit
+func verifyzero(addr uintptr, n uint32) {
+	print("inside verifyzero\n")
+	for i := 0; i < int(n); i++ {
+		test := *((*byte)(unsafe.Pointer(addr + uintptr(n))))
+		if test > 0 {
+			print("verify zero failure\n")
+		}
+	}
+}
+
+//go:nosplit
 func memclrbytes(ptr unsafe.Pointer, n uintptr)
 
 //go:nosplit
@@ -92,7 +107,10 @@ func boot_alloc(size uint32) physaddr {
 	newsize := uint32(roundup(uint32(size), 0x4))
 	boot_end = boot_end + physaddr(newsize)
 	//print("boot alloc clearing ", hex(uint32(result)), " up to ", hex(uint32(boot_end)), "\n")
+	memclr(unsafe.Pointer(uintptr(result)), uintptr(newsize))
 	memclrbytes(unsafe.Pointer(uintptr(result)), uintptr(newsize))
+	DMB()
+	verifyzero(uintptr(result), newsize)
 	return result
 }
 
@@ -237,7 +255,8 @@ func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 	//realsize := roundup(size, PGSIZE)
 	realsize := roundup(size, PGSIZE)
 	print("realsize is ", hex(realsize), "\n")
-	for i := uint32(0); i < realsize; i += PGSIZE {
+	i := uint32(0)
+	for ; i < realsize; i += PGSIZE {
 		//pgnum := pa2pgnum(physaddr(i + pa))
 		nextpa := pa + i
 		l1offset := nextpa >> 18
@@ -248,11 +267,15 @@ func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 		base_addr := (va + i)
 		*entry = base_addr | perms
 	}
+	print("mapped region va from ", hex(va), " to ", hex(va+i), "\n")
 }
 
 //go:nosplit
 func map_kernel() {
 	//install the kernel page table
+
+	//clear it first
+	//memclrbytes(unsafe.Pointer(uintptr(l1_table)), uintptr(4*4096))
 
 	//map the uart
 	map_region(0x02000000, 0x02000000, PGSIZE, 0x0)
@@ -262,15 +285,14 @@ func map_kernel() {
 
 	//identity map [kernelstart, boot_alloc(0))
 	print("kernel start is ", hex(uint32(kernelstart)), "\n")
-	//map_region(uint32(kernelstart), uint32(kernelstart), uint32(boot_alloc(0)-kernelstart), 0x0)
+
 	map_region(uint32(kernelstart), uint32(kernelstart), uint32(KERNEL_END-kernelstart), 0x0)
+
 	map_region(uint32(uint32(RAM_START)+RAM_SIZE-ONE_MEG), uint32(RAM_START)+RAM_SIZE-ONE_MEG, PGSIZE, 0x0)
-	//map_region(uint32(0x50000000), uint32(0x50000000), PGSIZE, 0x0)
 	print("boot_alloc(0) is ", hex(uint32(boot_alloc(0))), "\n")
 	//	showl1table()
 	//loadvbar(unsafe.Pointer(uintptr(vectab)))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
-	//loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	kernpgdir = (uintptr)(unsafe.Pointer(uintptr(l1_table)))
 	print("mapped kernel identity\n")
 }

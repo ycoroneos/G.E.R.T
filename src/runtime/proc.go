@@ -3458,10 +3458,16 @@ func releasep() *p {
 }
 
 func incidlelocked(v int32) {
+	if armhackmode > 0 {
+		print("incidlelocked lock sched lock\n")
+	}
 	lock(&sched.lock)
 	sched.nmidlelocked += v
 	if v > 0 {
 		checkdead()
+	}
+	if armhackmode > 0 {
+		print("incidlelocked unlock sched lock\n")
 	}
 	unlock(&sched.lock)
 }

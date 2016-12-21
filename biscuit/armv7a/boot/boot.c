@@ -35,6 +35,7 @@ extern char gobin_start[], gobin_end[];
 
 // go bin load address
 uintptr_t go_load_addr=(uintptr_t)0x10000000;
+//uintptr_t go_load_addr=(uintptr_t)0x40000000;
 
 
 static void backtrace(struct trapframe *tf)

@@ -612,6 +612,8 @@ func recovery(gp *g) {
 	gogo(&gp.sched)
 }
 
+var panicpanic = false
+
 func startpanic_m() {
 	_g_ := getg()
 	if mheap_.cachealloc.size == 0 { // very early
@@ -624,6 +626,7 @@ func startpanic_m() {
 	if armhackmode > 0 {
 		writeUnsafe([]byte("startpanic_m... "))
 	}
+	panicpanic = true
 	switch _g_.m.dying {
 	case 0:
 		_g_.m.dying = 1

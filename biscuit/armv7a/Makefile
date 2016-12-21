@@ -6,7 +6,9 @@ BUILDIR := obj
 
 GOBIN := ../../bin/go
 GOARCH := GOOS=linux GOARCH=arm GOARM=7
-GOLINKFLAGS := "-T 0x10000000 -E main.Entry"
+GOLINKFLAGS := "-E main.Entry"
+#GOLINKFLAGS := "-T 0x10000000 -E main.Entry"
+#GOLINKFLAGS := "-T 0x40000000 -E main.Entry"
 GOCMD := $(GOARCH) $(GOBIN)
 GO_SRC = $(wildcard *.go)
 GO_DIR := go/

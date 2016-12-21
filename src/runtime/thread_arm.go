@@ -3,6 +3,9 @@ package runtime
 import "unsafe"
 
 //go:nosplit
+func Threadschedule()
+
+//go:nosplit
 func RecordTrapframe()
 
 //go:nosplit
@@ -87,13 +90,14 @@ var lastrun = 0
 
 //go:nosplit
 func thread_schedule() {
-	RecordTrapframe()
+	//RecordTrapframe()
 	print("thread scheduler\n")
 	for ; lastrun < maxthreads; lastrun = (lastrun + 1) % maxthreads {
 		if threads[lastrun].state == ST_RUNNABLE {
 			threads[lastrun].state = ST_RUNNING
 			curthread = &threads[lastrun]
 			print("\t\t\t\tschedule thread ", lastrun, "\n")
+			print("\t\t\t\tLR ", hex(curthread.tf.lr), " sp ", hex(curthread.tf.sp), "\n")
 			ReplayTrapframe()
 			throw("should never be here\n")
 		}
@@ -118,7 +122,7 @@ func hack_futex_arm(uaddr *int32, op, val int32, to *timespec, uaddr2 *int32, va
 			//enter thread scheduler
 			curthread.state = ST_SLEEPING
 			curthread.futaddr = uaddrn
-			thread_schedule()
+			Threadschedule()
 			//returns with retval in r0
 			ret = int(RR0())
 		} else {
@@ -127,7 +131,22 @@ func hack_futex_arm(uaddr *int32, op, val int32, to *timespec, uaddr2 *int32, va
 			ret = eagain
 		}
 	case FUTEX_WAKE:
-		throw("cant handle futex wake yet\n")
+		woke := 0
+		for i := 0; i < maxthreads && val > 0; i++ {
+			t := &threads[i]
+			st := t.state
+			if t.futaddr == uaddrn && st == ST_SLEEPING {
+				t.state = ST_RUNNABLE
+				//t.sleepfor = 0
+				t.futaddr = 0
+				t.tf.r0 = 0
+				//t.sleepret = 0
+				val--
+				woke++
+			}
+		}
+		print("futex woke ", woke, " threads\n")
+		ret = woke
 	default:
 		print("futex op ", hex(uintptr(op)))
 		throw("unexpected futex op")

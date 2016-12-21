@@ -53,7 +53,9 @@ func trap_debug() {
 	case 142:
 		//	print("spoofing select\n")
 		//throw("select")
-		thread_schedule()
+		if !panicpanic {
+			Threadschedule()
+		}
 		PutR0(0)
 		return
 	case 174:
@@ -96,6 +98,8 @@ func trap_debug() {
 		}
 		for {
 		}
+	case 0xbadbabe:
+		throw("abort")
 	}
 	print("unpatched trap: ", trapno, "\n")
 	print("\tr0: ", hex(arg0), "\n")

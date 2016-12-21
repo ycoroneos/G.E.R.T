@@ -1,7 +1,8 @@
 package main
 
 import "runtime"
-import "fmt"
+
+//import "fmt"
 
 //import "unsafe"
 
@@ -18,16 +19,18 @@ func Entry() {
 	//runtime.SWIcall()
 	//runtime.Traphandle = unsafe.Pointer(&f)
 	runtime.Runtime_main()
+	//main()
 	//SWI()
-	for {
-	}
+	//for {
+	//	}
 }
 
 //go:nosplit
 func main() {
-	fmt.Printf("hello, world\n")
 	for {
-		uart_print([]byte("heloooo\n"))
+		uart_print([]byte("fmt print\n"))
+		//fmt.Printf("hello, world\n")
+		uart_print([]byte("fmt print done\n"))
 	}
 	SWI()
 }

@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"runtime"
 	"sync"
 	"unicode/utf8"
 )
@@ -184,6 +185,9 @@ func (p *pp) Write(b []byte) (ret int, err error) {
 // Fprintf formats according to a format specifier and writes to w.
 // It returns the number of bytes written and any write error encountered.
 func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
+	if runtime.Armhackmode > 0 {
+		print("fprintf\n")
+	}
 	p := newPrinter()
 	p.doPrintf(format, a)
 	n, err = w.Write(p.buf)
@@ -194,6 +198,9 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
 // Printf formats according to a format specifier and writes to standard output.
 // It returns the number of bytes written and any write error encountered.
 func Printf(format string, a ...interface{}) (n int, err error) {
+	if runtime.Armhackmode > 0 {
+		print("Fprintf\n")
+	}
 	return Fprintf(os.Stdout, format, a...)
 }
 

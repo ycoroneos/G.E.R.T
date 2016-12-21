@@ -809,6 +809,9 @@ func round2(x int32) int32 {
 // g->atomicstatus will be Grunning or Gscanrunning upon entry.
 // If the GC is trying to stop this g then it will set preemptscan to true.
 func newstack() {
+	if armhackmode > 0 {
+		print("newstack\n")
+	}
 	thisg := getg()
 	// TODO: double check all gp. shouldn't be getg().
 	if thisg.m.morebuf.g.ptr().stackguard0 == stackFork {
