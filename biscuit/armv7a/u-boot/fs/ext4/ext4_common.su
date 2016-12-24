@@ -1,14 +1,14 @@
 ext4_common.c:50:10:ext4fs_div_roundup	16	static
-ext4_common.c:59:6:put_ext4	64	dynamic
+ext4_common.c:59:6:put_ext4	72	dynamic
 ext4_common.c:189:5:ext4fs_set_block_bmap	12	static
 ext4_common.c:225:6:ext4fs_reset_block_bmap	12	static
 ext4_common.c:255:5:ext4fs_set_inode_bmap	8	static
 ext4_common.c:280:6:ext4fs_reset_inode_bmap	8	static
 ext4_common.c:301:5:ext4fs_checksum_update	24	static
-ext4_common.c:855:10:ext4fs_get_new_blk_no	48	static
+ext4_common.c:855:10:ext4fs_get_new_blk_no	40	static
 ext4_common.c:981:5:ext4fs_get_new_inode_no	48	static
 ext4_common.c:1381:6:ext4fs_allocate_blocks	72	static
-ext4_common.c:1474:5:ext4fs_read_inode	88	static
+ext4_common.c:1474:5:ext4fs_read_inode	80	static
 ext4_common.c:633:5:ext4fs_iget	8	static
 ext4_common.c:1505:10:read_allocated_block	48	static
 ext4_common.c:352:6:ext4fs_update_parent_dentry	64	static

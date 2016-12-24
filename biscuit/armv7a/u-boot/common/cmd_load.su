@@ -5,7 +5,7 @@ cmd_load.c:949:12:getcxmodem	8	static
 cmd_load.c:954:14:load_serial_ymodem	1056	static
 cmd_load.c:626:13:bin_data_char	0	static
 cmd_load.c:556:12:chk1.constprop	0	static
-cmd_load.c:566:13:s1_sendpacket.constprop	16	static
+cmd_load.c:566:13:s1_sendpacket.constprop	8	static
 cmd_load.c:129:14:load_serial	832	static
 cmd_load.c:39:12:do_load_serial	16	static
 cmd_load.c:417:12:do_load_serial_bin	56	static

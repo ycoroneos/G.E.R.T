@@ -2,7 +2,7 @@ fdt_sw.c:13:12:_fdt_sw_check_header	0	static
 fdt_sw.c:28:14:_fdt_grab_space	12	static
 fdt_sw.c:43:5:fdt_create	16	static
 fdt_sw.c:65:5:fdt_resize	32	static
-fdt_sw.c:97:5:fdt_add_reservemap_entry	24	static
+fdt_sw.c:97:5:fdt_add_reservemap_entry	32	static
 fdt_sw.c:120:5:fdt_finish_reservemap	16	static
 fdt_sw.c:125:5:fdt_begin_node	24	static
 fdt_sw.c:141:5:fdt_end_node	16	static

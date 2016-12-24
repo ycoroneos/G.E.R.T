@@ -1,4 +1,4 @@
-cmd_arch/arm/cpu/armv7/cache_v7.o := arm-none-eabi-gcc -Wp,-MD,arch/arm/cpu/armv7/.cache_v7.o.d  -nostdinc -isystem /usr/lib/gcc/arm-none-eabi/5.4.0/include -Iinclude    -I./arch/arm/include -include ./include/linux/kconfig.h -D__KERNEL__ -D__UBOOT__ -DCONFIG_SYS_TEXT_BASE=0x17800000 -Wall -Wstrict-prototypes -Wno-format-security -fno-builtin -ffreestanding -Os -fno-stack-protector -fno-delete-null-pointer-checks -g -fstack-usage -Wno-format-nonliteral -Werror=date-time -D__ARM__ -Wa,-mimplicit-it=always -mthumb -mthumb-interwork -mabi=aapcs-linux -mword-relocations -mno-unaligned-access -ffunction-sections -fdata-sections -fno-common -ffixed-r9 -msoft-float -pipe -march=armv7-a    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(cache_v7)"  -D"KBUILD_MODNAME=KBUILD_STR(cache_v7)" -c -o arch/arm/cpu/armv7/cache_v7.o arch/arm/cpu/armv7/cache_v7.c
+cmd_arch/arm/cpu/armv7/cache_v7.o := arm-none-eabi-gcc -Wp,-MD,arch/arm/cpu/armv7/.cache_v7.o.d  -nostdinc -isystem /usr/lib/gcc/arm-none-eabi/4.9.3/include -Iinclude    -I./arch/arm/include -include ./include/linux/kconfig.h -D__KERNEL__ -D__UBOOT__ -DCONFIG_SYS_TEXT_BASE=0x17800000 -Wall -Wstrict-prototypes -Wno-format-security -fno-builtin -ffreestanding -Os -fno-stack-protector -fno-delete-null-pointer-checks -g -fstack-usage -Wno-format-nonliteral -Werror=date-time -D__ARM__ -Wa,-mimplicit-it=always -mthumb -mthumb-interwork -mabi=aapcs-linux -mword-relocations -mno-unaligned-access -ffunction-sections -fdata-sections -fno-common -ffixed-r9 -msoft-float -pipe -march=armv7-a    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(cache_v7)"  -D"KBUILD_MODNAME=KBUILD_STR(cache_v7)" -c -o arch/arm/cpu/armv7/cache_v7.o arch/arm/cpu/armv7/cache_v7.c
 
 source_arch/arm/cpu/armv7/cache_v7.o := arch/arm/cpu/armv7/cache_v7.c
 
@@ -14,7 +14,7 @@ deps_arch/arm/cpu/armv7/cache_v7.o := \
   arch/arm/include/asm/types.h \
     $(wildcard include/config/arm64.h) \
     $(wildcard include/config/phys/64bit.h) \
-  /usr/lib/gcc/arm-none-eabi/5.4.0/include/stdbool.h \
+  /usr/lib/gcc/arm-none-eabi/4.9.3/include/stdbool.h \
   include/common.h \
     $(wildcard include/config/pci.h) \
     $(wildcard include/config/4xx.h) \
@@ -370,7 +370,7 @@ deps_arch/arm/cpu/armv7/cache_v7.o := \
   include/linux/compiler-gcc.h \
     $(wildcard include/config/arch/supports/optimized/inlining.h) \
     $(wildcard include/config/optimize/inlining.h) \
-  include/linux/compiler-gcc5.h \
+  include/linux/compiler-gcc4.h \
     $(wildcard include/config/arch/use/builtin/bswap.h) \
   arch/arm/include/asm/bitops.h \
   arch/arm/include/asm/proc-armv/system.h \
@@ -389,7 +389,7 @@ deps_arch/arm/cpu/armv7/cache_v7.o := \
   arch/arm/include/asm/ptrace.h \
   arch/arm/include/asm/proc-armv/ptrace.h \
     $(wildcard include/config/arm/thumb.h) \
-  /usr/lib/gcc/arm-none-eabi/5.4.0/include/stdarg.h \
+  /usr/lib/gcc/arm-none-eabi/4.9.3/include/stdarg.h \
   include/linux/kernel.h \
   include/part.h \
     $(wildcard include/config/lba48.h) \
@@ -437,7 +437,7 @@ deps_arch/arm/cpu/armv7/cache_v7.o := \
     $(wildcard include/config/fit/best/match.h) \
     $(wildcard include/config/android/boot/image.h) \
   include/compiler.h \
-  /usr/lib/gcc/arm-none-eabi/5.4.0/include/stddef.h \
+  /usr/lib/gcc/arm-none-eabi/4.9.3/include/stddef.h \
   arch/arm/include/asm/byteorder.h \
   include/linux/byteorder/little_endian.h \
   include/linux/byteorder/swab.h \

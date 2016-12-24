@@ -1,7 +1,7 @@
 fdt_rw.c:17:12:_fdt_blocks_misordered	8	static
 fdt_rw.c:56:12:_fdt_splice	24	static
 fdt_rw.c:69:12:_fdt_splice_mem_rsv	16	static
-fdt_rw.c:82:12:_fdt_splice_struct	24	static
+fdt_rw.c:82:12:_fdt_splice_struct	16	static
 fdt_rw.c:353:13:_fdt_packblocks	24	static
 fdt_rw.c:109:12:_fdt_find_add_string	24	static
 fdt_rw.c:182:12:_fdt_add_property	24	static

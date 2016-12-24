@@ -7,7 +7,7 @@ fdt_support.c:63:5:fdt_getprop_u32_default	24	static
 fdt_support.c:87:5:fdt_find_and_setprop	32	static
 fdt_support.c:111:5:fdt_find_or_add_subnode	24	static
 fdt_support.c:203:5:fdt_root	24	static
-fdt_support.c:229:5:fdt_initrd	72	static
+fdt_support.c:229:5:fdt_initrd	64	static
 fdt_support.c:289:5:fdt_chosen	24	static
 fdt_support.c:320:6:do_fixup_by_path	24	static
 fdt_support.c:336:6:do_fixup_by_path_u32	24	static
@@ -18,10 +18,10 @@ fdt_support.c:391:6:do_fixup_by_compat_u32	24	static
 fdt_support.c:431:5:fdt_fixup_memory_banks	64	static
 fdt_support.c:477:5:fdt_fixup_memory	16	static
 fdt_support.c:482:6:fdt_fixup_ethernet	88	static
-fdt_support.c:530:5:fdt_shrink_to_minimum	48	static
+fdt_support.c:530:5:fdt_shrink_to_minimum	40	static
 fdt_support.c:720:5:fdt_increase_size	0	static
 fdt_support.c:939:6:fdt_del_node_and_alias	16	static
-fdt_support.c:1176:5:fdt_translate_address	120	static
+fdt_support.c:1176:5:fdt_translate_address	112	static
 fdt_support.c:1190:5:fdt_node_offset_by_compat_reg	32	static
 fdt_support.c:1211:5:fdt_alloc_phandle	16	static
 fdt_support.c:1231:5:fdt_set_phandle	40	static

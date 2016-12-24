@@ -1,4 +1,4 @@
-cmd_lib/libfdt/fdt_sw.o := arm-none-eabi-gcc -Wp,-MD,lib/libfdt/.fdt_sw.o.d  -nostdinc -isystem /usr/lib/gcc/arm-none-eabi/5.4.0/include -Iinclude    -I./arch/arm/include -include ./include/linux/kconfig.h -D__KERNEL__ -D__UBOOT__ -DCONFIG_SYS_TEXT_BASE=0x17800000 -Wall -Wstrict-prototypes -Wno-format-security -fno-builtin -ffreestanding -Os -fno-stack-protector -fno-delete-null-pointer-checks -g -fstack-usage -Wno-format-nonliteral -Werror=date-time -D__ARM__ -Wa,-mimplicit-it=always -mthumb -mthumb-interwork -mabi=aapcs-linux -mword-relocations -mno-unaligned-access -ffunction-sections -fdata-sections -fno-common -ffixed-r9 -msoft-float -pipe -march=armv7-a    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(fdt_sw)"  -D"KBUILD_MODNAME=KBUILD_STR(fdt_sw)" -c -o lib/libfdt/fdt_sw.o lib/libfdt/fdt_sw.c
+cmd_lib/libfdt/fdt_sw.o := arm-none-eabi-gcc -Wp,-MD,lib/libfdt/.fdt_sw.o.d  -nostdinc -isystem /usr/lib/gcc/arm-none-eabi/4.9.3/include -Iinclude    -I./arch/arm/include -include ./include/linux/kconfig.h -D__KERNEL__ -D__UBOOT__ -DCONFIG_SYS_TEXT_BASE=0x17800000 -Wall -Wstrict-prototypes -Wno-format-security -fno-builtin -ffreestanding -Os -fno-stack-protector -fno-delete-null-pointer-checks -g -fstack-usage -Wno-format-nonliteral -Werror=date-time -D__ARM__ -Wa,-mimplicit-it=always -mthumb -mthumb-interwork -mabi=aapcs-linux -mword-relocations -mno-unaligned-access -ffunction-sections -fdata-sections -fno-common -ffixed-r9 -msoft-float -pipe -march=armv7-a    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(fdt_sw)"  -D"KBUILD_MODNAME=KBUILD_STR(fdt_sw)" -c -o lib/libfdt/fdt_sw.o lib/libfdt/fdt_sw.c
 
 source_lib/libfdt/fdt_sw.o := lib/libfdt/fdt_sw.c
 
@@ -6,7 +6,7 @@ deps_lib/libfdt/fdt_sw.o := \
   include/libfdt_env.h \
   include/compiler.h \
     $(wildcard include/config/use/stdint.h) \
-  /usr/lib/gcc/arm-none-eabi/5.4.0/include/stddef.h \
+  /usr/lib/gcc/arm-none-eabi/4.9.3/include/stddef.h \
   include/linux/string.h \
   include/linux/types.h \
     $(wildcard include/config/uid16.h) \
@@ -16,7 +16,7 @@ deps_lib/libfdt/fdt_sw.o := \
   arch/arm/include/asm/types.h \
     $(wildcard include/config/arm64.h) \
     $(wildcard include/config/phys/64bit.h) \
-  /usr/lib/gcc/arm-none-eabi/5.4.0/include/stdbool.h \
+  /usr/lib/gcc/arm-none-eabi/4.9.3/include/stdbool.h \
   arch/arm/include/asm/string.h \
     $(wildcard include/config/use/arch/memcpy.h) \
     $(wildcard include/config/use/arch/memset.h) \
@@ -291,7 +291,7 @@ deps_lib/libfdt/fdt_sw.o := \
   include/linux/compiler-gcc.h \
     $(wildcard include/config/arch/supports/optimized/inlining.h) \
     $(wildcard include/config/optimize/inlining.h) \
-  include/linux/compiler-gcc5.h \
+  include/linux/compiler-gcc4.h \
     $(wildcard include/config/arch/use/builtin/bswap.h) \
   include/linux/byteorder/swab.h \
   include/linux/byteorder/generic.h \

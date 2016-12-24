@@ -7,7 +7,7 @@ ext4_journal.c:202:6:print_revoke_blks	16	static
 ext4_journal.c:236:6:ext4fs_push_revoke_blk	32	static
 ext4_journal.c:265:6:ext4fs_free_revoke_blks	16	static
 ext4_journal.c:288:5:check_blknr_for_revoke	16	static
-ext4_journal.c:328:6:recover_transaction	168	static
+ext4_journal.c:328:6:recover_transaction	160	static
 ext4_journal.c:382:6:print_jrnl_status	0	static
 ext4_journal.c:390:5:ext4fs_check_journal_state	168	static
 ext4_journal.c:32:5:ext4fs_init_journal	40	static

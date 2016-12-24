@@ -22,6 +22,6 @@ cmd_pxe.c:276:12:get_pxelinux_path	152	static
 cmd_pxe.c:370:1:do_pxe_get	56	static
 cmd_pxe.c:425:12:get_relfile_envaddr	24	static
 cmd_pxe.c:617:12:label_boot	1232	static
-cmd_pxe.c:1523:13:handle_pxe_menu	56	static
+cmd_pxe.c:1523:13:handle_pxe_menu	48	static
 cmd_pxe.c:1566:1:do_pxe_boot	24	static
 cmd_pxe.c:1645:12:do_sysboot	32	static

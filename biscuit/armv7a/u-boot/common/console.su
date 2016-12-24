@@ -1,7 +1,7 @@
 console.c:102:12:console_setfile	16	static
 console.c:281:5:serial_printf	656	static
-console.c:471:6:putc	0	static
 console.c:514:6:puts	0	static
+console.c:471:6:putc	0	static
 console.c:299:5:fgetc	0	static
 console.c:371:5:getc	0	static
 console.c:330:5:ftstc	0	static

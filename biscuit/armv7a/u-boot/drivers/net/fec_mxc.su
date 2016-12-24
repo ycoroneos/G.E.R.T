@@ -5,7 +5,7 @@ fec_mxc.c:190:12:fec_phy_read	16	static
 fec_mxc.c:595:13:fec_halt	16	static
 fec_mxc.c:637:12:fec_send	24	static
 fec_mxc.c:129:13:fec_mii_setspeed	8	static
-fec_mxc.c:534:12:fec_init	32	static
+fec_mxc.c:534:12:fec_init	24	static
 fec_mxc.c:782:12:fec_recv	1600	static
 fec_mxc.c:971:5:fec_probe	48	static
 fec_mxc.c:1061:17:fec_get_miibus	16	static

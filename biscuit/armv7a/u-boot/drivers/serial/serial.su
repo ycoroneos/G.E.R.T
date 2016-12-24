@@ -7,7 +7,7 @@ serial.c:288:5:serial_stub_tstc	0	static
 serial.c:382:30:get_current	8	static
 serial.c:33:13:serial_null	0	static
 serial.c:169:6:serial_register	0	static
-serial.c:302:6:serial_stdio_init	96	static
+serial.c:302:6:serial_stdio_init	88	static
 serial.c:339:5:serial_assign	16	static
 serial.c:201:6:serial_initialize	8	static
 serial.c:359:6:serial_reinit_all	8	static

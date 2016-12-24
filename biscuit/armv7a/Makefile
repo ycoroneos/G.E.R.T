@@ -4,11 +4,9 @@ SDCARD?=INVALID
 GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
 
-GOBIN := ../../bin/go
+GOBIN := ../../golang1.7/bin/go
 GOARCH := GOOS=linux GOARCH=arm GOARM=7
-GOLINKFLAGS := "-E main.Entry"
-#GOLINKFLAGS := "-T 0x10000000 -E main.Entry"
-#GOLINKFLAGS := "-T 0x40000000 -E main.Entry"
+GOLINKFLAGS := "-T 0x11000000 -E main.Entry"
 GOCMD := $(GOARCH) $(GOBIN)
 GO_SRC = $(wildcard *.go)
 GO_DIR := go/
@@ -21,7 +19,8 @@ AS_OBJ := $(patsubst boot/%.s,$(BUILDIR)/%.s.o,$(AS_SRC))
 BOOT_OBJ := $(AS_OBJ) $(C_OBJ)
 BOOT_TARGET := $(BUILDIR)/bootloader
 
-QEMU := qemu-system-arm
+#QEMU := qemu-system-arm
+QEMU := ~/qemu/build/arm-softmmu/qemu-system-arm
 
 CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
           -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/
@@ -67,11 +66,13 @@ clean:
 	-rm -rf $(BUILDIR)
 
 gdb:
-	$(GCCPREFIX)gdb
+	$(GCCPREFIX)gdb -x gdb-trace.script > output
+qemud: all
+	$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 qemu: all
-	$(QEMU) -s -S -M raspi2 -smp 4 -global bcm2835-fb.pixo=0 -bios $(GO_OBJ)_hacked.bin -serial stdio
+	$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic
 runtime:
-	cd ../../src && ./rebuild_arm.sh
+	cd ../../golang1.7/src && ./rebuild_arm.sh
 runtimeq:
 	cd ../src && ./rebuild_arm_quick.sh
 bytecode: test.s

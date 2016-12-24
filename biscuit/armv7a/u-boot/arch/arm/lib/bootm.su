@@ -1,8 +1,8 @@
 bootm.c:262:13:boot_jump_linux	24	static
-bootm.c:45:6:arch_lmb_reserve	0	static
+bootm.c:45:6:arch_lmb_reserve	8	static
 bootm.c:189:13:setup_board_tags	0	static
 bootm.c:204:13:boot_prep_linux	24	static
 bootm.c:329:5:do_bootm_linux	24	static
-bootm.c:362:5:bootz_setup	8	static
+bootm.c:362:5:bootz_setup	16	static
 bootm.c:384:6:boot_prep_vxworks	8	static
 bootm.c:399:6:boot_jump_vxworks	0	static

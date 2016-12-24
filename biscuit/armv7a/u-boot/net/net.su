@@ -1,4 +1,3 @@
-net.c:351:13:net_clear_handlers	0	static
 net.c:657:13:start_again_timeout_handler	0	static
 net.c:721:13:dummy_handler	0	static
 net.c:229:12:on_ipaddr	8	static
@@ -6,10 +5,11 @@ net.c:241:12:on_gatewayip	8	static
 net.c:253:12:on_netmask	8	static
 net.c:265:12:on_serverip	8	static
 net.c:343:13:net_init_loop	0	static
+net.c:351:13:net_clear_handlers	0	static
 net.c:319:6:net_auto_load	8	static
 net.c:363:6:net_init	8	static
 net.c:662:5:net_start_again	16	static
-net.c:394:5:net_loop	48	static
+net.c:394:5:net_loop	32	static
 net.c:727:11:net_get_udp_handler	0	static
 net.c:732:6:net_set_udp_handler	0	static
 net.c:741:11:net_get_arp_handler	0	static

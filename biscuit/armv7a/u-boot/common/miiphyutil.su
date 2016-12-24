@@ -1,5 +1,5 @@
 miiphyutil.c:68:12:legacy_miiphy_read	16	static
-miiphyutil.c:79:12:legacy_miiphy_write	4	static
+miiphyutil.c:79:12:legacy_miiphy_write	8	static
 miiphyutil.c:39:17:miiphy_get_dev_by_name	16	static
 miiphyutil.c:62:6:miiphy_init	0	static
 miiphyutil.c:141:17:mdio_alloc	8	static

@@ -14,14 +14,14 @@ ipu_common.c:118:13:clk_get_parent	0	static
 ipu_common.c:126:5:clk_set_rate	8	static
 ipu_common.c:133:6:clk_round_rate	0	static
 ipu_common.c:141:5:clk_set_parent	0	static
-ipu_common.c:415:5:ipu_probe	24	static
+ipu_common.c:415:5:ipu_probe	16	static
 ipu_common.c:479:6:ipu_dump_registers	0	static
 ipu_common.c:525:9:ipu_init_channel	24	static
 ipu_common.c:614:6:ipu_uninit_channel	32	static
 ipu_common.c:1013:9:ipu_enable_channel	24	static
 ipu_common.c:1057:6:ipu_clear_buffer_ready	8	static
-ipu_common.c:1091:9:ipu_disable_channel	32	static
+ipu_common.c:1091:9:ipu_disable_channel	24	static
 ipu_common.c:1145:10:bytes_per_pixel	0	static
-ipu_common.c:957:9:ipu_init_channel_buffer	104	static
+ipu_common.c:957:9:ipu_init_channel_buffer	96	static
 ipu_common.c:1178:19:format_to_colorspace	0	static
 ipu_common.c:1203:5:ipu_set_ldb_clock	0	static

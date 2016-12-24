@@ -11,7 +11,7 @@ nfs.c:260:13:nfs_umountall_req	4104	static
 nfs.c:305:13:nfs_lookup_req	4120	static
 nfs.c:333:13:nfs_read_req	4120	static
 nfs.c:285:13:nfs_readlink_req	4112	static
-nfs.c:528:12:nfs_read_reply.isra.0	2064	static
+nfs.c:528:12:nfs_read_reply.isra.2	2064	static
 nfs.c:356:13:nfs_send	72	static
 nfs.c:584:13:nfs_handler	16	static
 nfs.c:570:13:nfs_timeout_handler	8	static

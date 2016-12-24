@@ -160,8 +160,6 @@ L_bss_end:
 L_main_func:
 	.long main
 
-	// L_reset_handler:
-	//	.long reset_interrupt
 
 L_undefined_handler:
 	push {r0-r12}
@@ -172,10 +170,6 @@ L_undefined_handler:
 	mov  r0, sp
 	b    trap
 
-	//	push #0x1
-	//	b _alltraps
-
-	//	.long undefined_interrupt
 
 L_svc_handler:
 	push {r0-r12}
@@ -186,11 +180,6 @@ L_svc_handler:
 	mov  r0, sp
 	b    trap
 
-	//	push #0x2
-	//	b    _alltraps
-
-	//	.long svc_interrupt
-
 L_prefetch_abort_handler:
 	push {r0-r12}
 	push {sp}
@@ -199,11 +188,6 @@ L_prefetch_abort_handler:
 	push {r0}
 	mov  r0, sp
 	b    trap
-
-	//	push #0x3
-	//	b    _alltraps
-
-	//	.long prefetch_abort_interrupt
 
 L_data_abort_handler:
 	push {r0-r12}
@@ -214,10 +198,6 @@ L_data_abort_handler:
 	mov  r0, sp
 	b    trap
 
-	//	push #0x4
-	//	b    _alltraps
-
-	//	.long data_abort_interrupt
 
 L_irq_handler:
 	push {r0-r12}
@@ -228,10 +208,6 @@ L_irq_handler:
 	mov  r0, sp
 	b    trap
 
-	//	push #0x5
-	//	b    _alltraps
-
-	//	.long irq_interrupt
 
 L_fiq_handler:
 	push {r0-r12}
@@ -242,23 +218,11 @@ L_fiq_handler:
 	mov  r0, sp
 	b    trap
 
-	//	push #0x6
-	//	b    _alltraps
-
-	//	.long fiq_interrupt
-
-	// _alltraps:
-	//	push {R0-R10}
-	//	push lr
-	//	push sp
-	//	mov  r0, sp
-	//	b    trap
-
 	.globl  gobin_start
 	.globl  gobin_end
 	.balign 0x1000
 
 gobin_start:
-	.incbin "obj/kernel_hacked.bin"
+	.incbin "obj/kernel.elf"
 
 gobin_end:

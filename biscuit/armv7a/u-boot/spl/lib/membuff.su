@@ -11,7 +11,7 @@ membuff.c:212:5:membuff_avail	40	static
 membuff.c:229:5:membuff_size	0	static
 membuff.c:234:6:membuff_makecontig	16	static
 membuff.c:285:5:membuff_free	16	static
-membuff.c:291:5:membuff_readline	24	static
+membuff.c:291:5:membuff_readline	20	static
 membuff.c:326:5:membuff_extend_by	32	static
 membuff.c:362:6:membuff_init	0	static
 membuff.c:369:5:membuff_new	16	static

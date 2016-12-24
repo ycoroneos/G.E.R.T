@@ -1,4 +1,4 @@
 cmd_itest.c:52:13:evalexp	16	static
 cmd_itest.c:86:15:evalstr	0	static
-cmd_itest.c:147:12:binary_test	48	static
+cmd_itest.c:147:12:binary_test	40	static
 cmd_itest.c:172:12:do_itest	8	static

@@ -1,6 +1,9 @@
 bootstage.h:344:19:bootstage_relocate	0	static
+board_r.c:104:12:initr_trace	0	static
 board_r.c:113:12:initr_reloc	0	static
 board_r.c:139:12:initr_reloc_global_data	0	static
+board_r.c:271:12:initr_barrier	0	static
+board_r.c:295:12:initr_console_record	0	static
 board_r.c:333:12:power_init_board	0	static
 board_r.c:338:12:initr_announce	0	static
 board_r.c:724:12:run_main_loop	8	static
@@ -15,9 +18,6 @@ board_r.c:325:12:initr_bootstage	8	static
 board_r.c:313:12:initr_dm	0	static
 board_r.c:280:12:initr_malloc	8	static
 board_r.c:126:12:initr_caches	8	static
-board_r.c:295:12:initr_console_record	0	static
-board_r.c:104:12:initr_trace	0	static
-board_r.c:271:12:initr_barrier	0	static
 board_r.c:76:12:board_flash_wp_on	0	static
 board_r.c:86:13:cpu_secondary_init_r	0	static
 board_r.c:90:12:initr_secondary_cpu	8	static

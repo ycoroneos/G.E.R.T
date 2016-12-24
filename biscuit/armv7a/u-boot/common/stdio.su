@@ -6,7 +6,7 @@ stdio.c:72:12:stdio_serial_getc	0	static
 stdio.c:67:13:stdio_serial_puts	0	static
 stdio.c:62:13:stdio_serial_putc	0	static
 stdio.c:119:19:stdio_get_list	0	static
-stdio.c:124:19:stdio_get_by_name	24	static
+stdio.c:124:19:stdio_get_by_name	16	static
 stdio.c:141:19:stdio_clone	16	static
 stdio.c:158:5:stdio_register_dev	8	static
 stdio.c:172:5:stdio_register	0	static

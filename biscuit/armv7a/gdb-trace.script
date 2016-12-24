@@ -1,0 +1,9 @@
+target remote :1234
+symbol-file obj/kernel.elf
+break main.init
+continue
+set $i=0
+while ($i<1000)
+si
+end
+quit

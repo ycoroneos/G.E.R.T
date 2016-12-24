@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "console.h"
+#include "elf.h"
 
 struct trapframe {
   uint32_t trapno;
@@ -123,32 +124,67 @@ void trap(struct trapframe *tf)
 }
 
 
+//static void load_go()
+//{
+//  size_t binsize = gobin_end - gobin_start;
+//  cprintf("go bin size : 0x%x\r\n", binsize);
+//  boot_memset((char *)(RAM_START + RAM_SIZE - ONE_MEG), 0, ONE_MEG);
+//  boot_memset((char *)go_load_addr, 0, binsize+stacksize+ONE_MEG);
+//  boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
+//  cprintf("loaded at 0x%x\r\n", go_load_addr);
+//  cprintf("first 10 words are:\r\n");
+//  uint32_t *in = (uint32_t *)(gobin_start);
+//  uint32_t *out = (uint32_t *)(go_load_addr);
+//  for (unsigned i=0; i<10; ++i)
+//  {
+//    cprintf("\t0x%x vs 0x%x\r\n", out[i], in[i]);
+//  }
+//  uint32_t nwords = binsize /4;
+//  cprintf("verifying: ");
+//  for (unsigned i=0; i<nwords; ++i)
+//  {
+//    if (in[i] != out[i])
+//    {
+//      cprintf("mismatch at address 0x%x\r\n", &out[i]);
+//      panic("verify failed");
+//    }
+//  }
+//  cprintf(" complete!\r\n");
+//}
+
 static void load_go()
 {
-  size_t binsize = gobin_end - gobin_start;
-  cprintf("go bin size : 0x%x\r\n", binsize);
-  boot_memset((char *)(RAM_START + RAM_SIZE - ONE_MEG), 0, ONE_MEG);
-  boot_memset((char *)go_load_addr, 0, binsize+stacksize+ONE_MEG);
-  boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
-  cprintf("loaded at 0x%x\r\n", go_load_addr);
-  cprintf("first 10 words are:\r\n");
-  uint32_t *in = (uint32_t *)(gobin_start);
-  uint32_t *out = (uint32_t *)(go_load_addr);
-  for (unsigned i=0; i<10; ++i)
+  struct Elf *elfhdr=(struct Elf*)gobin_start;
+  struct Proghdr *ph, *eph;
+
+  cprintf("elf lives at %x\r\n", gobin_start);
+
+  //check if valid elf
+  if (elfhdr->e_magic != ELF_MAGIC)
   {
-    cprintf("\t0x%x vs 0x%x\r\n", out[i], in[i]);
+      panic("bad elf header\r\n");
   }
-  uint32_t nwords = binsize /4;
-  cprintf("verifying: ");
-  for (unsigned i=0; i<nwords; ++i)
+
+  ph=(struct Proghdr *) ((uint8_t *) elfhdr + elfhdr->e_phoff);
+  eph=ph+elfhdr->e_phnum;
+  uint32_t elfentry=elfhdr->e_entry;
+  cprintf("elf entry is %x\r\n", elfentry);
+  go_load_addr = (uintptr_t)elfentry;
+  for (; ph<eph; ph++)
   {
-    if (in[i] != out[i])
-    {
-      cprintf("mismatch at address 0x%x\r\n", &out[i]);
-      panic("verify failed");
-    }
+      if (ph->p_type==ELF_PROG_LOAD)
+      {
+          uint32_t offset=ph->p_offset;
+          uint32_t progsize=ph->p_filesz; //the actual program size in bytes
+          uint32_t totalsize=ph->p_memsz; //total space required in bytes
+          uint32_t dst=ph->p_va;
+          uint32_t pa=dst;
+          cprintf("p_align is %d\r\n", ph->p_align);
+          cprintf("putting va %x at pa %x with size %x\r\n", dst, (uint32_t)pa, totalsize);
+          boot_memcpy((void*)pa, ((void*)elfhdr+offset), progsize); //copy data to pa
+          boot_memset((void*)(pa+progsize), 0, totalsize-progsize); //zero out the rest
+      }
   }
-  cprintf(" complete!\r\n");
 }
 
 int main()
@@ -165,28 +201,24 @@ int main()
   cprintf("float multiplication %x\r\n", b);
   //load our kernel
   load_go();
-  uint32_t kernel_start = go_load_addr;
-  uint32_t kernel_size = gobin_end - gobin_start + stacksize;
-  asm volatile("mov r0, %0"
+  uint32_t kernel_start = gobin_start;
+//  uint32_t kernel_size = gobin_end - gobin_start + stacksize;
+//  asm volatile("mov r0, %0"
+//      :
+//      :"r"(kernel_start)
+//      :"r0"
+//      );
+  asm volatile("mov r5, %0"
       :
       :"r"(kernel_start)
-      :"r0"
+      :"r5"
       );
-  asm volatile("mov r1, %0"
-      :
-      :"r"(kernel_size)
-      :"r0"
-      );
-//  asm volatile("mov sp, %0"
-//      :
-//      :"r"((kernel_start + kernel_size) & 0xFFFFFFF0)
-//      :"sp"
-//      );
   asm volatile("mov sp, %0"
       :
       :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
       :"sp"
       );
+  cprintf("enter go\n");
   ((void (*)(void)) (go_load_addr))();
   panic("should not be here");
 }

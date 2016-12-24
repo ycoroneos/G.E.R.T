@@ -2,7 +2,7 @@ package main
 
 import "runtime"
 
-//import "fmt"
+import "fmt"
 
 //import "unsafe"
 
@@ -14,23 +14,25 @@ func SWI()
 
 //go:nosplit
 func Entry() {
-	//*(*uint32)(unsafe.Pointer(uintptr(UART1_UTXD))) = 97
-	//uart_putc(97)
-	//runtime.SWIcall()
-	//runtime.Traphandle = unsafe.Pointer(&f)
+	runtime.Armhackmode = 1
 	runtime.Runtime_main()
-	//main()
-	//SWI()
-	//for {
-	//	}
 }
 
 //go:nosplit
 func main() {
+	fmt.Println("hi from fmt")
+	channel := make(chan string, 1)
+	channel <- "channel test pass"
+	val := <-channel
+	fmt.Println(val)
+	go func(resp chan string) {
+		fmt.Println("goprint from inside a go routine!")
+		resp <- "done"
+	}(channel)
+	<-channel
+	fmt.Println("start GC")
+	runtime.GC()
+	fmt.Println("done GC, sleeping forever")
 	for {
-		uart_print([]byte("fmt print\n"))
-		//fmt.Printf("hello, world\n")
-		uart_print([]byte("fmt print done\n"))
 	}
-	SWI()
 }

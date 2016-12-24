@@ -1,5 +1,5 @@
 ddr.c:176:6:mx6dq_dram_iocfg	16	static
 ddr.c:254:6:mx6sdl_dram_iocfg	12	static
-ddr.c:411:6:mx6_lpddr2_cfg	80	static
+ddr.c:411:6:mx6_lpddr2_cfg	88	static
 ddr.c:641:6:mx6_ddr3_cfg	96	static
 ddr.c:948:6:mx6_dram_cfg	8	static
