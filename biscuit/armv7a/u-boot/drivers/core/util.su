@@ -1,0 +1,3 @@
+util.c:10:6:dm_warn	16	static
+util.c:19:6:dm_dbg	16	static
+util.c:28:5:list_count_items	0	static
