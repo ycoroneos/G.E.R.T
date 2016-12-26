@@ -70,7 +70,7 @@ gdb:
 qemud: all
 	$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 qemu: all
-	$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic
+	$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -smp 4
 runtime:
 	cd ../../golang1.7/src && ./rebuild_arm.sh
 runtimeq:

@@ -87,14 +87,18 @@ func gwrite(b []byte) {
 		return
 	}
 	recordForPanic(b)
-	gp := getg()
-	if gp == nil || gp.writebuf == nil {
+	if Armhackmode > 0 {
 		writeErr(b)
-		return
-	}
+	} else {
+		gp := getg()
+		if gp == nil || gp.writebuf == nil {
+			writeErr(b)
+			return
+		}
 
-	n := copy(gp.writebuf[len(gp.writebuf):cap(gp.writebuf)], b)
-	gp.writebuf = gp.writebuf[:len(gp.writebuf)+n]
+		n := copy(gp.writebuf[len(gp.writebuf):cap(gp.writebuf)], b)
+		gp.writebuf = gp.writebuf[:len(gp.writebuf)+n]
+	}
 }
 
 func printsp() {

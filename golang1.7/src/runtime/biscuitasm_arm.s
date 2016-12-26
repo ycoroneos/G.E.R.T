@@ -199,3 +199,37 @@ _zero:
 
 	// return
 	B (R6)
+
+TEXT runtime·cpunum(SB), NOSPLIT, $0
+	// first read cpu id into r0
+	WORD $0xee100fb0   // mrc	15, 0, r0, cr0, cr0, {5}
+	AND  $3, R0        // get rid of everything except cpuid
+	MOVW R0, ret+0(FP)
+	RET
+
+TEXT runtime·boot_any(SB), NOSPLIT, $0
+	// enter holding pen
+	CALL runtime·mp_pen(SB)
+
+	// first read cpu id into r0
+	WORD $0xee100fb0                  // mrc	15, 0, r0, cr0, cr0, {5}
+	AND  $2, R0                       // get rid of everything except cpuid
+	MOVW $4, R1
+	MUL  R1, R0
+	MOVW runtime·isr_stack_pt(SB), R1
+	ADD  R1, R0
+	MOVW (R0), R0                     // now r0 contains sp
+	MOVW R0, R13
+
+	// load the page tables
+	CALL runtime·loadttbr0(SB)
+
+	// enter holding pen
+	CALL runtime·mp_pen(SB)
+	RET
+
+TEXT runtime·getentry(SB), NOSPLIT, $0
+	MOVW runtime·boot_any(SB), R2
+	MOVW R11, R2
+	MOVW R2, ret+0(FP)
+	RET

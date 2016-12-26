@@ -177,9 +177,15 @@ func RecordTrapframe()
 //go:nosplit
 func ReplayTrapframe()
 
-var cpunum = 0
-
 const maxcpus = 4
+
+//cpu states
+const (
+	CPU_WFI     = 0
+	CPU_STARTED = 1
+)
+
+var cpustatus [maxcpus]uint32
 
 type trapframe struct {
 	lr  uintptr
@@ -257,7 +263,6 @@ var lastrun = 0
 
 //go:nosplit
 func thread_schedule() {
-	//RecordTrapframe()
 	print("thread scheduler\n")
 	//start looking after the current thread id
 	lastrun = (lastrun + 1) % maxthreads
@@ -270,7 +275,6 @@ func thread_schedule() {
 			ReplayTrapframe()
 			throw("should never be here\n")
 		}
-		print("\t\t\t\tnot ", lastrun, "\n")
 	}
 	throw("no runnable threads. what happened?\n")
 }
@@ -421,6 +425,11 @@ var nextfree uintptr
 //L1 table
 var l1_table physaddr
 
+//each cpu gets an interrupt stack
+//and a boot stack
+var isr_stack [4]physaddr
+var isr_stack_pt *physaddr = &isr_stack[0]
+
 //vector table
 //8 things
 //reset, undefined, svc, prefetch abort, data abort, unused, irq, fiq
@@ -499,6 +508,10 @@ func mem_init() {
 	maplock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
 	print("\tmap spinlock at: ", hex(uintptr(unsafe.Pointer(maplock))), " \n")
 
+	//allocate the spinlock for mmap
+	bootlock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
+	print("\tboot spinlock at: ", hex(uintptr(unsafe.Pointer(bootlock))), " \n")
+
 	//allocate pages array outside the runtime's knowledge
 	//boot_end = boot_end + physaddr(8*4)
 	//boot_end = physaddr(roundup(uint32(boot_end), PGSIZE))
@@ -506,6 +519,67 @@ func mem_init() {
 	//print("pages at: ", hex(uintptr(unsafe.Pointer(pages))), " sizeof(struct PageInfo) is ", hex(unsafe.Sizeof(*pages)), "\n")
 	print("pages at: ", hex(pages), "\n")
 	physPageSize = uintptr(PGSIZE)
+
+}
+
+var bootlock *Spinlock_t
+
+//go:nosplit
+func cpunum() int
+
+//go:nosplit
+func boot_any()
+
+//go:nosplit
+func getentry() uint32
+
+//1:0x20d8028 2:0x20d8030 3:0x20d8038 scr:0x20d8000
+
+var scr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8000))))
+var cpu1bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8028))))
+var cpu2bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8030))))
+var cpu3bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8038))))
+
+//go:nosplit
+func mp_init() {
+	//set up stacks, they must be 8 byte aligned
+
+	//first set up isr_stack
+	//other cores will boot off the isr stack
+	start := uint32(boot_alloc(4 * 1028))
+	end := uint32(boot_alloc(0))
+
+	print("start stack: ", hex(start), " end stack: ", hex(end), "\n")
+	for i := uint32(0); i < 4; i++ {
+		isr_stack[i] = physaddr((end - 1024*i) & 0xFFFFFFF8)
+		print("cpu[", i, "] isr stack at ", hex(isr_stack[i]), "\n")
+	}
+	print("cur cpu: ", cpunum(), "\n")
+
+	entry := getentry()
+
+	Splock(bootlock)
+	print("scr reads: ", hex(*scr), "\n")
+	print("trying to boot cpu 1, entry is ", hex(entry), "\n")
+	//do the boots
+	*cpu1bootaddr = entry
+	val := *scr
+	val |= 0x1<<22 | 0x1<<14 | 0x1<<18
+	*scr = val
+	//print("cpu1bootaddr reads: ", hex(*cpu1bootaddr), "\n")
+	//print("scr reads: ", hex(*scr), "\n")
+	for cpustatus[1] == CPU_WFI {
+	}
+	//Spunlock(bootlock)
+
+}
+
+//go:nosplit
+func mp_pen() {
+	print("cpu ", cpunum(), " is in the pen\n")
+	cpustatus[cpunum()] = CPU_STARTED
+	Splock(bootlock)
+	Spunlock(bootlock)
 }
 
 //go:nosplit
@@ -661,7 +735,14 @@ func map_kernel() {
 
 	//map the stack and boot_alloc scratch space
 	print("mapping stack + page tables\n")
+	nextfree := boot_alloc(0)
+	if uint32(nextfree) < (uint32(RAM_START) + RAM_SIZE - ONE_MEG) {
+		throw("out of scratch space\n")
+	}
 	map_region(uint32(uint32(RAM_START)+RAM_SIZE-ONE_MEG), uint32(RAM_START)+RAM_SIZE-ONE_MEG, PGSIZE, 0x0)
+
+	//map the boot rom
+	map_region(uint32(0x0), uint32(0x0), PGSIZE, 0x0)
 
 	//identity map [kernelstart, boot_alloc(0))
 	//	print("kernel start is ", hex(uint32(kernelstart)), "\n")

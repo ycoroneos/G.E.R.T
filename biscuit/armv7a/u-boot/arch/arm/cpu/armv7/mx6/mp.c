@@ -49,6 +49,7 @@ int cpu_release(int nr, int argc, char *const argv[])
 
 	boot_addr = simple_strtoul(argv[0], NULL, 16);
 
+  printf("1:0x%x 2:0x%x 3:0x%x scr:0x%x\n", &src->gpr3, &src->gpr5, &src->gpr7, &src->scr);
 	switch (nr) {
 	case 1:
 		src->gpr3 = boot_addr;
