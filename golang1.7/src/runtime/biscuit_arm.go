@@ -10,6 +10,9 @@ func Runtime_main()
 func PutR0(val uint32)
 
 //go:nosplit
+func PutSP(val uint32)
+
+//go:nosplit
 func PutR2(val uint32)
 
 //go:nosplit
@@ -35,6 +38,9 @@ func RR6() uint32
 
 //go:nosplit
 func RR7() uint32
+
+//go:nosplit
+func RSP() uint32
 
 ////catching traps
 var firstexit = true
@@ -505,12 +511,12 @@ func mem_init() {
 	print("\tvector table at: ", hex(vectab), " \n")
 
 	//allocate the spinlock for mmap
-	maplock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
-	print("\tmap spinlock at: ", hex(uintptr(unsafe.Pointer(maplock))), " \n")
+	//maplock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
+	//print("\tmap spinlock at: ", hex(uintptr(unsafe.Pointer(maplock))), " \n")
 
 	//allocate the spinlock for mmap
-	bootlock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
-	print("\tboot spinlock at: ", hex(uintptr(unsafe.Pointer(bootlock))), " \n")
+	//bootlock = (*Spinlock_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(unsafe.Sizeof(Spinlock_t{}))))))
+	//print("\tboot spinlock at: ", hex(uintptr(unsafe.Pointer(bootlock))), " \n")
 
 	//allocate pages array outside the runtime's knowledge
 	//boot_end = boot_end + physaddr(8*4)
@@ -521,8 +527,6 @@ func mem_init() {
 	physPageSize = uintptr(PGSIZE)
 
 }
-
-var bootlock *Spinlock_t
 
 //go:nosplit
 func cpunum() int
@@ -537,8 +541,15 @@ func getentry() uint32
 
 var scr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8000))))
 var cpu1bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8028))))
+var cpu1bootarg *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d802C))))
+
 var cpu2bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8030))))
+var cpu2bootarg *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8034))))
+
 var cpu3bootaddr *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d8038))))
+var cpu3bootarg *uint32 = ((*uint32)(unsafe.Pointer(uintptr(0x20d803C))))
+
+var bootlock Spinlock_t
 
 //go:nosplit
 func mp_init() {
@@ -558,28 +569,56 @@ func mp_init() {
 
 	entry := getentry()
 
-	Splock(bootlock)
+	bootlock.lock()
 	print("scr reads: ", hex(*scr), "\n")
-	print("trying to boot cpu 1, entry is ", hex(entry), "\n")
+	print("trying to boot cpu 1,2,3 entry is ", hex(entry), "\n")
+
 	//do the boots
+
+	//cpu1
 	*cpu1bootaddr = entry
+	*cpu1bootarg = uint32(isr_stack[1])
 	val := *scr
-	val |= 0x1<<22 | 0x1<<14 | 0x1<<18
 	*scr = val
-	//print("cpu1bootaddr reads: ", hex(*cpu1bootaddr), "\n")
-	//print("scr reads: ", hex(*scr), "\n")
+	for *scr&(0x1<<14|0x1<<18) > 0 {
+	}
+	*scr |= 0x1 << 22
 	for cpustatus[1] == CPU_WFI {
 	}
+	print("\tbooted cpu1\n")
+
+	//cpu2
+	*cpu2bootaddr = entry
+	*cpu2bootarg = uint32(isr_stack[2])
+	val = *scr
+	*scr = val
+	for *scr&(0x1<<15|0x1<<19) > 0 {
+	}
+	*scr |= 0x1 << 23
+	for cpustatus[2] == CPU_WFI {
+	}
+	print("\tbooted cpu2\n")
+
+	//cpu3
+	*cpu3bootaddr = entry
+	*cpu3bootarg = uint32(isr_stack[3])
+	val = *scr
+	*scr = val
+	for *scr&(0x1<<16|0x1<<20) > 0 {
+	}
+	*scr |= 0x1 << 24
+	for cpustatus[3] == CPU_WFI {
+	}
+	print("\tbooted cpu3\n")
 	//Spunlock(bootlock)
 
 }
 
 //go:nosplit
 func mp_pen() {
-	print("cpu ", cpunum(), " is in the pen\n")
 	cpustatus[cpunum()] = CPU_STARTED
-	Splock(bootlock)
-	Spunlock(bootlock)
+	bootlock.lock()
+	bootlock.unlock()
 }
 
 //go:nosplit
@@ -783,32 +822,27 @@ type Spinlock_t struct {
 }
 
 //go:nosplit
-func Splock(l *Spinlock_t) {
+func (l *Spinlock_t) lock() {
 	for {
-		if atomic.Xchg(&l.v, 1) == 1 {
-			break
+		if atomic.Cas(&l.v, 0, 1) {
+			return
 		}
-		//for l.v != 0 {
-		//htpause()
-		//}
 	}
 }
 
 //go:nosplit
-func Spunlock(l *Spinlock_t) {
+func (l *Spinlock_t) unlock() {
 	atomic.Store(&l.v, 0)
-	//	l.v = 0
 }
 
 const MMAP_FIXED = uint32(0x10)
 
-//var maplock = &Spinlock_t{}
-var maplock *Spinlock_t
+var maplock Spinlock_t
 
 // mmap calls the mmap system call.  It is implemented in assembly.
 //go:nosplit
 func hack_mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) unsafe.Pointer {
-	Splock(maplock)
+	maplock.lock()
 	va := uintptr(addr)
 	size := uint32(roundup(uint32(n), PGSIZE))
 	print("mmap_arm: ", hex(va), " ", hex(n), " ", hex(prot), " ", hex(flags), "\n")
@@ -853,7 +887,7 @@ func hack_mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32
 		memclrNoHeapPointers(unsafe.Pointer(va), uintptr(size))
 		//memclrbytes(unsafe.Pointer(va), uintptr(size))
 	}
-	Spunlock(maplock)
+	maplock.unlock()
 	print("updated page tables -> ", hex(va), "\n")
 	return unsafe.Pointer(va)
 }

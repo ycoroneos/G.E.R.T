@@ -11,6 +11,10 @@ TEXT runtime·PutR0(SB), NOSPLIT, $0-4
 	MOVW ret+4(FP), R0
 	RET
 
+TEXT runtime·PutSP(SB), NOSPLIT, $0-4
+	MOVW ret+4(FP), R13
+	RET
+
 TEXT runtime·PutR2(SB), NOSPLIT, $0-4
 	MOVW ret+4(FP), R2
 	RET
@@ -41,6 +45,10 @@ TEXT runtime·RR5(SB), NOSPLIT, $0
 
 TEXT runtime·RR6(SB), NOSPLIT, $0
 	MOVW R6, ret+0(FP)
+	RET
+
+TEXT runtime·RSP(SB), NOSPLIT, $0
+	MOVW R13, ret+0(FP)
 	RET
 
 TEXT runtime·RR7(SB), NOSPLIT, $0
@@ -209,17 +217,20 @@ TEXT runtime·cpunum(SB), NOSPLIT, $0
 
 TEXT runtime·boot_any(SB), NOSPLIT, $0
 	// enter holding pen
-	CALL runtime·mp_pen(SB)
+	// CALL runtime·mp_pen(SB)
 
-	// first read cpu id into r0
-	WORD $0xee100fb0                  // mrc	15, 0, r0, cr0, cr0, {5}
-	AND  $2, R0                       // get rid of everything except cpuid
-	MOVW $4, R1
-	MUL  R1, R0
-	MOVW runtime·isr_stack_pt(SB), R1
-	ADD  R1, R0
-	MOVW (R0), R0                     // now r0 contains sp
+	//	// first read cpu id into r0
+	//	WORD $0xee100fb0                  // mrc	15, 0, r0, cr0, cr0, {5}
+	//	AND  $3, R0                       // get rid of everything except cpuid
+	//	MOVW $4, R1
+	//	MUL  R1, R0
+	//	MOVW runtime·isr_stack_pt(SB), R1
+	//	ADD  R1, R0
+
+	MOVW runtime·cpu1bootarg(SB), R0
+	MOVW (R0), R0                    // now r0 contains sp
 	MOVW R0, R13
+	CALL runtime·mp_pen(SB)
 
 	// load the page tables
 	CALL runtime·loadttbr0(SB)
