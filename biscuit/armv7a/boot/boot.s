@@ -16,21 +16,55 @@
 //	ldr pc, L_irq_handler
 //	ldr pc, L_fiq_handler
 
+// _init_vectors:
+//	b L_start
+//	b L_undefined_handler
+//	b L_svc_handler
+//	b L_prefetch_abort_handler
+//	b L_data_abort_handler
+//	b .
+//	b L_irq_handler
+//	b L_fiq_handler
+
 _init_vectors:
-	b L_start
-	b L_undefined_handler
-	b L_svc_handler
-	b L_prefetch_abort_handler
-	b L_data_abort_handler
-	b .
-	b L_irq_handler
-	b L_fiq_handler
+	ldr pc, boot_addr
+	ldr pc, undef_addr
+	ldr pc, svc_addr
+	ldr pc, prefetch_addr
+	ldr pc, abort_addr
+	ldr pc, unused_addr
+	ldr pc, irq_addr
+	ldr pc, fiq_addr
+
+boot_addr:
+	.long L_start
+
+undef_addr:
+	.long L_start
+
+svc_addr:
+	.long L_start
+
+prefetch_addr:
+	.long L_start
+
+abort_addr:
+	.long L_start
+
+unused_addr:
+	.long L_start
+
+irq_addr:
+	.long L_start
+
+fiq_addr:
+	.long L_start
 
 L_start:
 	// load vbar
 	adr r0, _init_vectors
 
-	//	mcr p15, 0, r0, c12, c0, 0
+	mcr p15, 0, r0, c12, c0, 0
 
 	// Setup the stack.
 	adr sp, _init_vectors
@@ -111,7 +145,7 @@ set_loop:
 	ISB
 
 	// Enable L1 Cache -------------------------------------------------------
-	// R0 = System Control Register
+	//	R0  = System Control Register
 	//	mrc p15, 0, r0, c1, c0, 0
 	//
 	//	// Enable caches and branch prediction
@@ -160,7 +194,6 @@ L_bss_end:
 L_main_func:
 	.long main
 
-
 L_undefined_handler:
 	push {r0-r12}
 	push {sp}
@@ -169,7 +202,6 @@ L_undefined_handler:
 	push {r0}
 	mov  r0, sp
 	b    trap
-
 
 L_svc_handler:
 	push {r0-r12}
@@ -198,7 +230,6 @@ L_data_abort_handler:
 	mov  r0, sp
 	b    trap
 
-
 L_irq_handler:
 	push {r0-r12}
 	push {sp}
@@ -207,7 +238,6 @@ L_irq_handler:
 	push {r0}
 	mov  r0, sp
 	b    trap
-
 
 L_fiq_handler:
 	push {r0-r12}

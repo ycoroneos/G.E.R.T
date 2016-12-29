@@ -18,21 +18,34 @@ func Entry() {
 	runtime.Runtime_main()
 }
 
-//go:nosplit
+func printer(resp chan string) {
+	fmt.Println("hiii from ", runtime.Cpunum(), "\n")
+	resp <- "done"
+}
+
+func gcdone() {
+	fmt.Println("stub")
+	return
+}
+
 func main() {
+	runtime.Release()
 	fmt.Println("hi from fmt")
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
 	fmt.Println(val)
-	go func(resp chan string) {
-		fmt.Println("goprint from inside a go routine!")
-		resp <- "done"
-	}(channel)
-	<-channel
+	for i := 0; i < 10; i++ {
+		go printer(channel)
+	}
+	for i := 0; i < 10; i++ {
+		<-channel
+	}
 	fmt.Println("start GC")
 	runtime.GC()
 	fmt.Println("done GC, sleeping forever")
+	runtime.Crash = true
+	gcdone()
 	for {
 	}
 }
