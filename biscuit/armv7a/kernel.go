@@ -30,7 +30,7 @@ func gcdone() {
 
 func main() {
 	runtime.Release()
-	fmt.Println("hi from fmt")
+	fmt.Println(runtime.Cpunum(), " hi from fmt")
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
@@ -38,14 +38,14 @@ func main() {
 	for i := 0; i < 10; i++ {
 		go printer(channel)
 	}
-	for i := 0; i < 10; i++ {
-		<-channel
-	}
-	fmt.Println("start GC")
-	runtime.GC()
-	fmt.Println("done GC, sleeping forever")
-	runtime.Crash = true
-	gcdone()
+	//	for i := 0; i < 10; i++ {
+	//		<-channel
+	//	}
+	//fmt.Println(runtime.Cpunum(), "start GC")
+	//runtime.GC()
+	//fmt.Println("done GC, sleeping forever")
+	//runtime.Crash = true
+	//gcdone()
 	for {
 	}
 }

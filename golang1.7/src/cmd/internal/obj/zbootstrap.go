@@ -10,6 +10,6 @@ const defaultGOARM = `7`
 const defaultGOOS = runtime.GOOS
 const defaultGOARCH = runtime.GOARCH
 const defaultGO_EXTLINK_ENABLED = ``
-const version = `devel +4026f9a Mon Dec 26 19:17:49 2016 -0500`
+const version = `devel +5f18541 Thu Dec 29 15:31:19 2016 -0500`
 const stackGuardMultiplier = 1
 const goexperiment = ``

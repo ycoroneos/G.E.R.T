@@ -9,11 +9,14 @@ package runtime
 import "unsafe"
 
 func writeErr(b []byte) {
-	if Armhackmode > 0 {
-		write_uart(b)
-	} else {
-		write(2, unsafe.Pointer(&b[0]), int32(len(b)))
-	}
+	write(2, unsafe.Pointer(&b[0]), int32(len(b)))
+	//	if Armhackmode > 0 {
+	//
+	//		write_uart(b)
+	//
+	//	} else {
+	//		write(2, unsafe.Pointer(&b[0]), int32(len(b)))
+	//	}
 }
 
 ////printing

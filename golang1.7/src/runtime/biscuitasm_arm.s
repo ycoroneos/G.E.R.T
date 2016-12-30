@@ -296,6 +296,9 @@ TEXT runtime·isr_setup(SB), NOSPLIT, $0
 	RET
 
 TEXT runtime·boot_any(SB), NOSPLIT, $0
+	MOVW $0x02020040, R0
+	MOVW $64, R1
+	MOVW R1, (R0)
 
 	// first read cpu id into r0
 	WORD $0xee100fb0                 // mrc	15, 0, r0, cr0, cr0, {5}
@@ -305,12 +308,17 @@ TEXT runtime·boot_any(SB), NOSPLIT, $0
 	MUL  R1, R2
 	SUB  $8, R2
 	MOVW runtime·cpu1bootarg(SB), R1
+	MOVW R11, R1
 
 	ADD R1, R2
 
-	MOVW (R2), R2                // now r0 contains sp
+	MOVW (R2), R2                // now r2 contains *sp
+	MOVW (R2), R2                // now r2 contains sp
 	MOVW R2, R13
 	CALL runtime·cleardcache(SB)
+	MOVW $0x02020040, R0
+	MOVW $65, R1
+	MOVW R1, (R0)
 
 	// enable data cache
 	WORD $0xee110f10 // mrc	15, 0, r0, cr1, cr0, {0}
@@ -340,8 +348,16 @@ TEXT runtime·boot_any(SB), NOSPLIT, $0
 	MOVW $0x40000000, R3
 	WORD $0xeee83a10     // vmsr	fpexc, r3
 
+	MOVW $0x02020040, R0
+	MOVW $66, R1
+	MOVW R1, (R0)
+
 	// load the page tables
 	CALL runtime·loadttbr0(SB)
+
+	MOVW $0x02020040, R0
+	MOVW $67, R1
+	MOVW R1, (R0)
 
 	// enter holding pen
 	CALL runtime·mp_pen(SB)
@@ -357,6 +373,9 @@ TEXT runtime·getentry(SB), NOSPLIT, $0
 	RET
 
 TEXT runtime·catch(SB), NOSPLIT, $0
+	MOVW $0x02020040, R0
+	MOVW $69, R1
+	MOVW R1, (R0)
 	CALL runtime·cpucatch(SB)
 	RET
 
