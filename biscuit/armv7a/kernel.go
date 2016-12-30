@@ -19,7 +19,7 @@ func Entry() {
 }
 
 func printer(resp chan string) {
-	fmt.Println("hiii from ", runtime.Cpunum(), "\n")
+	fmt.Println("hiii from cpu ", runtime.Cpunum(), "\n")
 	resp <- "done"
 }
 
@@ -30,22 +30,17 @@ func gcdone() {
 
 func main() {
 	runtime.Release()
-	fmt.Println(runtime.Cpunum(), " hi from fmt")
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
 	fmt.Println(val)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		go printer(channel)
 	}
-	//	for i := 0; i < 10; i++ {
-	//		<-channel
-	//	}
-	//fmt.Println(runtime.Cpunum(), "start GC")
-	//runtime.GC()
-	//fmt.Println("done GC, sleeping forever")
-	//runtime.Crash = true
-	//gcdone()
+	for i := 0; i < 10; i++ {
+		fmt.Println(<-channel)
+	}
+	fmt.Println("done now")
 	for {
 	}
 }

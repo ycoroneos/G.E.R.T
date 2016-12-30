@@ -3068,6 +3068,7 @@ func gfpurge(_p_ *p) {
 
 // Breakpoint executes a breakpoint trap.
 func Breakpoint() {
+	throw("breakpoint")
 	breakpoint()
 }
 

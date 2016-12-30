@@ -238,6 +238,7 @@ const (
 	ST_WAITING   = 3
 	ST_SLEEPING  = 4
 	ST_WILLSLEEP = 5
+	ST_NEW       = 6
 )
 
 //go:nosplit
@@ -278,14 +279,15 @@ func makethread(flags uint32, stack uintptr, entry uintptr) int {
 	threads[i].tf.lr = entry
 	threads[i].tf.sp = stack
 	threads[i].tf.r0 = 0 //returns 0 in the child
-	//print("\t\t\t\t new thread ", i, "\n")
+	print("\t\t\t\t new thread ", i, "\n")
 	//print("\t\t\t\t LR ", hex(threads[i].tf.lr), " sp: ", hex(threads[i].tf.sp), "\n")
 	return int(i)
 }
 
 var lastrun = 0
 
-var threadlock Spinlock_t
+//var threadlock Spinlock_t
+var threadlock Ticketlock_t
 
 //go:nosplit
 func thread_schedule() {
@@ -297,6 +299,10 @@ func thread_schedule() {
 
 		//threadlock.lock()
 		if cpustatus[mycpu] == CPU_FULL {
+			if btrace == true {
+				print(mycpu)
+			}
+			//print("\n\t", mycpu, "\n")
 			//	print("cpu ", cpunum(), "\n\t")
 			//	print("thread scheduler cpu ", mycpu, "\n")
 			//print("curthread base is ", hex(uintptr(unsafe.Pointer(&curthread[0]))), "\n")
@@ -330,18 +336,40 @@ func thread_schedule() {
 				threads[next].state = ST_RUNNING
 				curthread[mycpu] = &threads[next]
 				if cpustatus[mycpu] == CPU_FULL {
-					print("\t\t\t\tschedule thread ", next, " on cpu ", mycpu, "\n")
+					//print("\t\t\t\tschedule thread ", next, " on cpu ", mycpu, "\n")
 					//		print("\t\t\t\tLR ", hex(curthread[mycpu].tf.lr), " sp ", hex(curthread[mycpu].tf.sp), "\n")
+					//print(mycpu, "Y ")
 				}
 				cpustatus[mycpu] = CPU_FULL
-				invallpages()
 				lastrun = next
+				invallpages()
 				threadlock.unlock()
 				ReplayTrapframe(curthread[mycpu])
 				throw("should never be here\n")
 			}
+			//print("\t\t thread ", next, " state is ", threads[next].state, "\n")
 		}
+		//check lastrun
+		if threads[lastrun].state == ST_RUNNABLE {
+			threads[lastrun].state = ST_RUNNING
+			curthread[mycpu] = &threads[lastrun]
+			if cpustatus[mycpu] == CPU_FULL {
+				//print("\t\t\t\tre-schedule thread ", lastrun, " on cpu ", mycpu, "\n")
+				//		print("\t\t\t\tLR ", hex(curthread[mycpu].tf.lr), " sp ", hex(curthread[mycpu].tf.sp), "\n")
+				//print(mycpu, "Y ")
+			}
+			cpustatus[mycpu] = CPU_FULL
+			lastrun = lastrun
+			invallpages()
+			threadlock.unlock()
+			ReplayTrapframe(curthread[mycpu])
+			throw("should never be here\n")
+		}
+		//drop to idle
 		threadlock.unlock()
+		if cpustatus[mycpu] == CPU_FULL {
+			//print(mycpu, "N ")
+		}
 		idle()
 		threadlock.lock()
 	}
@@ -350,7 +378,12 @@ func thread_schedule() {
 
 //go:nosplit
 func idle() {
-	////print("cpu ", cpunum(), " waits for work\n")
+	//print("cpu ", cpunum(), " waits for work\n")
+	//	for i := 0; i < maxthreads; i++ {
+	//		//print("\t\tthread ", i, " is in state ", threads[i].state, "\n")
+	//	}
+	//	for i := 0; i < 1000000000; i++ {
+	//	}
 }
 
 //go:nosplit
@@ -1047,6 +1080,27 @@ func (l *Spinlock_t) unlock() {
 	DMB()
 }
 
+type Ticketlock_t struct {
+	v      uint32
+	holder int
+}
+
+var next_ticket int64 = -1
+var now_serving int64 = 0
+
+//go:nosplit
+func (l *Ticketlock_t) lock() {
+	me := atomic.Xaddint64(&next_ticket, 1)
+	for me != now_serving {
+	}
+}
+
+//go:nosplit
+func (l *Ticketlock_t) unlock() {
+	now_serving = now_serving + 1
+	DMB()
+}
+
 const MMAP_FIXED = uint32(0x10)
 
 var maplock Spinlock_t
@@ -1093,21 +1147,25 @@ func hack_mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32
 	}
 	//showl1table()
 	//print("reloading page table\n")
-	invallpages()
 	//memclrbytes(unsafe.Pointer(va), uintptr(size))
 	if clear == true {
 		//print("clearing... ")
 		memclrNoHeapPointers(unsafe.Pointer(va), uintptr(size))
 		//memclrbytes(unsafe.Pointer(va), uintptr(size))
 	}
+	invallpages()
+	DMB()
 	maplock.unlock()
 	//print("updated page tables -> ", hex(va), "\n")
 	return unsafe.Pointer(va)
 }
 
+var curtime int64 = 0
+
 //go:nosplit
 func clk_gettime(clock_type uint32, ts *timespec) {
 	//print("spoof clock_gettime on cpu ", cpunum(), "\n")
-	ts.tv_sec = 0
-	ts.tv_nsec = 0
+	ts.tv_sec = int32(curtime >> 32)
+	ts.tv_nsec = int32(curtime & 0xFFFFFFFF)
+	curtime = curtime + 1
 }
