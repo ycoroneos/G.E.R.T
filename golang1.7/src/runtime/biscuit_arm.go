@@ -749,10 +749,7 @@ func mp_init() {
 	cpustatus[0] = CPU_FULL
 	//return
 
-	//print("here0")
-	//enable the scu
 	scu_enable()
-	//print("here1")
 
 	//set the interrupt stack
 	isr_setup()
@@ -841,7 +838,8 @@ func Release() {
 
 //go:nosplit
 func cpucatch() {
-	throw("this will fail\n")
+	write_uart([]byte("int"))
+	throw("interrupt\n")
 	for {
 	}
 }
@@ -1169,3 +1167,12 @@ func clk_gettime(clock_type uint32, ts *timespec) {
 	ts.tv_nsec = int32(curtime & 0xFFFFFFFF)
 	curtime = curtime + 1
 }
+
+//go:nosplit
+func EnableIRQ()
+
+//go:nosplit
+func DisableIRQ()
+
+//go:nosplit
+func Getmpcorebase() uintptr

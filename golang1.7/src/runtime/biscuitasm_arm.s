@@ -293,6 +293,26 @@ TEXT runtime·scu_enable(SB), NOSPLIT, $0
 
 // doesnt do anything yet
 TEXT runtime·isr_setup(SB), NOSPLIT, $0
+	// first read cpu id into r0
+	WORD $0xee100fb0                 // mrc	15, 0, r0, cr0, cr0, {5}
+	AND  $3, R0                      // get rid of everything except cpuid
+	MOVW R0, R2
+	MOVW $8, R1
+	MUL  R1, R2
+	SUB  $8, R2
+	MOVW runtime·cpu1bootarg(SB), R1
+	MOVW R11, R1
+
+	ADD R1, R2
+
+	MOVW (R2), R2 // now r2 contains *sp
+	MOVW (R2), R2 // now r2 contains sp
+	MOVW R2, R0   // now r0 constans sp
+
+	// set up isr stack
+	WORD $0xe321f0d2 // msr	CPSR_c, #210	; 0xd2
+	MOVW R0, R13
+	WORD $0xe321f0d3 // msr CPSR_c, #211; 0xd3
 	RET
 
 TEXT runtime·boot_any(SB), NOSPLIT, $0
@@ -312,9 +332,16 @@ TEXT runtime·boot_any(SB), NOSPLIT, $0
 
 	ADD R1, R2
 
-	MOVW (R2), R2                // now r2 contains *sp
-	MOVW (R2), R2                // now r2 contains sp
+	MOVW (R2), R2 // now r2 contains *sp
+	MOVW (R2), R2 // now r2 contains sp
 	MOVW R2, R13
+	MOVW R2, R0
+
+	// set up isr stack
+	WORD $0xe321f0d2 // msr	CPSR_c, #210	; 0xd2
+	MOVW R0, R13
+	WORD $0xe321f0d3 // msr CPSR_c, #211; 0xd3
+
 	CALL runtime·cleardcache(SB)
 	MOVW $0x02020040, R0
 	MOVW $65, R1
@@ -384,3 +411,19 @@ TEXT runtime·getcatch(SB), NOSPLIT, $0
 	MOVW R11, R2
 	MOVW R2, ret+0(FP)
 	RET
+
+TEXT runtime·EnableIRQ(SB), NOSPLIT, $0
+	// just flips the I bit
+	WORD $0xe321f053 // msr CPSR_c, #83; 0x53
+	RET
+
+TEXT runtime·DisableIRQ(SB), NOSPLIT, $0
+	// just sets the I bit
+	WORD $0xe321f0d3 // msr CPSR_c, #211; 0xd3
+	RET
+
+TEXT runtime·Getmpcorebase(SB), NOSPLIT, $0
+	WORD $0xee9f0f10   // mrc 15, 4, r0, cr15, cr0, {0}
+	MOVW R0, ret+0(FP)
+	RET
+

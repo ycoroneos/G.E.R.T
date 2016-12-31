@@ -23,13 +23,10 @@ func printer(resp chan string) {
 	resp <- "done"
 }
 
-func gcdone() {
-	fmt.Println("stub")
-	return
-}
-
+//the runtime calls main after it's done setting up
 func main() {
-	runtime.Release()
+	GIC_init(false)
+	//runtime.Release()
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
@@ -37,10 +34,12 @@ func main() {
 	for i := 0; i < 20; i++ {
 		go printer(channel)
 	}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		fmt.Println(<-channel)
 	}
-	fmt.Println("done now")
+	fmt.Println(startGPT())
+	fmt.Println("done now, wait for interrupt")
+	//sgi(0, 0xFF)
 	for {
 	}
 }

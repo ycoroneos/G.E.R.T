@@ -1,4 +1,4 @@
 #include "textflag.h"
 
-TEXT ·SWI(SB), NOSPLIT, $-4
+TEXT ·SWI(SB), NOSPLIT, $0
 	SWI $0x0
