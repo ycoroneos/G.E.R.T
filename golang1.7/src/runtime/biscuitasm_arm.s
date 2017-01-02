@@ -291,23 +291,9 @@ TEXT runtime·scu_enable(SB), NOSPLIT, $0
 
 	RET
 
-// doesnt do anything yet
+// sets up isr stack on cpu0
 TEXT runtime·isr_setup(SB), NOSPLIT, $0
-	// first read cpu id into r0
-	WORD $0xee100fb0                 // mrc	15, 0, r0, cr0, cr0, {5}
-	AND  $3, R0                      // get rid of everything except cpuid
-	MOVW R0, R2
-	MOVW $8, R1
-	MUL  R1, R2
-	SUB  $8, R2
-	MOVW runtime·cpu1bootarg(SB), R1
-	MOVW R11, R1
-
-	ADD R1, R2
-
-	MOVW (R2), R2 // now r2 contains *sp
-	MOVW (R2), R2 // now r2 contains sp
-	MOVW R2, R0   // now r0 constans sp
+	MOVW runtime·isr_stack(SB), R0
 
 	// set up isr stack
 	WORD $0xe321f0d2 // msr	CPSR_c, #210	; 0xd2
@@ -400,11 +386,12 @@ TEXT runtime·getentry(SB), NOSPLIT, $0
 	RET
 
 TEXT runtime·catch(SB), NOSPLIT, $0
-	MOVW $0x02020040, R0
-	MOVW $69, R1
-	MOVW R1, (R0)
-	CALL runtime·cpucatch(SB)
-	RET
+	WORD $0xe24ee004                // sub	lr, lr, #4
+	WORD $0xe92d5fff                // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+	MOVW $runtime·cpucatch(SB), R11
+	BL   (R11)
+	WORD $0xe8fd9fff                // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
+	RET                             // wont get here
 
 TEXT runtime·getcatch(SB), NOSPLIT, $0
 	MOVW runtime·catch(SB), R2

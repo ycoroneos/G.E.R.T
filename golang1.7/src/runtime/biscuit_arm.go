@@ -3,6 +3,8 @@ package runtime
 import "unsafe"
 import "runtime/internal/atomic"
 
+const NOP = 0xe320f000
+
 //for booting
 func Runtime_main()
 
@@ -111,11 +113,16 @@ func trap_debug() {
 		PutR0(0)
 		return
 	case 174:
-		//print("spoofing rtsigproc\n")
+		//print("spoofing rtsigaction\n")
+		//signum := uint32(arg0)
+		//new := ((*sigactiont)(unsafe.Pointer(uintptr(arg1))))
+		//old := ((*sigactiont)(unsafe.Pointer(uintptr(arg2))))
+		//res := hack_sigaction(signum, new, old)
+		//PutR0(res)
 		PutR0(0)
 		return
 	case 175:
-		//print("spoofing rtsigaction\n")
+		//print("spoofing rtsigproc\n")
 		PutR0(0)
 		return
 	case 186:
@@ -198,9 +205,10 @@ const maxcpus = 4
 
 //cpu states
 const (
-	CPU_WFI     = 0
-	CPU_STARTED = 1
-	CPU_FULL    = 2
+	CPU_WFI      = 0
+	CPU_STARTED  = 1
+	CPU_RELEASED = 2
+	CPU_FULL     = 3
 )
 
 var cpustatus [maxcpus]uint32
@@ -649,6 +657,8 @@ func mem_init() {
 	*vectab = *boot_table
 	//print("\tvector table at: ", hex(uintptr(unsafe.Pointer(vectab))), " \n")
 	catch := getcatch()
+	//replace push lr at the start of catch
+	*((*uint32)(unsafe.Pointer(uintptr(catch)))) = NOP
 	vectab.reset_addr = catch
 	vectab.undef_addr = catch
 	vectab.svc_addr = catch
@@ -755,6 +765,9 @@ func mp_init() {
 	isr_setup()
 
 	entry := getentry()
+	//replace the push lr at the start of entry with a nop
+	*((*uint32)(unsafe.Pointer(uintptr(entry)))) = NOP
+
 	//print("here1")
 	//bootlock.lock()
 	//DMB()
@@ -824,8 +837,32 @@ func mp_pen() {
 	throw("cpu release\n")
 }
 
+type GIC_cpu_map struct {
+	cpu_interface_control_register       uint32
+	interrupt_priority_mask_register     uint32
+	binary_point_register                uint32
+	interrupt_acknowledge_register       uint32
+	end_of_interrupt_register            uint32
+	running_priority_register            uint32
+	highest_pending_interrupt_register   uint32
+	aliased_binary_point_register        uint32
+	reserved1                            [8]uint32
+	implementation_defined_registers     [36]uint32
+	reserved2                            [11]uint32
+	cpu_interface_dentification_register uint32
+}
+
+var gic_cpu *GIC_cpu_map = (*GIC_cpu_map)(unsafe.Pointer(uintptr(Getmpcorebase() + 0x100)))
+
 //go:nosplit
 func trampoline() {
+	//have to enable the GIC cpu interface here for each cpu
+	EnableIRQ()
+	me := cpunum()
+	//print("\tcpu_interface_dentification_register core ", me, " : ", hex(gic_cpu.cpu_interface_dentification_register), "\n")
+	gic_cpu.cpu_interface_control_register = 0x03   // enable everything
+	gic_cpu.interrupt_priority_mask_register = 0xFF //unmask everything
+	cpustatus[me] = CPU_RELEASED
 	threadlock.lock()
 	thread_schedule()
 }
@@ -834,14 +871,40 @@ func trampoline() {
 func Release() {
 	stop = 0
 	DMB()
+	for cpustatus[1] < CPU_RELEASED {
+	}
+	for cpustatus[2] < CPU_RELEASED {
+	}
+	for cpustatus[3] < CPU_RELEASED {
+	}
+}
+
+var IRQmsg chan int = make(chan int, 20)
+
+var trapfn func()
+
+///The world might be stopped, we dont really know
+//go:nosplit
+//go:nowritebarrierrec
+func cpucatch() {
+	g := getg()
+	if g == nil {
+		//write_uart([]byte("crash"))
+		//throw("nilg")
+		needm(0)
+		trapfn()
+		dropm()
+	} else {
+		//setg(g.m.gsignal)
+		trapfn()
+		//	print("INT", cpunum(), " ")
+		//	IRQmsg <- 1
+	}
 }
 
 //go:nosplit
-func cpucatch() {
-	write_uart([]byte("int"))
-	throw("interrupt\n")
-	for {
-	}
+func SetIRQcallback(f func()) {
+	trapfn = f
 }
 
 //go:nosplit
@@ -1176,3 +1239,35 @@ func DisableIRQ()
 
 //go:nosplit
 func Getmpcorebase() uintptr
+
+/////////////signals for interrupts
+////look in defs_linux_arm.go
+
+var irqfunc uintptr = 0
+
+//go:nosplit
+func hack_sigaction(signum uint32, new *sigactiont, old *sigactiont, size uintptr) int32 {
+	switch signum {
+	case _SIGINT:
+		print("sigaction on sigint\n")
+		print("using sa_handler ", hex(new.sa_handler), "\n")
+		irqfunc = new.sa_handler
+	}
+	return 0
+}
+
+//go:nosplit
+func hack_sigaltstack(new, old *stackt) {
+	if new == nil {
+		//print("requesting signal stack\n")
+		me := cpunum()
+		old.ss_sp = ((*byte)(unsafe.Pointer(uintptr(isr_stack[me] - 1024))))
+		old.ss_size = 1024
+		old.ss_flags = 0
+		return
+	}
+	if old == nil {
+		//print("sigaltstack ", hex(uintptr(unsafe.Pointer(new.ss_sp))), "\n")
+	}
+	return
+}

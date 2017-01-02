@@ -334,15 +334,17 @@ nog:
 	MOVW R0, (R1)
 
 TEXT runtime·sigaltstack(SB), NOSPLIT, $0
-	MOVW    new+0(FP), R0
-	MOVW    old+4(FP), R1
-	MOVW    $SYS_sigaltstack, R7
-	CALL    ·trap_debug(SB)
-	MOVW    $0xfffff001, R6
-	CMP     R6, R0
-	MOVW.HI $0, R8               // crash on syscall failure
-	MOVW.HI R8, (R8)
-	RET
+	JMP ·hack_sigaltstack(SB)
+
+//	MOVW    new+0(FP), R0
+//	MOVW    old+4(FP), R1
+//	MOVW    $SYS_sigaltstack, R7
+//	CALL    ·trap_debug(SB)
+//	MOVW    $0xfffff001, R6
+//	CMP     R6, R0
+//	MOVW.HI $0, R8               // crash on syscall failure
+//	MOVW.HI R8, (R8)
+//	RET
 
 TEXT runtime·sigfwd(SB), NOSPLIT, $0-16
 	MOVW sig+4(FP), R0
@@ -385,14 +387,16 @@ TEXT runtime·rtsigprocmask(SB), NOSPLIT, $0
 	RET
 
 TEXT runtime·rt_sigaction(SB), NOSPLIT, $0
-	MOVW sig+0(FP), R0
-	MOVW new+4(FP), R1
-	MOVW old+8(FP), R2
-	MOVW size+12(FP), R3
-	MOVW $SYS_rt_sigaction, R7
-	CALL ·trap_debug(SB)
-	MOVW R0, ret+16(FP)
-	RET
+	JMP ·hack_sigaction(SB)
+
+//	MOVW sig+0(FP), R0
+//	MOVW new+4(FP), R1
+//	MOVW old+8(FP), R2
+//	MOVW size+12(FP), R3
+//	MOVW $SYS_rt_sigaction, R7
+//	CALL ·trap_debug(SB)
+//	MOVW R0, ret+16(FP)
+//	RET
 
 TEXT runtime·usleep(SB), NOSPLIT, $12
 	MOVW usec+0(FP), R0

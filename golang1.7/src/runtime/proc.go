@@ -934,6 +934,9 @@ func stopTheWorld(reason string) {
 	semacquire(&worldsema, 0)
 	getg().m.preemptoff = reason
 	systemstack(stopTheWorldWithSema)
+	if Armhackmode > 0 {
+		write_uart([]byte("world is stopped\n"))
+	}
 }
 
 // startTheWorld undoes the effects of stopTheWorld.
@@ -943,6 +946,9 @@ func startTheWorld() {
 	// gomaxprocs cannot change while worldsema is held.
 	semrelease(&worldsema)
 	getg().m.preemptoff = ""
+	if Armhackmode > 0 {
+		write_uart([]byte("world is started\n"))
+	}
 }
 
 // Holding worldsema grants an M the right to try to stop the world

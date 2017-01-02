@@ -31,6 +31,7 @@ func uart_putc(c byte) {
 }
 
 //go:nosplit
+//go:nobarrierec
 func write_uart(b []byte) {
 	var i = 0
 	for i = 0; i < len(b); i++ {
@@ -39,6 +40,7 @@ func write_uart(b []byte) {
 }
 
 //go:nosplit
+//go:nobarrierec
 func write_uart_unsafe(buf uintptr, count uint32) uint32 {
 	for i := uint32(0); i < count; i++ {
 		c := ((*byte)(unsafe.Pointer(buf + uintptr(i))))
