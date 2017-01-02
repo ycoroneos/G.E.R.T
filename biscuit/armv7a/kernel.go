@@ -22,8 +22,8 @@ var irqchan chan int = make(chan int, 1)
 
 //go:nosplit
 //go:nowritebarrierec
-func irq() {
-	irqnum := gic_cpu.interrupt_acknowledge_register
+func irq(irqnum uint32) {
+	//irqnum := gic_cpu.interrupt_acknowledge_register
 	select {
 	case irqchan <- runtime.Cpunum():
 	default:
@@ -35,7 +35,7 @@ func irq() {
 	default:
 		//fmt.Printf("IRQ %d on cpu %d\n", irqnum, runtime.Cpunum())
 	}
-	gic_cpu.end_of_interrupt_register = irqnum
+	//gic_cpu.end_of_interrupt_register = irqnum
 }
 
 func printer(resp chan string) {
@@ -63,14 +63,16 @@ func main() {
 	//	for i := 0; i < 20; i++ {
 	//		fmt.Println(<-channel)
 	//	}
-	fmt.Println("waiting")
-	fmt.Println(makesgi())
+	//fmt.Println("waiting")
+	//fmt.Println(makesgi())
 	//fmt.Println("got it")
 	fmt.Println(startGPT())
 	go gopherwatch()
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
+	fir_main()
+	fmt.Println("done with fir test")
 	for {
 		//fmt.Println(<-irqchan)
 	}

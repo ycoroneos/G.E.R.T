@@ -881,32 +881,36 @@ func Release() {
 
 var IRQmsg chan int = make(chan int, 20)
 
-var trapfn func()
+var trapfn func(irqnum uint32)
 
 ///The world might be stopped, we dont really know
 //go:nosplit
 //go:nowritebarrierrec
 func cpucatch() {
+	irqnum := gic_cpu.interrupt_acknowledge_register
 	g := getg()
 	if g == nil {
-		if cpustatus[cpunum()] != CPU_FULL {
-			write_uart([]byte("not init "))
-		}
-		write_uart([]byte("crash"))
-		//throw("nilg")
-		needm(0)
-		trapfn()
-		dropm()
+		//	if cpustatus[cpunum()] != CPU_FULL {
+		//		write_uart([]byte("not init "))
+		//	}
+		//	write_uart([]byte("crash"))
+		//	//throw("nilg")
+		//	needm(0)
+		//	trapfn()
+		//	dropm()
+		//we missed it
+		write_uart([]byte("missed"))
 	} else {
 		//setg(g.m.gsignal)
-		trapfn()
+		trapfn(irqnum)
 		//	print("INT", cpunum(), " ")
 		//	IRQmsg <- 1
 	}
+	gic_cpu.end_of_interrupt_register = irqnum
 }
 
 //go:nosplit
-func SetIRQcallback(f func()) {
+func SetIRQcallback(f func(uint32)) {
 	trapfn = f
 }
 

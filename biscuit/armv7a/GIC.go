@@ -118,7 +118,7 @@ func GIC_init(checks bool) {
 	/*
 	   Enable the GPT interrupt
 	*/
-	enable_interrupt(87, 3)
+	enable_interrupt(87, 0)
 	//enable_interrupt(0, 1)
 	runtime.EnableIRQ()
 	GIC_unmask_all() // unmask all interrupts
