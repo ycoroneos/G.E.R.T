@@ -889,7 +889,10 @@ var trapfn func()
 func cpucatch() {
 	g := getg()
 	if g == nil {
-		//write_uart([]byte("crash"))
+		if cpustatus[cpunum()] != CPU_FULL {
+			write_uart([]byte("not init "))
+		}
+		write_uart([]byte("crash"))
 		//throw("nilg")
 		needm(0)
 		trapfn()

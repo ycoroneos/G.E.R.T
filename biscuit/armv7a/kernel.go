@@ -64,7 +64,7 @@ func main() {
 	//		fmt.Println(<-channel)
 	//	}
 	fmt.Println("waiting")
-	//fmt.Println(makesgi())
+	fmt.Println(makesgi())
 	//fmt.Println("got it")
 	fmt.Println(startGPT())
 	go gopherwatch()
