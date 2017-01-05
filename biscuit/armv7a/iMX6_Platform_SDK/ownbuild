@@ -1,0 +1,4 @@
+#!/bin/bash
+export PATH=$PATH:/home/src/arm/target/bin/
+export CROSS_COMPILE=arm-none-eabi-
+tools/build_sdk -t mx6sdl

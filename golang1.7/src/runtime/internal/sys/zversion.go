@@ -3,7 +3,7 @@
 package sys
 
 const DefaultGoroot = `/home/yanni/biscuit/golang1.7`
-const TheVersion = `devel +f4f60a0 Mon Jan 2 16:28:03 2017 -0500`
+const TheVersion = `devel +5729607 Wed Jan 4 19:40:58 2017 -0500`
 const Goexperiment = ``
 const StackGuardMultiplier = 1
 

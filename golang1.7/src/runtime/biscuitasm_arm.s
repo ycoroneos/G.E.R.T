@@ -419,16 +419,19 @@ TEXT runtime·getentry(SB), NOSPLIT, $0
 	RET
 
 TEXT runtime·catch(SB), NOSPLIT, $0
-	WORD $0xe24ee004                // sub	lr, lr, #4
-	WORD $0xe92d5fff                // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
-	MOVW $0x02020040, R0
-	MOVW $64, R1
+	WORD $0xe24ee004 // sub	lr, lr, #4
+	WORD $0xe92d5fff // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+
+	// MOVW $0x02020040, R0
+	// MOVW $64, R1
+	MOVW R14, R0
 	MOVW $runtime·cpucatch(SB), R11
 	BL   (R11)
-	MOVW $0x02020040, R0
-	MOVW $65, R1
-	WORD $0xe8fd9fff                // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
-	RET                             // wont get here
+
+	// MOVW $0x02020040, R0
+	// MOVW $65, R1
+	WORD $0xe8fd9fff // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
+	RET              // wont get here
 
 TEXT runtime·getcatch(SB), NOSPLIT, $0
 	MOVW runtime·catch(SB), R2

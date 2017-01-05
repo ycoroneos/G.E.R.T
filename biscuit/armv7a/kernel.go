@@ -55,7 +55,7 @@ func main() {
 	GIC_init(false)
 	runtime.SetIRQcallback(irq)
 	runtime.Release()
-	enable_interrupt(87, 1)
+	enable_interrupt(87, 2)
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
@@ -74,8 +74,8 @@ func main() {
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
-	//fir_main()
-	//fmt.Println("done with fir test")
+	fir_main()
+	fmt.Println("done with fir test")
 	for {
 		//fmt.Println(<-irqchan)
 	}

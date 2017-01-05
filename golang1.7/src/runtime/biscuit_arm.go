@@ -807,17 +807,17 @@ func mp_init() {
 	for cpustatus[1] == CPU_WFI {
 	}
 
-	//	//cpu2
-	//	*cpu2bootaddr = entry
-	//	*cpu2bootarg = uint32(isr_stack[2])
-	//	//val = *scr
-	//	//*scr = val
-	//	for *scr&(0x1<<15|0x1<<19) > 0 {
-	//	}
-	//	*scr |= 0x1 << 23
-	//	for cpustatus[2] == CPU_WFI {
-	//	}
-	//
+	//cpu2
+	*cpu2bootaddr = entry
+	*cpu2bootarg = uint32(isr_stack[2])
+	//val = *scr
+	//*scr = val
+	for *scr&(0x1<<15|0x1<<19) > 0 {
+	}
+	*scr |= 0x1 << 23
+	for cpustatus[2] == CPU_WFI {
+	}
+
 	//cpu3
 	//	*cpu3bootaddr = entry
 	//	*cpu3bootarg = uint32(isr_stack[3])
@@ -884,8 +884,8 @@ func Release() {
 	DMB()
 	for cpustatus[1] < CPU_RELEASED {
 	}
-	//	for cpustatus[2] < CPU_RELEASED {
-	//	}
+	for cpustatus[2] < CPU_RELEASED {
+	}
 	//for cpustatus[3] < CPU_RELEASED {
 	//}
 }
@@ -898,6 +898,7 @@ var trapfn func(irqnum uint32)
 //go:nosplit
 //go:nowritebarrierrec
 func cpucatch() {
+	//lr := RR0()
 	irqnum := gic_cpu.interrupt_acknowledge_register
 	g := getg()
 	if g == nil {
@@ -912,6 +913,7 @@ func cpucatch() {
 		//we missed it
 		write_uart([]byte("missed"))
 	} else {
+		//	print("LR : ", hex(lr), " cpu ", cpunum(), "\n")
 		//setg(g.m.gsignal)
 		trapfn(irqnum)
 		//	print("INT", cpunum(), " ")
