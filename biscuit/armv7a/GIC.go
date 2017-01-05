@@ -118,7 +118,7 @@ func GIC_init(checks bool) {
 	/*
 	   Enable the GPT interrupt
 	*/
-	enable_interrupt(87, 0)
+	//enable_interrupt(87, 2)
 	//enable_interrupt(0, 1)
 	runtime.EnableIRQ()
 	GIC_unmask_all() // unmask all interrupts
@@ -131,8 +131,8 @@ func enable_interrupt(num uint32, cpunum uint32) {
 	gic_distributor.interrupt_priority_registers[num] = 0                        // highest priority
 	gic_distributor.interrupt_security_registers[num/32] &= ^(1 << (num & 0x1F)) // disable security
 	//gic_distributor.interrupt_processor_targets_registers[num] |= uint8(cpunum & 0xFF) // send to CPU 0
-	gic_distributor.interrupt_processor_targets_registers[num] |= uint8((0x1 << cpunum) & 0xFF) // send to CPU 0
-	gic_distributor.interrupt_set_enable_registers[num/32] = 1 << (num & 0x1F)                  // enable the interrupt
+	gic_distributor.interrupt_processor_targets_registers[num] = uint8((0x1 << cpunum) & 0xFF) // send to CPU 0
+	gic_distributor.interrupt_set_enable_registers[num/32] = 1 << (num & 0x1F)                 // enable the interrupt
 }
 
 func sgi(num uint32, cpus uint32) {

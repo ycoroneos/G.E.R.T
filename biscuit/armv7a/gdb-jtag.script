@@ -1,0 +1,4 @@
+target remote :2331
+symbol-file obj/kernel.elf
+layout asm
+b runtime.catch

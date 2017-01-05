@@ -36,6 +36,6 @@ func gopherwatch() {
 	for {
 		time := int(sleep(2))
 		fmt.Printf("time is %x\r\n", time)
-		fmt.Printf("last irq from %d\n", <-irqchan)
+		//		fmt.Printf("last irq from %d\n", <-irqchan)
 	}
 }

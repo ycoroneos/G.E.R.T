@@ -1,0 +1,39 @@
+/*********************************************************************
+*               SEGGER MICROCONTROLLER GmbH & Co KG                  *
+*       Solutions for real time microcontroller applications         *
+**********************************************************************
+*                                                                    *
+*       (c) 2014  SEGGER Microcontroller GmbH & Co KG                *
+*                                                                    *
+*       www.segger.com     Support: support@segger.com               *
+*                                                                    *
+**********************************************************************
+----------------------------------------------------------------------
+File    : ConnectSecondCore.JLinkScript
+Purpose : 
+---------------------------END-OF-HEADER------------------------------
+*/
+
+/*********************************************************************
+*
+*       InitTarget
+*/
+void InitTarget(void) {
+  Report("Connect to 2nd A9 core");
+  JTAG_DRPre             = 0;
+  JTAG_DRPost            = 0;
+  JTAG_IRPre             = 0;
+  JTAG_IRPost            = 0;
+  JTAG_IRLen             = 4;
+  CPU                    = CORTEX_A9;
+  JTAG_AllowTAPReset     = 1;
+  //
+  // Base address of debug registers differs from device to device, so this needs to be adapted  
+  //
+  CORESIGHT_CoreBaseAddr = 0x02152000;  // Base address of debug registers of second core. Usually right after the block for the 1st core. 1 block == 4 KB
+  //
+  // Manually configure which APs are present on the CoreSight device
+  //
+  CORESIGHT_AddAP(0, CORESIGHT_AHB_AP);
+  CORESIGHT_AddAP(1, CORESIGHT_APB_AP);
+}

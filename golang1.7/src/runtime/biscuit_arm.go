@@ -61,6 +61,9 @@ func trap_debug() {
 	trapno := RR7()
 	////print("incoming trap: ", trapno, "\n")
 	switch trapno {
+	case 1:
+		print("exit")
+		PutR0(0)
 	case 3:
 		////print("spoofing read on: ", arg0, "\n")
 		ret := uint32(0xffffffff)
@@ -94,6 +97,7 @@ func trap_debug() {
 		//print("spoofing select on cpu ", cpunum(), "\n")
 		//throw("select")
 		if !panicpanic {
+			//disable_interrupts()
 			threadlock.lock()
 			curthread[cpunum()].state = ST_RUNNABLE
 			//print("thread ", curthread[cpunum()].id, " is now runnable\n")
@@ -105,6 +109,7 @@ func trap_debug() {
 		return
 	case 158:
 		//print("spoofing sys sched yield on cpu ", cpunum(), "\n")
+		//disable_interrupts()
 		threadlock.lock()
 		curthread[cpunum()].state = ST_RUNNABLE
 		return_here()
@@ -165,7 +170,8 @@ func trap_debug() {
 	case 248:
 		if firstexit == true {
 			firstexit = false
-			throw("exit")
+			//throw("exit")
+			PutR0(0)
 		}
 		for {
 		}
@@ -294,8 +300,9 @@ func makethread(flags uint32, stack uintptr, entry uintptr) int {
 
 var lastrun = 0
 
-//var threadlock Spinlock_t
-var threadlock Ticketlock_t
+var threadlock Spinlock_t
+
+//var threadlock Ticketlock_t
 
 //go:nosplit
 func thread_schedule() {
@@ -425,6 +432,7 @@ func hack_futex_arm(uaddr *int32, op, val int32, to *timespec, uaddr2 *int32, va
 		dosleep := *uaddr == val
 		if dosleep {
 			//enter thread scheduler
+			//disable_interrupts()
 			threadlock.lock()
 			curthread[mycpu].state = ST_SLEEPING
 			curthread[mycpu].futaddr = uaddrn
@@ -657,13 +665,16 @@ func mem_init() {
 	*vectab = *boot_table
 	//print("\tvector table at: ", hex(uintptr(unsafe.Pointer(vectab))), " \n")
 	catch := getcatch()
+	abort := getabort_int()
+	pref_abort := getpref_abort()
+	undefined := getundefined()
 	//replace push lr at the start of catch
 	*((*uint32)(unsafe.Pointer(uintptr(catch)))) = NOP
 	vectab.reset_addr = catch
-	vectab.undef_addr = catch
+	vectab.undef_addr = undefined
 	vectab.svc_addr = catch
-	vectab.prefetch_addr = catch
-	vectab.abort_addr = catch
+	vectab.prefetch_addr = pref_abort
+	vectab.abort_addr = abort
 	vectab.irq_addr = catch
 	vectab.fiq_addr = catch
 	vectab.reset_addr_addr = catch
@@ -706,6 +717,24 @@ func catch()
 
 //go:nosplit
 func getcatch() uint32
+
+//go:nosplit
+func abort_int()
+
+//go:nosplit
+func getabort_int() uint32
+
+//go:nosplit
+func pref_abort()
+
+//go:nosplit
+func getpref_abort() uint32
+
+//go:nosplit
+func undefined()
+
+//go:nosplit
+func getundefined() uint32
 
 const Mpcorebase uintptr = uintptr(0xA00000)
 
@@ -754,10 +783,8 @@ func mp_init() {
 	//print("cur cpu: ", cpunum(), "\n")
 
 	if cpunum() != 0 {
-		//print("current cpu is not 0, cant procede\n")
 	}
 	cpustatus[0] = CPU_FULL
-	//return
 
 	scu_enable()
 
@@ -768,72 +795,55 @@ func mp_init() {
 	//replace the push lr at the start of entry with a nop
 	*((*uint32)(unsafe.Pointer(uintptr(entry)))) = NOP
 
-	//print("here1")
-	//bootlock.lock()
-	//DMB()
-	//print("scr reads: ", hex(*scr), "\n")
-	//print("trying to boot cpu 1,2,3 entry is ", hex(entry), "\n")
-
-	//do the boots
-
 	//cpu1
 	*cpu1bootaddr = entry
 	*cpu1bootarg = uint32(isr_stack[1])
-	val := *scr
-	*scr = val
+	//val := *scr
+	//*scr = val
+	DMB()
 	for *scr&(0x1<<14|0x1<<18) > 0 {
 	}
 	*scr |= 0x1 << 22
 	for cpustatus[1] == CPU_WFI {
 	}
-	//print("\tbooted cpu1\n")
 
-	//cpu2
-	*cpu2bootaddr = entry
-	*cpu2bootarg = uint32(isr_stack[2])
-	val = *scr
-	*scr = val
-	for *scr&(0x1<<15|0x1<<19) > 0 {
-	}
-	*scr |= 0x1 << 23
-	for cpustatus[2] == CPU_WFI {
-	}
-	//print("\tbooted cpu2\n")
-
+	//	//cpu2
+	//	*cpu2bootaddr = entry
+	//	*cpu2bootarg = uint32(isr_stack[2])
+	//	//val = *scr
+	//	//*scr = val
+	//	for *scr&(0x1<<15|0x1<<19) > 0 {
+	//	}
+	//	*scr |= 0x1 << 23
+	//	for cpustatus[2] == CPU_WFI {
+	//	}
+	//
 	//cpu3
-	*cpu3bootaddr = entry
-	*cpu3bootarg = uint32(isr_stack[3])
-	val = *scr
-	*scr = val
-	for *scr&(0x1<<16|0x1<<20) > 0 {
-	}
-	*scr |= 0x1 << 24
-	for cpustatus[3] == CPU_WFI {
-	}
-	//print("\tbooted cpu3\n")
-	//Spunlock(bootlock)
-
+	//	*cpu3bootaddr = entry
+	//	*cpu3bootarg = uint32(isr_stack[3])
+	//	val := *scr
+	//	*scr = val
+	//	for *scr&(0x1<<16|0x1<<20) > 0 {
+	//	}
+	//	*scr |= 0x1<<24 | 0x1<<16 | 0x1<<20
+	//	for cpustatus[3] == CPU_WFI {
+	//	}
+	//brk()
 }
 
 var stop = 1
 
 //go:nosplit
 func mp_pen() {
-	//write_uart([]byte("*"))
 	me := cpunum()
 	loadvbar(unsafe.Pointer(vectab))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
-	//write_uart([]byte("*"))
 	cpustatus[me] = CPU_STARTED
-	//DMB()
-	//	bootlock.lock()
-	//	bootlock.unlock()
 	for stop == 1 {
 	}
 	//write_uart([]byte("@"))
 	loadttbr0(unsafe.Pointer(uintptr(l1_table)))
 	trampoline()
-	//never get here
 	throw("cpu release\n")
 }
 
@@ -863,6 +873,7 @@ func trampoline() {
 	gic_cpu.cpu_interface_control_register = 0x03   // enable everything
 	gic_cpu.interrupt_priority_mask_register = 0xFF //unmask everything
 	cpustatus[me] = CPU_RELEASED
+	//disable_interrupts()
 	threadlock.lock()
 	thread_schedule()
 }
@@ -873,10 +884,10 @@ func Release() {
 	DMB()
 	for cpustatus[1] < CPU_RELEASED {
 	}
-	for cpustatus[2] < CPU_RELEASED {
-	}
-	for cpustatus[3] < CPU_RELEASED {
-	}
+	//	for cpustatus[2] < CPU_RELEASED {
+	//	}
+	//for cpustatus[3] < CPU_RELEASED {
+	//}
 }
 
 var IRQmsg chan int = make(chan int, 20)
@@ -907,6 +918,38 @@ func cpucatch() {
 		//	IRQmsg <- 1
 	}
 	gic_cpu.end_of_interrupt_register = irqnum
+}
+
+//go:nosplit
+//go:nowritebarrierrec
+func cpuabort() {
+	addr := RR0()
+	me := cpunum()
+	//err := "abort on cpu" + str(me) + "from addr" + hex(addr) + "\n"
+	//write_uart(err)
+	print("abort on cpu ", me, " from addr ", hex(addr), "\n")
+	for {
+	}
+}
+
+//go:nosplit
+//go:nowritebarrierrec
+func cpuprefabort() {
+	addr := RR0()
+	me := cpunum()
+	print("prefetch abort on cpu ", me, " from addr ", hex(addr), "\n")
+	for {
+	}
+}
+
+//go:nosplit
+//go:nowritebarrierrec
+func cpuundefined() {
+	addr := RR0()
+	me := cpunum()
+	print("undefined on cpu ", me, " from addr ", hex(addr), "\n")
+	for {
+	}
 }
 
 //go:nosplit
@@ -1133,9 +1176,11 @@ type Spinlock_t struct {
 
 //go:nosplit
 func (l *Spinlock_t) lock() {
+	//disable_interrupts()
 	for {
 		if atomic.Cas(&l.v, 0, 1) {
 			l.holder = cpunum()
+			//	enable_interrupts()
 			return
 		}
 	}
@@ -1278,3 +1323,9 @@ func hack_sigaltstack(new, old *stackt) {
 	}
 	return
 }
+
+//go:nosplit
+func disable_interrupts()
+
+//go:nosplit
+func enable_interrupts()

@@ -100,9 +100,21 @@ TEXT runtime·ReplayTrapframe(SB), NOSPLIT, $0-4
 	MOVW 20(R4), R2
 	MOVW 24(R4), R3
 	MOVW 28(R4), g
+
+	RET
+
+TEXT runtime·disable_interrupts(SB), NOSPLIT, $0
+	// disable interrupts while in thread scheduler
+	WORD $0xe321f0d3 // msr	CPSR_c, #211	; 0xd3
+	RET
+
+TEXT runtime·enable_interrupts(SB), NOSPLIT, $0
+	// enable interrupts when running a thread
+	WORD $0xe321f053 // msr	CPSR_c, #83	; 0x53
 	RET
 
 TEXT runtime·Threadschedule(SB), NOSPLIT, $0
+
 	MOVW R13, R5
 	ADD  $4, R5, R5 // undo the push {lr}
 
@@ -299,6 +311,11 @@ TEXT runtime·isr_setup(SB), NOSPLIT, $0
 	WORD $0xe321f0d2 // msr	CPSR_c, #210	; 0xd2
 	MOVW R0, R13
 	WORD $0xe321f0d3 // msr CPSR_c, #211; 0xd3
+
+	// set up abort stack
+	WORD $0xe321f0d7 // msr	CPSR_c, #215	; 0xd7
+	MOVW R0, R13
+	WORD $0xe321f0d3 // msr	CPSR_c, #211	; 0xd3
 	RET
 
 TEXT runtime·boot_any(SB), NOSPLIT, $0
@@ -327,6 +344,16 @@ TEXT runtime·boot_any(SB), NOSPLIT, $0
 	WORD $0xe321f0d2 // msr	CPSR_c, #210	; 0xd2
 	MOVW R0, R13
 	WORD $0xe321f0d3 // msr CPSR_c, #211; 0xd3
+
+	// set up abort stack
+	WORD $0xe321f0d7 // msr	CPSR_c, #215	; 0xd7
+	MOVW R0, R13
+	WORD $0xe321f0d3 // msr	CPSR_c, #211	; 0xd3
+
+	// set up undefined stack
+	WORD $0xe321f0db // msr	CPSR_c, #219	; 0xdb
+	MOVW R0, R13
+	WORD $0xe321f0d3 // msr	CPSR_c, #211	; 0xd3
 
 	CALL runtime·cleardcache(SB)
 	MOVW $0x02020040, R0
@@ -365,11 +392,17 @@ TEXT runtime·boot_any(SB), NOSPLIT, $0
 	MOVW $66, R1
 	MOVW R1, (R0)
 
+	// load vectors
+	//	CALL runtime·loadvbar(SB)
+
 	// load the page tables
 	CALL runtime·loadttbr0(SB)
 
 	MOVW $0x02020040, R0
 	MOVW $67, R1
+	MOVW R1, (R0)
+	MOVW $0x02020040, R0
+	MOVW $68, R1
 	MOVW R1, (R0)
 
 	// enter holding pen
@@ -388,13 +421,62 @@ TEXT runtime·getentry(SB), NOSPLIT, $0
 TEXT runtime·catch(SB), NOSPLIT, $0
 	WORD $0xe24ee004                // sub	lr, lr, #4
 	WORD $0xe92d5fff                // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+	MOVW $0x02020040, R0
+	MOVW $64, R1
 	MOVW $runtime·cpucatch(SB), R11
 	BL   (R11)
+	MOVW $0x02020040, R0
+	MOVW $65, R1
 	WORD $0xe8fd9fff                // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
 	RET                             // wont get here
 
 TEXT runtime·getcatch(SB), NOSPLIT, $0
 	MOVW runtime·catch(SB), R2
+	MOVW R11, R2
+	MOVW R2, ret+0(FP)
+	RET
+
+TEXT runtime·abort_int(SB), NOSPLIT, $0
+	WORD $0xe24ee008                // sub	lr, lr, #8
+	WORD $0xe92d5fff                // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+	MOVW R14, R0
+	MOVW $runtime·cpuabort(SB), R11
+	BL   (R11)
+	WORD $0xe8fd9fff                // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
+	RET                             // wont get here
+
+TEXT runtime·getabort_int(SB), NOSPLIT, $0
+	MOVW runtime·abort_int(SB), R2
+	MOVW R11, R2
+	MOVW R2, ret+0(FP)
+	RET
+
+TEXT runtime·pref_abort(SB), NOSPLIT, $0
+	WORD $0xe24ee004                    // sub	lr, lr, #4
+	WORD $0xe92d5fff                    // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+	MOVW R14, R0
+	MOVW $runtime·cpuprefabort(SB), R11
+	BL   (R11)
+	WORD $0xe8fd9fff                    // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
+	RET                                 // wont get here
+
+TEXT runtime·getpref_abort(SB), NOSPLIT, $0
+	MOVW runtime·pref_abort(SB), R2
+	MOVW R11, R2
+	MOVW R2, ret+0(FP)
+	RET
+
+TEXT runtime·undefined(SB), NOSPLIT, $0
+	WORD $0xe24ee004                    // sub	lr, lr, #4
+	WORD $0xe92d5fff                    // push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+	MOVW R14, R0
+	MOVW $runtime·cpuundefined(SB), R11
+	BL   (R11)
+	WORD $0xe8fd9fff                    // ldm	sp!, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}^
+	RET                                 // wont get here
+
+TEXT runtime·getundefined(SB), NOSPLIT, $0
+	MOVW runtime·undefined(SB), R2
 	MOVW R11, R2
 	MOVW R2, ret+0(FP)
 	RET

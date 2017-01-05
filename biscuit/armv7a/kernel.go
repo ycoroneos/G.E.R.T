@@ -18,16 +18,18 @@ func Entry() {
 	runtime.Runtime_main()
 }
 
-var irqchan chan int = make(chan int, 1)
+var irqchan chan int = make(chan int, 20)
 
 //go:nosplit
 //go:nowritebarrierec
 func irq(irqnum uint32) {
-	//irqnum := gic_cpu.interrupt_acknowledge_register
-	select {
-	case irqchan <- runtime.Cpunum():
-	default:
-	}
+	//	//irqnum := gic_cpu.interrupt_acknowledge_register
+	//	if len(irqchan) == cap(irqchan) {
+	//		// Channel was full, but might not be by now
+	//	} else {
+	//		// Channel wasn't full, but might be by now
+	//		irqchan <- runtime.Cpunum()
+	//	}
 	switch irqnum {
 	case 87:
 		addtime(1)
@@ -53,6 +55,7 @@ func main() {
 	GIC_init(false)
 	runtime.SetIRQcallback(irq)
 	runtime.Release()
+	enable_interrupt(87, 1)
 	channel := make(chan string, 1)
 	channel <- "channel test pass"
 	val := <-channel
@@ -71,8 +74,8 @@ func main() {
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
-	fir_main()
-	fmt.Println("done with fir test")
+	//fir_main()
+	//fmt.Println("done with fir test")
 	for {
 		//fmt.Println(<-irqchan)
 	}

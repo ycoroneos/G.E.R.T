@@ -11,3 +11,10 @@ func BTrace() int {
 	btrace = true
 	return 0
 }
+func brk() {
+	func() {
+		print("bkpt")
+	}()
+	for {
+	}
+}

@@ -39,5 +39,6 @@ func startGPT() bool {
 	gpt.IR = 0x1
 	gpt.OCR1 = 0x1FFF
 	gpt.CR |= 0x1
+	gpt.SR = 0x1
 	return true
 }

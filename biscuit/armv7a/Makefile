@@ -32,13 +32,13 @@ LFLAGS := $(CFLAGS) -Tboot/link.ld
 .PHONY : all runtime $(GO_OBJ).elf
 
 all: $(BOOT_TARGET).elf
-	$(GCCPREFIX)objdump -d $(BOOT_TARGET).elf > $(BOOT_TARGET).dump
+	$(GCCPREFIX)objdump -D $(BOOT_TARGET).elf > $(BOOT_TARGET).dump
 	$(GCCPREFIX)readelf -a $(BOOT_TARGET).elf > $(BOOT_TARGET).read
 
 $(GO_OBJ).elf: $(GO_SRC)
 	@echo "+GO "$(GO_SRC)
 	@$(GOCMD) build -ldflags $(GOLINKFLAGS) -o $@
-	$(GCCPREFIX)objdump -d $(GO_OBJ).elf > $(GO_OBJ).dump
+	$(GCCPREFIX)objdump -D $(GO_OBJ).elf > $(GO_OBJ).dump
 	$(GCCPREFIX)readelf -a $(GO_OBJ).elf > $(GO_OBJ).read
 	$(GCCPREFIX)objcopy -O binary $(GO_OBJ).elf $(GO_OBJ).bin
 	./hackbin.py $(GO_OBJ).bin $(GO_OBJ)_hacked.bin
@@ -65,8 +65,18 @@ $(BUILDIR)/%.s.o : boot/%.s
 clean:
 	-rm -rf $(BUILDIR)
 
-gdb:
+gdb-trace:
 	$(GCCPREFIX)gdb -x gdb-trace.script > output
+jtag0:
+	JLinkGDBServer -ScriptFile core0.jlink -device MCIMX6Q5 -port 3330
+jtag1:
+	JLinkGDBServer -ScriptFile core1.jlink -device MCIMX6Q5 -port 3331
+jtag2:
+	JLinkGDBServer -ScriptFile core2.jlink -device MCIMX6Q5 -port 3332
+jtag3:
+	JLinkGDBServer -ScriptFile core3.jlink -device MCIMX6Q5 -port 3333
+gdbj:
+	$(GCCPREFIX)gdb -x gdb-jtag.script
 qemud: all
 	#$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S

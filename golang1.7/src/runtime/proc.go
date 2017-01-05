@@ -2169,6 +2169,8 @@ func schedule() {
 	_g_ := getg()
 
 	if _g_.m.locks != 0 {
+		print("schedule: holding locks")
+		brk()
 		throw("schedule: holding locks")
 	}
 
