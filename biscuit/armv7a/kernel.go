@@ -69,13 +69,15 @@ func main() {
 	//fmt.Println("waiting")
 	//fmt.Println(makesgi())
 	//fmt.Println("got it")
-	fmt.Println(startGPT())
-	go gopherwatch()
+	//fmt.Println(startGPT())
+	//go gopherwatch()
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
-	fir_main()
-	fmt.Println("done with fir test")
+	//fir_main()
+	//fmt.Println("done with fir test")
+	fmt.Println("try to init sd card 1")
+	card_init(1, 4)
 	for {
 		//fmt.Println(<-irqchan)
 	}
