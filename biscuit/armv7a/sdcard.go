@@ -756,14 +756,15 @@ func usdhc_check_response(instance uint32) int {
 	dev := &usdhc_device[instance-1]
 	status := -1
 	if (((dev.regbase.INT_STATUS & 0x1) > 0) ||
-		((dev.regbase.MMC_BOOT & 0x1 << 6) > 0)) &&
-		((dev.regbase.INT_STATUS & 0x1 << 16) == 0) &&
-		((dev.regbase.INT_STATUS & 0x1 << 17) == 0) &&
-		((dev.regbase.INT_STATUS & 0x1 << 19) == 0) &&
-		((dev.regbase.INT_STATUS & 0x1 << 18) == 0) {
+		((dev.regbase.MMC_BOOT & (0x1 << 6)) > 0)) &&
+		((dev.regbase.INT_STATUS & (0x1 << 16)) == 0) &&
+		((dev.regbase.INT_STATUS & (0x1 << 17)) == 0) &&
+		((dev.regbase.INT_STATUS & (0x1 << 19)) == 0) &&
+		((dev.regbase.INT_STATUS & (0x1 << 18)) == 0) {
 		status = 1
 	} else {
 		fmt.Printf("Error status: 0x%x\n", dev.regbase.INT_STATUS)
+		fmt.Printf("MMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
 
 		/* Clear CIHB and CDIHB status */
 		if ((dev.regbase.PRES_STATE & 0x1) > 0) ||
@@ -783,7 +784,7 @@ func usdhc_wait_end_cmd_resp_intr(instance uint32) {
 	dev := &usdhc_device[instance-1]
 	count := 0
 
-	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_CMD_RESP_TIME_MSK) != ESDHC_STATUS_END_CMD_RESP_TIME_MSK {
+	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_CMD_RESP_TIME_MSK) < 0 {
 		if count == ESDHC_OPER_TIMEOUT_COUNT {
 			fmt.Printf("Command timeout.\n")
 			break
@@ -808,7 +809,10 @@ func usdhc_cmd_cfg(instance uint32, cmd *command_t) {
 	dev.regbase.CMD_ARG = cmd.arg
 
 	/* Clear the DMAS field */
+	fmt.Printf("PROT_CTRL addr 0x%x\n", &dev.regbase.PROT_CTRL)
+	fmt.Printf("old PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
 	dev.regbase.PROT_CTRL &= ^(uint32(BM_USDHC_PROT_CTRL_DMASEL))
+	fmt.Printf("new PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
 
 	/* If ADMA mode enabled and command with DMA, enable ADMA2 */
 	//    if ((cmd->dma_enable == TRUE) && (read_usdhc_adma_mode() == TRUE)) {
@@ -877,7 +881,8 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	dev.regbase.INT_STATUS = ESDHC_CLEAR_INTERRUPT
 
 	/* Enable Interrupt */
-	dev.regbase.INT_STATUS_EN |= ESDHC_INTERRUPT_ENABLE
+	//dev.regbase.INT_STATUS_EN |= ESDHC_INTERRUPT_ENABLE
+	dev.regbase.INT_STATUS_EN = 0xFFFFFFFF
 
 	/* Wait for CMD/DATA lines to be free */
 	if usdhc_wait_cmd_data_lines(instance, int(cmd.data_present)) < 0 {
@@ -886,7 +891,10 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	}
 
 	/* Clear interrupt status */
-	dev.regbase.INT_STATUS |= ESDHC_STATUS_END_CMD_RESP_TIME_MSK
+	//dev.regbase.INT_STATUS |= ESDHC_STATUS_END_CMD_RESP_TIME_MSK
+	dev.regbase.INT_STATUS = 0xFFFFFFFF
+	fmt.Printf("INT_STATUS reads %x\n", dev.regbase.INT_STATUS)
+	fmt.Printf("INT_STATUS_EN reads %x\n", dev.regbase.INT_STATUS_EN)
 
 	/* Enable interrupt when sending DMA commands */
 	//    if ((read_usdhc_intr_mode() > 0) && (cmd->dma_enable>0)) {
