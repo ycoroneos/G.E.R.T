@@ -77,7 +77,13 @@ func main() {
 	//fir_main()
 	//fmt.Println("done with fir test")
 	fmt.Println("try to init sd card 1")
-	card_init(1, 4)
+	//card_init(1, 4)
+	data := make([]uint32, 25, 25)
+	if card_data_read(uint32(3), &data, 25, 0) > 0 {
+		for i := 0; i < 25; i++ {
+			fmt.Printf("byte %x\n", data[i])
+		}
+	}
 	for {
 		//fmt.Println(<-irqchan)
 	}

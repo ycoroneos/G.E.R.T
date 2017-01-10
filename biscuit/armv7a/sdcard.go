@@ -141,7 +141,7 @@ type command_response_t struct {
 
 type usdhc_regs struct {
 	DS_ADDR              uint32
-	BLT_ATT              uint32
+	BLK_ATT              uint32
 	CMD_ARG              uint32
 	CMD_XFR_TYP          uint32
 	CMD_RSP0             uint32
@@ -228,42 +228,46 @@ const ()
 
 //sdcard randoms
 const (
-	ESDHC_ONE_BIT_SUPPORT       = 0x0
-	ESDHC_LITTLE_ENDIAN_MODE    = 0x2
-	ESDHC_CIHB_CHK_COUNT        = 10
-	ESDHC_CDIHB_CHK_COUNT       = 100
-	BM_USDHC_PROT_CTRL_DMASEL   = 0x00000300
-	ESDHC_MIXER_CTRL_CMD_MASK   = 0xFFFFFFC0
-	BP_USDHC_MIX_CTRL_DMAEN     = 0
-	BP_USDHC_MIX_CTRL_BCEN      = 1
-	BP_USDHC_MIX_CTRL_AC12EN    = 2
-	BP_USDHC_MIX_CTRL_DDR_EN    = 3
-	BP_USDHC_MIX_CTRL_DTDSEL    = 4
-	BP_USDHC_MIX_CTRL_MSBSEL    = 5
-	BP_USDHC_CMD_XFR_TYP_RSPTYP = 16
-	BP_USDHC_CMD_XFR_TYP_CCCEN  = 19
-	BP_USDHC_CMD_XFR_TYP_CICEN  = 20
-	BP_USDHC_CMD_XFR_TYP_DPSEL  = 21
-	BP_USDHC_CMD_XFR_TYP_CMDINX = 24
-	ESDHC_OPER_TIMEOUT_COUNT    = 10000
-	SD_IF_CMD_ARG_COUNT         = 2
-	SD_IF_HV_COND_ARG           = 0x000001AA
-	SD_IF_LV_COND_ARG           = 0x000002AA
-	SD_OCR_VALUE_HV_HC          = 0x40ff8000
-	SD_OCR_VALUE_LV_HC          = 0x40000080
-	SD_OCR_VALUE_HV_LC          = 0x00ff8000
-	SD_OCR_VALUE_COUNT          = 3
-	SD_VOLT_VALID_COUNT         = 3000
-	CARD_BUSY_BIT               = 0x80000000
-	SD_OCR_HC_RES               = 0x40000000
-	SECT_MODE                   = 1
-	BYTE_MODE                   = 0
-	RCA_SHIFT                   = 16
-	SD_R1_STATUS_APP_CMD_MSK    = 0x20
-	MMC_HV_HC_OCR_VALUE         = 0x40FF8000
-	MMC_VOLT_VALID_COUNT        = 3000
-	MMC_OCR_HC_BIT_MASK         = 0x60000000
-	MMC_OCR_HC_RESP_VAL         = 0x40000000
+	ESDHC_ONE_BIT_SUPPORT             = 0x0
+	ESDHC_LITTLE_ENDIAN_MODE          = 0x2
+	ESDHC_CIHB_CHK_COUNT              = 10
+	ESDHC_CDIHB_CHK_COUNT             = 100
+	BM_USDHC_PROT_CTRL_DMASEL         = 0x00000300
+	ESDHC_MIXER_CTRL_CMD_MASK         = 0xFFFFFFC0
+	BP_USDHC_MIX_CTRL_DMAEN           = 0
+	BP_USDHC_MIX_CTRL_BCEN            = 1
+	BP_USDHC_MIX_CTRL_AC12EN          = 2
+	BP_USDHC_MIX_CTRL_DDR_EN          = 3
+	BP_USDHC_MIX_CTRL_DTDSEL          = 4
+	BP_USDHC_MIX_CTRL_MSBSEL          = 5
+	BP_USDHC_CMD_XFR_TYP_RSPTYP       = 16
+	BP_USDHC_CMD_XFR_TYP_CCCEN        = 19
+	BP_USDHC_CMD_XFR_TYP_CICEN        = 20
+	BP_USDHC_CMD_XFR_TYP_DPSEL        = 21
+	BP_USDHC_CMD_XFR_TYP_CMDINX       = 24
+	ESDHC_OPER_TIMEOUT_COUNT          = 10000
+	SD_IF_CMD_ARG_COUNT               = 2
+	SD_IF_HV_COND_ARG                 = 0x000001AA
+	SD_IF_LV_COND_ARG                 = 0x000002AA
+	SD_OCR_VALUE_HV_HC                = 0x40ff8000
+	SD_OCR_VALUE_LV_HC                = 0x40000080
+	SD_OCR_VALUE_HV_LC                = 0x00ff8000
+	SD_OCR_VALUE_COUNT                = 3
+	SD_VOLT_VALID_COUNT               = 3000
+	CARD_BUSY_BIT                     = 0x80000000
+	SD_OCR_HC_RES                     = 0x40000000
+	SECT_MODE                         = 1
+	BYTE_MODE                         = 0
+	RCA_SHIFT                         = 16
+	SD_R1_STATUS_APP_CMD_MSK          = 0x20
+	MMC_HV_HC_OCR_VALUE               = 0x40FF8000
+	MMC_VOLT_VALID_COUNT              = 3000
+	MMC_OCR_HC_BIT_MASK               = 0x60000000
+	MMC_OCR_HC_RESP_VAL               = 0x40000000
+	BLK_LEN                           = 512
+	ESDHC_FIFO_LENGTH                 = 0x80
+	ESDHC_BLKATTR_WML_BLOCK           = 0x80
+	ESDHC_STATUS_END_DATA_RSP_TC_MASK = 0x00700002
 )
 
 var sd_if_cmd_arg = [...]uint32{
@@ -287,6 +291,220 @@ var usdhc_device = [...]usdhc_inst_t{
 	usdhc_inst_t{((*usdhc_regs)(unsafe.Pointer(uintptr(REGS_USDHC2_BASE)))), USDHC_ADMA_BUFFER2, 0, 0, 0, IMX_INT_USDHC2, 1},
 	usdhc_inst_t{((*usdhc_regs)(unsafe.Pointer(uintptr(REGS_USDHC3_BASE)))), USDHC_ADMA_BUFFER3, 0, 0, 0, IMX_INT_USDHC3, 1},
 	usdhc_inst_t{((*usdhc_regs)(unsafe.Pointer(uintptr(REGS_USDHC4_BASE)))), USDHC_ADMA_BUFFER4, 0, 0, 0, IMX_INT_USDHC4, 1},
+}
+
+//go:nosplit
+func usdhc_check_transfer(instance uint32) int {
+	status := -1
+	if instance == 0 {
+		fmt.Printf("host_reset instance 0 is not valid\n")
+	}
+	dev := &usdhc_device[instance-1]
+
+	if ((dev.regbase.INT_STATUS & (0x1 << 1)) > 0) &&
+		(dev.regbase.INT_STATUS&(0x1<<20) <= 0) &&
+		(dev.regbase.INT_STATUS&(0x1<<21) <= 0) {
+		status = 1
+	} else {
+		fmt.Printf("Error transfer status: 0x%x\n", dev.regbase.INT_STATUS)
+	}
+
+	return status
+}
+
+//go:nosplit
+func host_data_read(instance uint32, dst_ptr *[]uint32, length int, wml int) int {
+	var idx int
+	var itr int
+	var loop int
+	dst_spot := 0
+	if instance == 0 {
+		fmt.Printf("host_reset instance 0 is not valid\n")
+	}
+	dev := &usdhc_device[instance-1]
+
+	/* Enable Interrupt */
+	dev.regbase.INT_STATUS_EN |= 0xFFFFFFFF
+	//HW_USDHC_INT_STATUS_EN(instance).U |= ESDHC_INTERRUPT_ENABLE;
+
+	/* Read data to dst_ptr */
+	loop = length / (4 * wml)
+	for idx = 0; idx < loop; idx++ {
+		/* Wait until buffer ready */
+		fmt.Printf("\t wait for buffer ready\n")
+		for (dev.regbase.PRES_STATE & (0x1 << 11)) == 0 {
+		}
+
+		/* Read from FIFO watermark words */
+		for itr = 0; itr < wml; itr++ {
+			data := dev.regbase.DATA_BUFF_ACC_PORT
+			fmt.Printf("\tread %x\n", data)
+			(*dst_ptr)[dst_spot] = data
+			dst_spot += 1
+		}
+	}
+
+	/* Read left data that not WML aligned */
+	loop = (length % (4 * wml)) / 4
+	if loop != 0 {
+		/* Wait until buffer ready */
+		fmt.Printf("\twait for buffer ready\n")
+		for (dev.regbase.PRES_STATE & (0x1 << 11)) == 0 {
+		}
+
+		/* Read the left to destination buffer */
+		for itr = 0; itr < loop; itr++ {
+			data := dev.regbase.DATA_BUFF_ACC_PORT
+			fmt.Printf("\tread %x\n", data)
+			(*dst_ptr)[dst_spot] = data
+			dst_spot += 1
+		}
+
+		/* Clear FIFO */
+		fmt.Printf("\tclear fifo\n")
+		for ; itr < wml; itr++ {
+			idx = int(dev.regbase.DATA_BUFF_ACC_PORT)
+		}
+	}
+
+	/* Wait until transfer complete */
+	fmt.Printf("\twait for transfer complete\n")
+	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_DATA_RSP_TC_MASK) <= 0 {
+	}
+
+	/* Check if error happened */
+	return usdhc_check_transfer(instance)
+}
+
+//go:nosplit
+func host_cfg_block(instance uint32, blk_len int, nob int, wml int) {
+	if instance == 0 {
+		fmt.Printf("host_reset instance 0 is not valid\n")
+	}
+	dev := &usdhc_device[instance-1]
+	/* Number of blocks and block length */
+	dev.regbase.BLK_ATT = (uint32(nob) << 16) | uint32(blk_len)
+
+	/* Watermark level - for DMA transfer */
+	dev.regbase.WTMK_LVL = uint32(wml)
+}
+
+//go:nosplit
+func host_clear_fifo(instance uint32) {
+	if instance == 0 {
+		fmt.Printf("host_reset instance 0 is not valid\n")
+	}
+	dev := &usdhc_device[instance-1]
+	/* If data present in Rx FIFO */
+	if (dev.regbase.INT_STATUS & (0x1 << 5)) > 0 {
+		/* Read from FIFO until empty */
+		for idx := 0; idx < ESDHC_FIFO_LENGTH; idx++ {
+			_ = dev.regbase.DATA_BUFF_ACC_PORT
+		}
+	}
+
+	/* Maybe not necessary */
+	dev.regbase.INT_STATUS |= 0x1 << 5
+}
+
+//go:nosplit
+func card_set_blklen(instance uint32, len int) int {
+	var cmd command_t
+	status := -1
+
+	/* Configure CMD16 */
+	card_cmd_config(&cmd, CMD16, len, READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
+
+	fmt.Printf("Send CMD16.\n")
+
+	/* Send CMD16 */
+	if host_send_cmd(instance, &cmd) > 0 {
+		status = 1
+	}
+
+	return status
+}
+
+//go:nosplit
+func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint32) int {
+
+	var port int
+	var sector int
+	var cmd command_t
+
+	/* Get uSDHC port according to instance */
+	if instance == 0 {
+		fmt.Printf("host_reset instance 0 is not valid\n")
+	}
+
+	fmt.Printf("card_data_read: Read 0x%x bytes from SD%d offset 0x%x to 0x%x.\n", length, port+1, offset, dst_ptr)
+
+	/* Get sector number */
+	if SDHC_ADMA_mode == 1 {
+		/* For DMA mode, length should be sector aligned */
+		if (length % BLK_LEN) != 0 {
+			length = length + BLK_LEN - (length % BLK_LEN)
+		}
+
+		sector = length / BLK_LEN
+	} else {
+		/* For PIO mode, not neccesary */
+		sector = length / BLK_LEN
+
+		if (length % BLK_LEN) != 0 {
+			sector += 1
+		}
+	}
+
+	/* Offset should be sectors */
+	if usdhc_device[port].addr_mode == SECT_MODE {
+		offset = offset / BLK_LEN
+	}
+
+	/* Set block length to card */
+	if card_set_blklen(instance, BLK_LEN) < 0 {
+		fmt.Printf("Fail to set block length to card in reading sector %d.\n", offset/BLK_LEN)
+		return -1
+	}
+
+	/* Clear Rx FIFO */
+	host_clear_fifo(instance)
+
+	/* Configure block length/number and watermark */
+	host_cfg_block(instance, BLK_LEN, sector, ESDHC_BLKATTR_WML_BLOCK)
+
+	/* If DMA mode enabled, configure BD chain */
+	if SDHC_ADMA_mode > 0 {
+		fmt.Println("ADMA transfer is not supported. why did this happen?")
+		//host_setup_adma(instance, dst_ptr, length)
+		//card_buffer_flush(dst_ptr, length)
+	}
+
+	/* Use CMD18 for multi-block read */
+	card_cmd_config(&cmd, CMD18, int(offset), READ, RESPONSE_48, DATA_PRESENT, 1, 1)
+
+	fmt.Printf("card_data_read: Send CMD18.\n")
+
+	/* Send CMD18 */
+	if host_send_cmd(instance, &cmd) < 0 {
+		fmt.Printf("Fail to send CMD18.\n")
+		return -1
+	} else {
+		/* In polling IO mode, manually read data from Rx FIFO */
+		if SDHC_ADMA_mode <= 0 {
+			fmt.Printf("Non-DMA mode, read data from FIFO.\n")
+
+			if host_data_read(instance, dst_ptr, length, ESDHC_BLKATTR_WML_BLOCK) < 0 {
+				fmt.Printf("Fail to read data from card.\n")
+				return -1
+			}
+		}
+	}
+
+	fmt.Printf("card_data_read: Data read successful.\n")
+
+	return 1
+
 }
 
 //go:nosplit
@@ -751,7 +969,7 @@ func sd_voltage_validation(instance uint32) int {
 //go:nosplit
 func usdhc_check_response(instance uint32) int {
 	if instance == 0 {
-		fmt.Printf("host_cfg_clock instance 0 is not valid\n")
+		fmt.Printf("\thost_cfg_clock instance 0 is not valid\n")
 	}
 	dev := &usdhc_device[instance-1]
 	status := -1
@@ -762,9 +980,13 @@ func usdhc_check_response(instance uint32) int {
 		((dev.regbase.INT_STATUS & (0x1 << 19)) == 0) &&
 		((dev.regbase.INT_STATUS & (0x1 << 18)) == 0) {
 		status = 1
+		fmt.Printf("\tresponse all good\n")
+		fmt.Printf("\tError status: 0x%x\n", dev.regbase.INT_STATUS)
+		fmt.Printf("\tMMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
 	} else {
-		fmt.Printf("Error status: 0x%x\n", dev.regbase.INT_STATUS)
-		fmt.Printf("MMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
+		fmt.Printf("\tresponse bad\n")
+		fmt.Printf("\tError status: 0x%x\n", dev.regbase.INT_STATUS)
+		fmt.Printf("\tMMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
 
 		/* Clear CIHB and CDIHB status */
 		if ((dev.regbase.PRES_STATE & 0x1) > 0) ||
@@ -784,9 +1006,9 @@ func usdhc_wait_end_cmd_resp_intr(instance uint32) {
 	dev := &usdhc_device[instance-1]
 	count := 0
 
-	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_CMD_RESP_TIME_MSK) < 0 {
+	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_CMD_RESP_TIME_MSK) <= 0 {
 		if count == ESDHC_OPER_TIMEOUT_COUNT {
-			fmt.Printf("Command timeout.\n")
+			fmt.Printf("Command timeout. Nothing happened at all\n")
 			break
 		}
 
@@ -809,10 +1031,10 @@ func usdhc_cmd_cfg(instance uint32, cmd *command_t) {
 	dev.regbase.CMD_ARG = cmd.arg
 
 	/* Clear the DMAS field */
-	fmt.Printf("PROT_CTRL addr 0x%x\n", &dev.regbase.PROT_CTRL)
-	fmt.Printf("old PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
+	//fmt.Printf("PROT_CTRL addr 0x%x\n", &dev.regbase.PROT_CTRL)
+	//fmt.Printf("old PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
 	dev.regbase.PROT_CTRL &= ^(uint32(BM_USDHC_PROT_CTRL_DMASEL))
-	fmt.Printf("new PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
+	//fmt.Printf("new PROT_CTRL 0x%x\n", dev.regbase.PROT_CTRL)
 
 	/* If ADMA mode enabled and command with DMA, enable ADMA2 */
 	//    if ((cmd->dma_enable == TRUE) && (read_usdhc_adma_mode() == TRUE)) {
@@ -878,7 +1100,8 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	}
 	dev := &usdhc_device[instance-1]
 	/* Clear Interrupt status register */
-	dev.regbase.INT_STATUS = ESDHC_CLEAR_INTERRUPT
+	//dev.regbase.INT_STATUS = ESDHC_CLEAR_INTERRUPT
+	dev.regbase.INT_STATUS = 0xFFFFFFFF
 
 	/* Enable Interrupt */
 	//dev.regbase.INT_STATUS_EN |= ESDHC_INTERRUPT_ENABLE
@@ -886,15 +1109,15 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 
 	/* Wait for CMD/DATA lines to be free */
 	if usdhc_wait_cmd_data_lines(instance, int(cmd.data_present)) < 0 {
-		fmt.Printf("Data/Command lines busy.\n")
+		fmt.Printf("\tData/Command lines busy.\n")
 		return -1
 	}
 
 	/* Clear interrupt status */
 	//dev.regbase.INT_STATUS |= ESDHC_STATUS_END_CMD_RESP_TIME_MSK
 	dev.regbase.INT_STATUS = 0xFFFFFFFF
-	fmt.Printf("INT_STATUS reads %x\n", dev.regbase.INT_STATUS)
-	fmt.Printf("INT_STATUS_EN reads %x\n", dev.regbase.INT_STATUS_EN)
+	fmt.Printf("\tINT_STATUS reads %x after clear\n", dev.regbase.INT_STATUS)
+	//fmt.Printf("INT_STATUS_EN reads %x\n", dev.regbase.INT_STATUS_EN)
 
 	/* Enable interrupt when sending DMA commands */
 	//    if ((read_usdhc_intr_mode() > 0) && (cmd->dma_enable>0)) {
@@ -908,11 +1131,12 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	//    }
 
 	/* Configure Command */
+	fmt.Printf("\tSending command 0x%x\n", cmd.command)
 	usdhc_cmd_cfg(instance, cmd)
 
 	/* If DMA Enabled */
 	if cmd.dma_enable > 0 {
-		fmt.Printf("why is DMA enabled? It is not supported\n")
+		fmt.Printf("\twhy is DMA enabled? It is not supported\n")
 		//        /* Return in interrupt mode */
 		//        if (read_usdhc_intr_mode() == TRUE) {
 		//            return SUCCESS;
@@ -920,7 +1144,9 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 		//
 		//        usdhc_wait_end_cmd_resp_dma_intr(instance);
 	} else {
+		fmt.Printf("\twait for response... ")
 		usdhc_wait_end_cmd_resp_intr(instance)
+		fmt.Println("got it!")
 	}
 
 	/* Mask all interrupts */
@@ -1166,20 +1392,23 @@ func card_init(instance, bus_width uint32) int {
 	/* Send Init 80 Clock */
 	host_init_active(instance)
 
-	fmt.Printf("Reset card.\n")
+	fmt.Printf("\n\nReset card:\n")
 
 	/* Issue Software Reset to card */
 	if card_software_reset(instance) < 0 {
 		return -1
 	}
 
+	fmt.Printf("\n\nvalidate sdcard voltage:\n")
 	/* SD Voltage Validation */
 	if sd_voltage_validation(instance) > 0 {
+		fmt.Printf("This is an sd card\n")
 		fmt.Printf("SD voltage validation passed.\n")
 
 		/* SD Initialization */
 		init_status = sd_init(instance, int(bus_width))
 	} else if mmc_voltage_validation(instance) > 0 { /* MMC Voltage Validation */
+		fmt.Printf("This is actually an mmc\n")
 		fmt.Printf("MMC voltage validation passed.\n")
 
 		/* MMC Initialization */
