@@ -74,20 +74,20 @@ func main() {
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
-	//fir_main()
-	//fmt.Println("done with fir test")
 	fmt.Println("try to init sd card 1")
-	if card_init(3, 4) < 0 {
+	if !init_som_sdcard() {
 		fmt.Println("init sd card failure")
 	} else {
 		fmt.Println("done init sd card")
-		data := make([]uint32, 25, 25)
-		if card_data_read(uint32(3), &data, 4, 512) > 0 {
-			for i := 0; i < 25; i++ {
-				fmt.Printf("byte %x\n", data[i])
+		good, data := read_som_sdcard(8, 0x3000)
+		if good {
+			for i := 0; i < len(data); i++ {
+				fmt.Printf("\tbyte read %x\n", data[i])
 			}
 		}
 	}
+	fir_main()
+	fmt.Println("done with fir test")
 	for {
 		//fmt.Println(<-irqchan)
 	}

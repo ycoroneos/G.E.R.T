@@ -432,7 +432,7 @@ func card_set_blklen(instance uint32, len int) int {
 	/* Configure CMD16 */
 	card_cmd_config(&cmd, CMD16, len, READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
 
-	fmt.Printf("Send CMD16.\n")
+	//fmt.Printf("Send CMD16.\n")
 
 	/* Send CMD16 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -443,9 +443,9 @@ func card_set_blklen(instance uint32, len int) int {
 }
 
 //go:nosplit
-func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint32) int {
+func card_data_read(instance uint32, length int, offset uint32) (int, []byte) {
 
-	var port int
+	//var port int
 	var sector int
 	var cmd command_t
 
@@ -453,8 +453,9 @@ func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint3
 	if instance == 0 {
 		fmt.Printf("host_reset instance 0 is not valid\n")
 	}
+	dev := &usdhc_device[instance-1]
 
-	fmt.Printf("card_data_read: Read 0x%x bytes from SD%d offset 0x%x to 0x%x.\n", length, port+1, offset, dst_ptr)
+	//fmt.Printf("card_data_read: Read 0x%x bytes from SD%d offset 0x%x\n", length, port+1, offset)
 
 	/* Get sector number */
 	if SDHC_ADMA_mode == 1 {
@@ -474,14 +475,14 @@ func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint3
 	}
 
 	/* Offset should be sectors */
-	if usdhc_device[port].addr_mode == SECT_MODE {
+	if dev.addr_mode == SECT_MODE {
 		offset = offset / BLK_LEN
 	}
 
 	/* Set block length to card */
 	if card_set_blklen(instance, BLK_LEN) < 0 {
 		fmt.Printf("Fail to set block length to card in reading sector %d.\n", offset/BLK_LEN)
-		return -1
+		return -1, nil
 	}
 
 	/* Clear Rx FIFO */
@@ -500,30 +501,64 @@ func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint3
 	/* Use CMD18 for multi-block read */
 	card_cmd_config(&cmd, CMD18, int(offset), READ, RESPONSE_48, DATA_PRESENT, 1, 1)
 
-	fmt.Printf("card_data_read: Send CMD18.\n")
+	//fmt.Printf("card_data_read: Send CMD18.\n")
 
+	/* make slice */
+	out_data := make([]byte, length)
 	/* Send CMD18 */
 	if host_send_cmd(instance, &cmd) < 0 {
 		fmt.Printf("Fail to send CMD18.\n")
-		return -1
+		return -1, nil
 	} else {
 		/* In polling IO mode, manually read data from Rx FIFO */
 		if SDHC_ADMA_mode <= 0 {
-			fmt.Printf("Non-DMA mode, read data from FIFO.\n")
-			fmt.Printf("Block length: %d\n", BLK_LEN)
-			fmt.Printf("Nbytes to read: %d\n", length)
-			fmt.Printf("Nsectors: %d\n", sector)
+			//fmt.Printf("Non-DMA mode, read data from FIFO.\n")
+			//fmt.Printf("Block length: %d\n", BLK_LEN)
+			//fmt.Printf("Nbytes to read: %d\n", length)
+			//fmt.Printf("Nsectors: %d\n", sector)
 
-			if host_data_read(instance, dst_ptr, length, ESDHC_BLKATTR_WML_BLOCK) < 0 {
-				fmt.Printf("Fail to read data from card.\n")
-				return -1
+			/* Clear Interrupt */
+			dev.regbase.INT_STATUS = 0xFFFFFFFF
+
+			/* Enable Interrupt */
+			dev.regbase.INT_STATUS_EN = 0xFFFFFFFF
+
+			for count := 0; count < length; count += 4 {
+				for (dev.regbase.PRES_STATE & (0x1 << 11)) == 0 {
+				}
+				data := dev.regbase.DATA_BUFF_ACC_PORT
+				for i := 0; i < 4; i++ {
+					if (count + i) > length {
+						break
+					}
+					out_data[count+i] = byte((data >> (8 * uint32(i))) & 0xFF)
+				}
 			}
+
+			/* clear out the fifo */
+			//var trash uint32
+			for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_DATA_RSP_TC_MASK) <= 0 {
+				if (dev.regbase.INT_STATUS & 0x20) > 0 {
+					dev.regbase.DATA_BUFF_ACC_PORT |= 0
+					//trash = dev.regbase.DATA_BUFF_ACC_PORT
+					//fmt.Printf("read trash %x\n", trash)
+				}
+			}
+			//trash += 2
+
+			if usdhc_check_transfer(instance) < 0 {
+				return -1, nil
+			}
+			//if host_data_read(instance, dst_ptr, length, ESDHC_BLKATTR_WML_BLOCK) < 0 {
+			//	fmt.Printf("Fail to read data from card.\n")
+			//	return -1
+			//}
 		}
 	}
 
-	fmt.Printf("card_data_read: Data read successful.\n")
+	//fmt.Printf("card_data_read: Data read successful.\n")
 
-	return 1
+	return 1, out_data
 
 }
 
@@ -592,25 +627,25 @@ func mmc_set_rca(instance uint32) int {
 func mmc_init(instance uint32, bus_width int) int {
 	status := -1
 
-	fmt.Printf("Get CID.\n")
+	//fmt.Printf("Get CID.\n")
 
 	/* Get CID */
 	if card_get_cid(instance) > 0 {
-		fmt.Printf("Set RCA.\n")
+		//fmt.Printf("Set RCA.\n")
 
 		/* Set RCA */
 		if mmc_set_rca(instance) > 0 {
 			/* Check Card Type here */
-			fmt.Printf("Set operating frequency.\n")
+			//fmt.Printf("Set operating frequency.\n")
 
 			/* Switch to Operating Frequency */
 			host_cfg_clock(instance, OPERATING_FREQ)
 
-			fmt.Printf("Enter transfer state.\n")
+			//fmt.Printf("Enter transfer state.\n")
 
 			/* Enter Transfer State */
 			if card_enter_trans(instance) > 0 {
-				fmt.Printf("Set bus width.\n")
+				//fmt.Printf("Set bus width.\n")
 
 				/* Set Card Bus Width */
 				if mmc_set_bus_width(instance, bus_width) > 0 {
@@ -694,7 +729,7 @@ func sd_set_bus_width(instance uint32, bus_width int) int {
 	/* Configure CMD55 */
 	card_cmd_config(&cmd, CMD55, int(address), READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
 
-	fmt.Printf("Send CMD55.\n")
+	//fmt.Printf("Send CMD55.\n")
 
 	/* Send ACMD6 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -708,7 +743,7 @@ func sd_set_bus_width(instance uint32, bus_width int) int {
 			/* Configure ACMD6 */
 			card_cmd_config(&cmd, ACMD6, bus_width, READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
 
-			fmt.Printf("Send CMD6.\n")
+			//fmt.Printf("Send CMD6.\n")
 
 			/* Send ACMD6 */
 			if host_send_cmd(instance, &cmd) > 0 {
@@ -736,7 +771,7 @@ func card_trans_status(instance uint32) int {
 	/* Configure CMD13 */
 	card_cmd_config(&cmd, CMD13, int(card_address), READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
 
-	fmt.Printf("Send CMD13.\n")
+	//fmt.Printf("Send CMD13.\n")
 
 	/* Send CMD13 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -769,7 +804,7 @@ func card_enter_trans(instance uint32) int {
 	/* Configure CMD7 */
 	card_cmd_config(&cmd, CMD7, int(card_address), READ, RESPONSE_48_CHECK_BUSY, DATA_PRESENT_NONE, 1, 1)
 
-	fmt.Printf("Send CMD7.\n")
+	//fmt.Printf("Send CMD7.\n")
 
 	/* Send CMD7 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -796,7 +831,7 @@ func sd_get_rca(instance uint32) int {
 	/* Configure CMD3 */
 	card_cmd_config(&cmd, CMD3, 0, READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
 
-	fmt.Printf("Send CMD3.\n")
+	//fmt.Printf("Send CMD3.\n")
 
 	/* Send CMD3 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -804,9 +839,9 @@ func sd_get_rca(instance uint32) int {
 		host_read_response(instance, &response)
 
 		/* Set RCA to Value Read */
-		fmt.Printf("RCA is 0x%x\n", response.cmd_rsp0)
+		//fmt.Printf("RCA is 0x%x\n", response.cmd_rsp0)
 		dev.rca = response.cmd_rsp0 >> RCA_SHIFT
-		fmt.Printf("saved RCA is 0x%x\n", dev.rca)
+		//fmt.Printf("saved RCA is 0x%x\n", dev.rca)
 
 		/* Check the IDENT card state */
 		card_state = int((response.cmd_rsp0 & 0x1e00) >> 9)
@@ -828,7 +863,7 @@ func card_get_cid(instance uint32) int {
 	/* Configure CMD2 */
 	card_cmd_config(&cmd, CMD2, 0, READ, RESPONSE_136, DATA_PRESENT_NONE, 1, 0)
 
-	fmt.Printf("Send CMD2.\n")
+	//fmt.Printf("Send CMD2.\n")
 
 	/* Send CMD2 */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -847,15 +882,15 @@ func card_get_cid(instance uint32) int {
 func sd_init(instance uint32, bus_width int) int {
 	status := -1
 
-	fmt.Printf("Get CID.\n")
+	//fmt.Printf("Get CID.\n")
 
 	/* Read CID */
 	if card_get_cid(instance) > 0 {
-		fmt.Printf("Get RCA.\n")
+		//fmt.Printf("Get RCA.\n")
 
 		/* Obtain RCA */
 		if sd_get_rca(instance) > 0 {
-			fmt.Printf("Set operating frequency.\n")
+			//fmt.Printf("Set operating frequency.\n")
 
 			/* Enable Operating Freq */
 			host_cfg_clock(instance, OPERATING_FREQ)
@@ -864,11 +899,11 @@ func sd_init(instance uint32, bus_width int) int {
 				bus_width = 4
 			}
 
-			fmt.Printf("Enter transfer state.\n")
+			//fmt.Printf("Enter transfer state.\n")
 
 			/* Enter Transfer State */
 			if card_enter_trans(instance) > 0 {
-				fmt.Printf("Set bus width.\n")
+				//fmt.Printf("Set bus width.\n")
 
 				/* Set Bus Width for SD card */
 				if sd_set_bus_width(instance, bus_width) > 0 {
@@ -912,7 +947,7 @@ func sd_voltage_validation(instance uint32) int {
 	}
 	dev := &usdhc_device[instance-1]
 
-	fmt.Printf("Send CMD8.\n")
+	//fmt.Printf("Send CMD8.\n")
 
 	for loop := uint32(0); loop < SD_IF_CMD_ARG_COUNT; {
 		card_cmd_config(&cmd, CMD8, int(sd_if_cmd_arg[loop]), READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
@@ -948,7 +983,7 @@ func sd_voltage_validation(instance uint32) int {
 		return status
 	}
 
-	fmt.Printf("Send ACMD41.\n")
+	//fmt.Printf("Send ACMD41.\n")
 
 	for loop := 0; loop < SD_VOLT_VALID_COUNT && status < 0; {
 		card_cmd_config(&cmd, CMD55, 0, READ, RESPONSE_48, DATA_PRESENT_NONE, 1, 1)
@@ -1002,9 +1037,9 @@ func usdhc_check_response(instance uint32) int {
 		((dev.regbase.INT_STATUS & (0x1 << 19)) == 0) &&
 		((dev.regbase.INT_STATUS & (0x1 << 18)) == 0) {
 		status = 1
-		fmt.Printf("\tresponse all good\n")
-		fmt.Printf("\tError status: 0x%x\n", dev.regbase.INT_STATUS)
-		fmt.Printf("\tMMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
+		//fmt.Printf("\tresponse all good\n")
+		//fmt.Printf("\tError status: 0x%x\n", dev.regbase.INT_STATUS)
+		//fmt.Printf("\tMMC_BOOT = 0x%x\n", dev.regbase.MMC_BOOT)
 	} else {
 		fmt.Printf("\tresponse bad\n")
 		fmt.Printf("\tError status: 0x%x\n", dev.regbase.INT_STATUS)
@@ -1138,7 +1173,7 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	/* Clear interrupt status */
 	//dev.regbase.INT_STATUS |= ESDHC_STATUS_END_CMD_RESP_TIME_MSK
 	dev.regbase.INT_STATUS = 0xFFFFFFFF
-	fmt.Printf("\tINT_STATUS reads %x after clear\n", dev.regbase.INT_STATUS)
+	//fmt.Printf("\tINT_STATUS reads %x after clear\n", dev.regbase.INT_STATUS)
 	//fmt.Printf("INT_STATUS_EN reads %x\n", dev.regbase.INT_STATUS_EN)
 
 	/* Enable interrupt when sending DMA commands */
@@ -1153,7 +1188,7 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 	//    }
 
 	/* Configure Command */
-	fmt.Printf("\tSending command 0x%x\n", cmd.command)
+	//fmt.Printf("\tSending command 0x%x\n", cmd.command)
 	usdhc_cmd_cfg(instance, cmd)
 
 	/* If DMA Enabled */
@@ -1166,9 +1201,9 @@ func host_send_cmd(instance uint32, cmd *command_t) int {
 		//
 		//        usdhc_wait_end_cmd_resp_dma_intr(instance);
 	} else {
-		fmt.Printf("\twait for response... ")
+		//fmt.Printf("\twait for response... ")
 		usdhc_wait_end_cmd_resp_intr(instance)
-		fmt.Println("got it!")
+		//fmt.Println("got it!")
 	}
 
 	/* Mask all interrupts */
@@ -1215,7 +1250,7 @@ func card_software_reset(instance uint32) int {
 	/* Configure CMD0 */
 	card_cmd_config(&cmd, CMD0, 0, READ, RESPONSE_NONE, DATA_PRESENT_NONE, 0, 0)
 
-	fmt.Printf("Send CMD0.\n")
+	//fmt.Printf("Send CMD0.\n")
 
 	/* Issue CMD0 to Card */
 	if host_send_cmd(instance, &cmd) > 0 {
@@ -1232,11 +1267,11 @@ func host_init_active(instance uint32) {
 	}
 	dev := &usdhc_device[instance-1]
 
-	fmt.Println("send 80 clock ticks")
+	//fmt.Println("send 80 clock ticks")
 	/* Send 80 clock ticks for card to power up */
 	dev.regbase.SYS_CTRL |= 1 << 27
 
-	fmt.Println("wait for INITA to clear")
+	//fmt.Println("wait for INITA to clear")
 	/* Wait until INITA field cleared */
 	for (dev.regbase.SYS_CTRL & (1 << 27)) > 0 {
 	}
@@ -1251,21 +1286,21 @@ func host_cfg_clock(instance uint32, frequency int) {
 	}
 	dev := &usdhc_device[instance-1]
 
-	fmt.Printf("wait for clock stable\n")
+	//fmt.Printf("wait for clock stable\n")
 	/* Wait until clock stable */
 	for (dev.regbase.PRES_STATE & (0x1 << 3)) == 0 {
 	}
 
-	fmt.Printf("clear things\n")
+	//fmt.Printf("clear things\n")
 	/* Clear DTOCV, SDCLKFS, DVFS bits */
 	dev.regbase.SYS_CTRL &= ^(uint32(0xF<<16) | uint32(0xFF<<8) | uint32(0xF<<4))
 
-	fmt.Printf("wait for clock stable\n")
+	//fmt.Printf("wait for clock stable\n")
 	/* Wait until clock stable */
 	for (dev.regbase.PRES_STATE & (0x1 << 3)) == 0 {
 	}
 
-	fmt.Printf("set frequency dividers\n")
+	//fmt.Printf("set frequency dividers\n")
 	/* Set frequency dividers */
 	if frequency == IDENTIFICATION_FREQ {
 		dev.regbase.SYS_CTRL |= ESDHC_IDENT_DVS << 4
@@ -1278,12 +1313,12 @@ func host_cfg_clock(instance uint32, frequency int) {
 		dev.regbase.SYS_CTRL |= ESDHC_HS_SDCLKFS << 8
 	}
 
-	fmt.Printf("wait for clock stable\n")
+	//fmt.Printf("wait for clock stable\n")
 	/* Wait until clock stable */
 	for (dev.regbase.PRES_STATE & (0x1 << 3)) == 0 {
 	}
 
-	fmt.Printf("set some bit\n")
+	//fmt.Printf("set some bit\n")
 	/* Set DTOCV bit */
 	dev.regbase.SYS_CTRL |= ESDHC_SYSCTL_DTOCV_VAL << 16
 }
@@ -1354,20 +1389,20 @@ func host_reset(instance uint32, bus_width int, endian_mode int) {
 	}
 	dev := &usdhc_device[instance-1]
 	/* Reset the eSDHC by writing 1 to RSTA bit of SYSCTRL Register */
-	fmt.Printf("sent reset\n")
+	//fmt.Printf("sent reset\n")
 	dev.regbase.SYS_CTRL |= 0x1 << 24
 
-	fmt.Printf("wait for rsta clear\n")
-	fmt.Printf("sys_ctrl is %x\n", dev.regbase.SYS_CTRL)
+	//fmt.Printf("wait for rsta clear\n")
+	//fmt.Printf("sys_ctrl is %x\n", dev.regbase.SYS_CTRL)
 	/* Wait until RSTA field cleared */
 	for (dev.regbase.SYS_CTRL & (0x1 << 24)) > 0 {
 	}
 
-	fmt.Printf("set default bus width\n")
+	//fmt.Printf("set default bus width\n")
 	/* Set default bus width to eSDHC */
 	host_set_bus_width(instance, bus_width)
 
-	fmt.Printf("set endian mode\n")
+	//fmt.Printf("set endian mode\n")
 	/* Set Endianness of eSDHC */
 	usdhc_set_endianness(instance, endian_mode)
 }
@@ -1388,7 +1423,7 @@ func card_init(instance, bus_width uint32) int {
 			fmt.Printf("SD card detected, but not instance %d\n", instance)
 			return -1
 		} else {
-			fmt.Printf("SD card %d detected\n", instance)
+			//fmt.Printf("SD card %d detected\n", instance)
 		}
 	}
 
@@ -1398,7 +1433,7 @@ func card_init(instance, bus_width uint32) int {
 			fmt.Printf("Card on SD%d is write protected.\n", instance)
 			return -1
 		} else {
-			fmt.Printf("Card on SD%d is not write protected.\n", instance)
+			//fmt.Printf("Card on SD%d is not write protected.\n", instance)
 		}
 	}
 
@@ -1414,27 +1449,44 @@ func card_init(instance, bus_width uint32) int {
 	/* Send Init 80 Clock */
 	host_init_active(instance)
 
-	fmt.Printf("\n\nReset card:\n")
+	//fmt.Printf("\n\nReset card:\n")
 
 	/* Issue Software Reset to card */
 	if card_software_reset(instance) < 0 {
 		return -1
 	}
 
-	fmt.Printf("\n\nvalidate sdcard voltage:\n")
+	//fmt.Printf("\n\nvalidate sdcard voltage:\n")
 	/* SD Voltage Validation */
 	if sd_voltage_validation(instance) > 0 {
-		fmt.Printf("This is an sd card\n")
-		fmt.Printf("SD voltage validation passed.\n")
+		//fmt.Printf("This is an sd card\n")
+		//fmt.Printf("SD voltage validation passed.\n")
 
 		/* SD Initialization */
 		init_status = sd_init(instance, int(bus_width))
 	} else if mmc_voltage_validation(instance) > 0 { /* MMC Voltage Validation */
-		fmt.Printf("This is actually an mmc\n")
-		fmt.Printf("MMC voltage validation passed.\n")
+		//fmt.Printf("This is actually an mmc\n")
+		//fmt.Printf("MMC voltage validation passed.\n")
 
 		/* MMC Initialization */
 		init_status = mmc_init(instance, int(bus_width))
 	}
 	return init_status
+}
+
+////////////////////////////////////////////////
+//useful functions
+
+//init the som sdcard at port 3 with 4bit bus width
+//go:nosplit
+func init_som_sdcard() bool {
+	return card_init(3, 4) > 0
+}
+
+///read length bytes at byte offset from the start of the sdcard
+//go:nosplit
+func read_som_sdcard(length int, offset uint32) (bool, []byte) {
+	val, data := card_data_read(uint32(3), length, offset)
+	status := val > 0
+	return status, data
 }
