@@ -1,5 +1,10 @@
 package main
 
+/*
+* This entire damn driver was directly ported from the iMX6 bare metal sdk
+* for use in the Biscuit embedded toolkit
+ */
+
 import "unsafe"
 import "fmt"
 
@@ -176,7 +181,7 @@ type usdhc_inst_t struct {
 	adma_ptr uint32      //ADMA buffer address
 	//void (*isr) (void);         //interrupt service routine
 	isr       uintptr //unused for now
-	rca       uint16  //relative card address
+	rca       uint32  //relative card address
 	addr_mode uint8   //addressing mode
 	intr_id   uint8   //interrupt ID
 	status    uint8   //interrupt status
@@ -323,8 +328,11 @@ func host_data_read(instance uint32, dst_ptr *[]uint32, length int, wml int) int
 	}
 	dev := &usdhc_device[instance-1]
 
+	/* Clear Interrupt */
+	dev.regbase.INT_STATUS = 0xFFFFFFFF
+
 	/* Enable Interrupt */
-	dev.regbase.INT_STATUS_EN |= 0xFFFFFFFF
+	dev.regbase.INT_STATUS_EN = 0xFFFFFFFF
 	//HW_USDHC_INT_STATUS_EN(instance).U |= ESDHC_INTERRUPT_ENABLE;
 
 	/* Read data to dst_ptr */
@@ -368,9 +376,16 @@ func host_data_read(instance uint32, dst_ptr *[]uint32, length int, wml int) int
 	}
 
 	/* Wait until transfer complete */
+	excount := 0
 	fmt.Printf("\twait for transfer complete\n")
 	for (dev.regbase.INT_STATUS & ESDHC_STATUS_END_DATA_RSP_TC_MASK) <= 0 {
+		if (dev.regbase.INT_STATUS & 0x20) > 0 {
+			extra := dev.regbase.DATA_BUFF_ACC_PORT
+			excount += 1
+			fmt.Printf("found extra data %x\n", extra)
+		}
 	}
+	fmt.Printf("total bytes read: %d\n", 4*(excount+dst_spot))
 
 	/* Check if error happened */
 	return usdhc_check_transfer(instance)
@@ -395,14 +410,16 @@ func host_clear_fifo(instance uint32) {
 		fmt.Printf("host_reset instance 0 is not valid\n")
 	}
 	dev := &usdhc_device[instance-1]
+	var trash uint32
 	/* If data present in Rx FIFO */
 	if (dev.regbase.INT_STATUS & (0x1 << 5)) > 0 {
 		/* Read from FIFO until empty */
 		for idx := 0; idx < ESDHC_FIFO_LENGTH; idx++ {
-			_ = dev.regbase.DATA_BUFF_ACC_PORT
+			trash = dev.regbase.DATA_BUFF_ACC_PORT
 		}
 	}
 
+	trash = trash + 2
 	/* Maybe not necessary */
 	dev.regbase.INT_STATUS |= 0x1 << 5
 }
@@ -493,6 +510,9 @@ func card_data_read(instance uint32, dst_ptr *[]uint32, length int, offset uint3
 		/* In polling IO mode, manually read data from Rx FIFO */
 		if SDHC_ADMA_mode <= 0 {
 			fmt.Printf("Non-DMA mode, read data from FIFO.\n")
+			fmt.Printf("Block length: %d\n", BLK_LEN)
+			fmt.Printf("Nbytes to read: %d\n", length)
+			fmt.Printf("Nsectors: %d\n", sector)
 
 			if host_data_read(instance, dst_ptr, length, ESDHC_BLKATTR_WML_BLOCK) < 0 {
 				fmt.Printf("Fail to read data from card.\n")
@@ -784,7 +804,9 @@ func sd_get_rca(instance uint32) int {
 		host_read_response(instance, &response)
 
 		/* Set RCA to Value Read */
-		dev.rca = uint16(response.cmd_rsp0 >> RCA_SHIFT)
+		fmt.Printf("RCA is 0x%x\n", response.cmd_rsp0)
+		dev.rca = response.cmd_rsp0 >> RCA_SHIFT
+		fmt.Printf("saved RCA is 0x%x\n", dev.rca)
 
 		/* Check the IDENT card state */
 		card_state = int((response.cmd_rsp0 & 0x1e00) >> 9)
@@ -1414,6 +1436,5 @@ func card_init(instance, bus_width uint32) int {
 		/* MMC Initialization */
 		init_status = mmc_init(instance, int(bus_width))
 	}
-
 	return init_status
 }
