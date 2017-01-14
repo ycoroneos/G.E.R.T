@@ -1483,10 +1483,24 @@ func init_som_sdcard() bool {
 	return card_init(3, 4) > 0
 }
 
+//init the board sdcard at port 1 with 4bit bus width
+//go:nosplit
+func init_board_sdcard() bool {
+	return card_init(1, 4) > 0
+}
+
 ///read length bytes at byte offset from the start of the sdcard
 //go:nosplit
 func read_som_sdcard(length int, offset uint32) (bool, []byte) {
 	val, data := card_data_read(uint32(3), length, offset)
+	status := val > 0
+	return status, data
+}
+
+///read length bytes at byte offset from the start of the sdcard
+//go:nosplit
+func read_board_sdcard(length int, offset uint32) (bool, []byte) {
+	val, data := card_data_read(uint32(1), length, offset)
 	status := val > 0
 	return status, data
 }

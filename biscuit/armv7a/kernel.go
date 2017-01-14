@@ -74,20 +74,24 @@ func main() {
 	//	for i := 0; i < 10000000; i++ {
 	//		fmt.Println(i)
 	//	}
-	fmt.Println("try to init sd card 1")
-	if !init_som_sdcard() {
-		fmt.Println("init sd card failure")
-	} else {
-		fmt.Println("done init sd card")
-		good, data := read_som_sdcard(8, 0x3000)
-		if good {
-			for i := 0; i < len(data); i++ {
-				fmt.Printf("\tbyte read %x\n", data[i])
-			}
-		}
+	//	fmt.Println("try to init sd card 1")
+	//	if !init_som_sdcard() {
+	//		fmt.Println("init sd card failure")
+	//	} else {
+	//		fmt.Println("done init sd card")
+	//		good, data := read_som_sdcard(8, 0x3000)
+	//		if good {
+	//			for i := 0; i < len(data); i++ {
+	//				fmt.Printf("\tbyte read %x\n", data[i])
+	//			}
+	//		}
+	//	}
+	//	fir_main()
+	//	fmt.Println("done with fir test")
+	good, _ := fat32_som_start()
+	if !good {
+		fmt.Println("fat32 init failure")
 	}
-	fir_main()
-	fmt.Println("done with fir test")
 	for {
 		//fmt.Println(<-irqchan)
 	}
