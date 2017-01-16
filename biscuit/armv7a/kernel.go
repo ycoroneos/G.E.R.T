@@ -88,7 +88,7 @@ func main() {
 	//	}
 	//	fir_main()
 	//	fmt.Println("done with fir test")
-	good, _ := fat32_som_start()
+	good, _ := fat32_som_start(read_som_sdcard)
 	if !good {
 		fmt.Println("fat32 init failure")
 	}

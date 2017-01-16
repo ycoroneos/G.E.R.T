@@ -7,6 +7,10 @@ const MBR_MAGIC = 0xAA55
 const FAT_TYPE = 0xb
 const BLKSIZE = 512
 
+type readfunc func(uint32, uint32) (bool, []byte)
+
+var readbytes readfunc
+
 type MBR struct {
 	partitions [4]partition
 	magic      uint32
@@ -31,15 +35,28 @@ type volume_id struct {
 	signature       uint32
 }
 
+type directory struct {
+	shortname string
+}
+
 type fd struct {
 }
 
 var theMBR MBR
 var vol_id volume_id
+var fat_begin_lba uint32
+var cluster_begin_lba uint32
+var sectors_per_cluster uint8
+var root_dir_first_cluster uint32
+var fatcache []uint32
+
+func lba2addr(lba uint32) uint32 {
+	return lba * BLKSIZE
+}
 
 func getmbr() (bool, uint32) {
 	lba := uint32(0x0)
-	good, data := read_som_sdcard(512, 0x0)
+	good, data := readbytes(512, 0x0)
 	if !good {
 		return false, 0x0
 	}
@@ -71,16 +88,16 @@ func getmbr() (bool, uint32) {
 }
 
 func getvolumeid(lba uint32) (bool, uint32) {
-	good, data := read_som_sdcard(512, lba*BLKSIZE)
+	good, data := readbytes(512, lba*BLKSIZE)
 	if !good {
 		return false, 0x0
 	}
 	vol_id.bytes_per_sec = (uint16(data[0xb])) | (uint16(data[0xb+1]) << 8)
-	vol_id.sec_per_cluster = data[0xd]
+	vol_id.sec_per_cluster = data[13]
 	vol_id.n_rsrv_sectors = (uint16(data[0xe]) << 0) | (uint16(data[0xe+1]) << 8)
 	vol_id.n_fats = data[0x10]
 	vol_id.sec_per_fat = (uint32(data[0x24]) << 0) | (uint32(data[0x24+1]) << 8) | (uint32(data[0x24+2]) << 16) | (uint32(data[0x24+3]) << 24)
-	vol_id.root_cluster = (uint32(data[0x2C]) << 0) | (uint32(data[0x2C+1]) << 8) | (uint32(data[0x2C+2]) << 16) | (uint32(data[0x2C+3]) << 24)
+	vol_id.root_cluster = (uint32(data[0x2C]) << 0) // | (uint32(data[0x2C+1]) << 8) | (uint32(data[0x2C+2]) << 16) | (uint32(data[0x2C+3]) << 24)
 	vol_id.signature = (uint32(data[0x1fe]) << 0) | (uint32(data[0x1fe+1]) << 8)
 	if vol_id.signature != MBR_MAGIC {
 		fmt.Printf("volume id signature is wrong\n")
@@ -90,12 +107,34 @@ func getvolumeid(lba uint32) (bool, uint32) {
 	} else {
 		fmt.Printf("found FAT32 volume signature\n")
 		fmt.Printf("bytes per sector: 0x%d\n", vol_id.bytes_per_sec)
+		fmt.Printf("number of FAT's %d\n", vol_id.n_fats)
+		fmt.Printf("sectors per fat %d\n", vol_id.sec_per_fat)
+		fmt.Printf("root cluster number is %d\n", vol_id.root_cluster)
 	}
+	fat_begin_lba = lba + uint32(vol_id.n_rsrv_sectors)
+	cluster_begin_lba = lba + uint32(vol_id.n_rsrv_sectors) + (2 * uint32(vol_id.sec_per_fat))
+	sectors_per_cluster = vol_id.sec_per_cluster
+	root_dir_first_cluster = vol_id.root_cluster
+
+	//now read the fat into memory to speed up access times
+	fmt.Printf("reading FAT into memory ... ")
+	good, fat_bytes := readbytes(vol_id.sec_per_fat*uint32(vol_id.bytes_per_sec), lba2addr(fat_begin_lba))
+	if !good {
+		return false, 0x0
+	}
+	nfat_entries := (vol_id.sec_per_fat * uint32(vol_id.bytes_per_sec)) / 4
+	fatcache = make([]uint32, nfat_entries, nfat_entries)
+	for i := uint32(0); i < nfat_entries; i++ {
+		fatcache[i] = (uint32(fat_bytes[(4*i)+0]) << 0) | (uint32(fat_bytes[(4*i)+1]) << 8) | (uint32(fat_bytes[(4*i)+2]) << 16) | (uint32(fat_bytes[(4*i)+3]) << 24)
+	}
+	fmt.Printf("done! fatcache is %d bytes\n", len(fat_bytes))
+
 	return true, 0x0
 }
 
 //this returns in interface for navigating and modifying the directory structure
-func fat32_som_start() (bool, int) {
+func fat32_som_start(reader_func readfunc) (bool, int) {
+	readbytes = reader_func
 	if !init_som_sdcard() {
 		return false, 0
 	}
@@ -103,7 +142,6 @@ func fat32_som_start() (bool, int) {
 	if !good {
 		return false, 0
 	}
-	fmt.Printf("found FAT32 partition with LBA 0x%x\n", lba)
 	good, _ = getvolumeid(lba)
 	if !good {
 		return false, 0

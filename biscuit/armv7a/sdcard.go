@@ -1491,16 +1491,16 @@ func init_board_sdcard() bool {
 
 ///read length bytes at byte offset from the start of the sdcard
 //go:nosplit
-func read_som_sdcard(length int, offset uint32) (bool, []byte) {
-	val, data := card_data_read(uint32(3), length, offset)
+func read_som_sdcard(length uint32, offset uint32) (bool, []byte) {
+	val, data := card_data_read(uint32(3), int(length), offset)
 	status := val > 0
 	return status, data
 }
 
 ///read length bytes at byte offset from the start of the sdcard
 //go:nosplit
-func read_board_sdcard(length int, offset uint32) (bool, []byte) {
-	val, data := card_data_read(uint32(1), length, offset)
+func read_board_sdcard(length uint32, offset uint32) (bool, []byte) {
+	val, data := card_data_read(uint32(1), int(length), offset)
 	status := val > 0
 	return status, data
 }
