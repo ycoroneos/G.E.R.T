@@ -19,8 +19,8 @@ AS_OBJ := $(patsubst boot/%.s,$(BUILDIR)/%.s.o,$(AS_SRC))
 BOOT_OBJ := $(AS_OBJ) $(C_OBJ)
 BOOT_TARGET := $(BUILDIR)/bootloader
 
-#QEMU := qemu-system-arm
-QEMU := ~/qemu/build/arm-softmmu/qemu-system-arm
+QEMU := qemu-system-arm
+#QEMU := ~/qemu/build/arm-softmmu/qemu-system-arm
 
 CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
           -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/

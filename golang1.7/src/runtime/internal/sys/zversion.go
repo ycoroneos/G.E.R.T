@@ -2,8 +2,8 @@
 
 package sys
 
-const DefaultGoroot = `/home/yanni/biscuit/golang1.7`
-const TheVersion = `devel +3f96cf0 Tue Jan 17 12:01:00 2017 -0500`
+const DefaultGoroot = `/Users/fruit/Documents/biscuit/golang1.7`
+const TheVersion = `devel +8f5a78d Tue Jan 17 17:57:35 2017 -0500`
 const Goexperiment = ``
 const StackGuardMultiplier = 1
 

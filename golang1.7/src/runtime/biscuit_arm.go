@@ -259,12 +259,12 @@ const (
 func thread_init() {
 	for i := uint32(0); i < maxthreads; i++ {
 		va := uintptr(unsafe.Pointer(&threads[i].id))
-		print("write to ", hex(va), " ")
+		//print("write to ", hex(va), " ")
 		pgnum := va >> PGSHIFT
 		pde := (*uint32)(unsafe.Pointer(kernpgdir + uintptr(pgnum*4)))
-		print("pde is ", hex(*pde), "\n")
+		//print("pde is ", hex(*pde), "\n")
 		if (*pde & 0x2) == 0 {
-			print("UNMAPPED")
+			print("UNMAPPED thread structure in thread_init")
 		}
 		threads[i].id = i
 	}
@@ -645,7 +645,7 @@ func boot_alloc(size uint32) physaddr {
 	memclrNoHeapPointers(unsafe.Pointer(uintptr(result)), uintptr(newsize))
 	//memclrbytes(unsafe.Pointer(uintptr(result)), uintptr(newsize))
 	DMB()
-	verifyzero(uintptr(result), newsize)
+	//verifyzero(uintptr(result), newsize)
 	return result
 }
 
@@ -703,8 +703,6 @@ func mem_init() {
 	////print("pages at: ", hex(uintptr(unsafe.Pointer(pages))), " sizeof(struct PageInfo) is ", hex(unsafe.Sizeof(*pages)), "\n")
 	//print("pages at: ", hex(pages), "\n")
 	physPageSize = uintptr(PGSIZE)
-
-	//threads = ((*[maxthreads]thread_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(maxthreads * unsafe.Sizeof(thread_t{})))))))
 
 }
 
@@ -805,17 +803,17 @@ func mp_init() {
 	//replace the push lr at the start of entry with a nop
 	*((*uint32)(unsafe.Pointer(uintptr(entry)))) = NOP
 
-	//	//cpu1
-	//	*cpu1bootaddr = entry
-	//	*cpu1bootarg = uint32(isr_stack[1])
-	//	//val := *scr
-	//	//*scr = val
-	//	DMB()
-	//	for *scr&(0x1<<14|0x1<<18) > 0 {
-	//	}
-	//	*scr |= 0x1 << 22
-	//	for cpustatus[1] == CPU_WFI {
-	//	}
+	//cpu1
+	*cpu1bootaddr = entry
+	*cpu1bootarg = uint32(isr_stack[1])
+	//val := *scr
+	//*scr = val
+	DMB()
+	for *scr&(0x1<<14|0x1<<18) > 0 {
+	}
+	*scr |= 0x1 << 22
+	for cpustatus[1] == CPU_WFI {
+	}
 
 	//	//cpu2
 	//	*cpu2bootaddr = entry
@@ -892,8 +890,8 @@ func trampoline() {
 func Release() {
 	stop = 0
 	DMB()
-	//	for cpustatus[1] < CPU_RELEASED {
-	//	}
+	for cpustatus[1] < CPU_RELEASED {
+	}
 	//	for cpustatus[2] < CPU_RELEASED {
 	//	}
 	//for cpustatus[3] < CPU_RELEASED {
@@ -1083,7 +1081,7 @@ func map_region(pa uint32, va uint32, size uint32, perms uint32) {
 	realsize := roundup(size, PGSIZE)
 	////print("realsize is ", hex(realsize), "\n")
 	i := uint32(0)
-	for ; i < realsize; i += PGSIZE {
+	for ; i <= realsize; i += PGSIZE {
 		//pgnum := pa2pgnum(physaddr(i + pa))
 		nextpa := pa + i
 		l1offset := nextpa >> 18

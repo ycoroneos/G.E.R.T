@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/s390x/objz.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/s390x/objz.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/s390x/objz.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/s390x/objz.go:1
 // Based on cmd/internal/obj/ppc64/obj9.go.
 //
 //	Copyright © 1994-1999 Lucent Technologies Inc.  All rights reserved.

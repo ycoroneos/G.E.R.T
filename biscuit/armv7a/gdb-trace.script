@@ -1,6 +1,6 @@
 target remote :1234
 symbol-file obj/kernel.elf
-break runtime.mp_init
+break runtime.thread_init
 continue
 set $i=0
 while ($i<1000)

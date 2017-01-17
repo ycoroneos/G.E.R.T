@@ -60,6 +60,7 @@ func main() {
 	channel <- "channel test pass"
 	val := <-channel
 	fmt.Println(val)
+	fmt.Println("REMEMBER THAT SKETCHY THING YOU DID WITH MAPPING AN EXTRA PAGE IN MAP_REGION")
 	//	for i := 0; i < 20; i++ {
 	//		go printer(channel)
 	//	}
@@ -88,23 +89,23 @@ func main() {
 	//	}
 	//	fir_main()
 	//	fmt.Println("done with fir test")
-	//	good, root := fat32_som_start(init_som_sdcard, read_som_sdcard)
-	//	if !good {
-	//		fmt.Println("fat32 init failure")
-	//	}
-	//	fmt.Println(root.getfilenames())
-	//	fmt.Println(root.getsubdirnames())
-	//	good, bootdir := root.direnter("BOOT")
-	//	if !good {
-	//		panic("dir entry failed")
-	//	} else {
-	//		fmt.Println(bootdir.getfilenames())
-	//		good, contents := bootdir.fileread("UENV.TXT")
-	//		if !good {
-	//			panic("file read failure")
-	//		}
-	//		fmt.Println(string(contents))
-	//	}
+	good, root := fat32_som_start(init_som_sdcard, read_som_sdcard)
+	if !good {
+		fmt.Println("fat32 init failure")
+	}
+	fmt.Println(root.getfilenames())
+	fmt.Println(root.getsubdirnames())
+	good, bootdir := root.direnter("BOOT")
+	if !good {
+		panic("dir entry failed")
+	} else {
+		fmt.Println(bootdir.getfilenames())
+		good, contents := bootdir.fileread("UENV.TXT")
+		if !good {
+			panic("file read failure")
+		}
+		fmt.Println(string(contents))
+	}
 
 	for {
 		//fmt.Println(<-irqchan)
