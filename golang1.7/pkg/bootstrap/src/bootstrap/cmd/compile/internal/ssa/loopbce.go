@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/ssa/loopbce.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/ssa/loopbce.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/ssa/loopbce.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/ssa/loopbce.go:1
 package ssa
 
 type indVar struct {
