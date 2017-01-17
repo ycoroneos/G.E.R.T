@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/symtab.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/symtab.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/symtab.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/symtab.go:1
 // Inferno utils/6l/span.c
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/6l/span.c
 //

@@ -2,11 +2,14 @@ package main
 
 import "unsafe"
 import "fmt"
+import "strings"
 
 const MBR_MAGIC = 0xAA55
 const FAT_TYPE = 0xb
 const BLKSIZE = 512
 const EOC = 0x0FFFFFF8
+const ATTR_DIRECTORY = 0x1 << 4
+const ATTR_LFN = 0xF
 
 type readfunc func(uint32, uint32) (bool, []byte)
 
@@ -36,19 +39,30 @@ type volume_id struct {
 	signature       uint32
 }
 
-type file struct {
-	shortname string
-	extension string
-	attribute uint8
+//the file and dirinfo structs look the same but they mean different things
+//files can be read/written
+type fileinfo struct {
 	cluster   uint32
 	size      uint32
+	attribute uint8
+	shortname string
+	extension string
 }
 
+//dirinfos can be listed and modified
+type dirinfo struct {
+	cluster   uint32
+	size      uint32
+	shortname string
+	attribute uint8
+}
+
+//a directory contains a parent dirinfo, children dirinfos, and files
 type directory struct {
-	files []file
-}
-
-type fd struct {
+	me       dirinfo
+	parent   dirinfo
+	children []dirinfo
+	files    []fileinfo
 }
 
 var theMBR MBR
@@ -57,6 +71,7 @@ var fat_begin_lba uint32
 var cluster_begin_lba uint32
 var sectors_per_cluster uint8
 var root_dir_first_cluster uint32
+var bytes_per_cluster uint32
 var fatcache []uint32
 
 func lba2addr(lba uint32) uint32 {
@@ -71,6 +86,77 @@ func cluster2lba(clusternum uint32) uint32 {
 	return cluster_begin_lba + (clusternum-2)*uint32(sectors_per_cluster)
 }
 
+//FS user utilities
+////////////////////////
+////////////////////////
+
+func (dir directory) getfilenames() []string {
+	var names []string
+	//first collect directories
+	for i := 0; i < len(dir.files); i++ {
+		names = append(names, dir.files[i].shortname+"."+dir.files[i].extension)
+	}
+	return names
+}
+
+func (dir directory) getsubdirnames() []string {
+	var names []string
+	//first collect directories
+	for i := 0; i < len(dir.children); i++ {
+		names = append(names, dir.children[i].shortname)
+	}
+	return names
+}
+
+//enters a named subdirectory of the input
+func (dir directory) direnter(name string) (bool, directory) {
+	for i := 0; i < len(dir.children); i++ {
+		if dir.children[i].shortname == name {
+			return readdir_cluster(dir.children[i].cluster)
+		}
+	}
+	return false, directory{}
+}
+
+//reads the bytes of a named file in a directory
+func (dir directory) fileread(name string) (bool, []byte) {
+	for i := 0; i < len(dir.children); i++ {
+		if (dir.files[i].shortname + "." + dir.files[i].extension) == name {
+			return readfile_cluster(dir.files[i].cluster, dir.files[i].size)
+		}
+	}
+	return false, []byte{0}
+}
+
+///////////////////////
+///////////////////////
+
+//reads len bytes out of a file at cluster
+func readfile_cluster(cluster, length uint32) (bool, []byte) {
+	//first make a list of all the clusters that contain data
+	var clusters []uint32
+	clusters = append(clusters, cluster)
+	for fatcache[cluster] < EOC {
+		cluster = fatcache[cluster]
+		clusters = append(clusters, cluster)
+	}
+	nclusters := length / bytes_per_cluster
+	if (length%bytes_per_cluster != 0) || (length < bytes_per_cluster) {
+		nclusters++
+	}
+	var output []byte
+	for i := uint32(0); i < nclusters; i++ {
+		discluster := clusters[i]
+		addr := lba2addr(cluster2lba(discluster))
+		good, data := readbytes(bytes_per_cluster, addr)
+		if !good {
+			return false, []byte{0}
+		}
+		output = append(output, data...)
+	}
+	return true, output[0:length]
+}
+
 //this takes a cluster number for a directory as input and it follows the FAT
 //chain in order to compile a list of all the files and subdirectories
 func readdir_cluster(cluster uint32) (bool, directory) {
@@ -81,9 +167,14 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 		cluster = fatcache[cluster]
 		clusters = append(clusters, cluster)
 	}
-	fmt.Println("clusters for this dir are ", clusters)
+	result := directory{}
+	//	result.me = dirinfo{"/", "", 0x0, cluster, 0x0} //size for the root directory?
+	//	result.parent = dirinfo{}
+	//fmt.Println("clusters for this dir are ", clusters)
 	for i := 0; i < len(clusters); i++ {
 		discluster := clusters[i]
+		disdirinfo := dirinfo{}
+		disdirinfo.cluster = discluster
 		addr := lba2addr(cluster2lba(discluster))
 		for {
 			//skip over long file entries
@@ -92,7 +183,7 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 				addr += 0x20
 				continue
 			} else if data[0] == 0x0 {
-				fmt.Println("reached end of directory")
+				//fmt.Println("reached end of directory")
 				break
 			}
 			for data[11] == 0xf {
@@ -102,24 +193,48 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 				addr += 0x20
 				good, data = readbytes(32, addr)
 			}
-			fmt.Printf("cluster addr: 0x%x\n", addr)
-			fmt.Println(data)
-			name := string(data[0:8])
-			extension := string(data[8:11])
+			//fmt.Printf("cluster addr: 0x%x\n", addr)
+			//fmt.Println(data)
+			name := strings.TrimSpace(string(data[0:8]))
+			extension := strings.TrimSpace(string(data[8:11]))
 			attrib := data[11]
 			size := (uint32(data[0x1c] << 0)) | (uint32(data[0x1c+1] << 8)) | (uint32(data[0x1c+2] << 16)) | (uint32(data[0x1c+3] << 24))
-			if attrib == 0xf {
-				fmt.Printf("long filename condensed: ")
-			}
-			fmt.Println("first file name: ", name, ".", extension, " size: ", size, " ")
 			cluster_begin := (uint32(data[0x14]) << 16) | (uint32(data[0x14+1]) << 24) | (uint32(data[0x1a]) << 0) | (uint32(data[0x1a+1]) << 8)
-			fmt.Printf("cluster begin number 0x%x\n", cluster_begin)
-			fmt.Printf("cluster data begin 0x%x\n", lba2addr(cluster2lba(cluster_begin)))
-			//readdir_cluster(cluster_begin)
+			//fmt.Printf("%s ", name)
+			switch attrib {
+			case ATTR_DIRECTORY:
+				//fmt.Printf(" ->dir, cluster = %d\n", cluster_begin)
+				//result.children = append(result.children, makedirinfo(name, extension, attrib, size, cluster_begin))
+				//result.children = append(result.children, dirinfo{name, attrib, size, cluster_begin})
+				result.children = append(result.children, dirinfo{cluster_begin, size, name, attrib})
+			case ATTR_LFN:
+				addr += 0x20
+				continue
+			default:
+				//its a file
+				//fmt.Printf(" ->file\n")
+				result.files = append(result.files, fileinfo{cluster_begin, size, attrib, name, extension})
+			}
+			//			disdirinfo.shortname = name
+			//			disdirinfo.extension = extension
+			//			disdirinfo.attribute = attrib
+			//			disdirinfo.size = size
+			//			if attrib == 0xf {
+			//				fmt.Printf("long filename condensed: ")
+			//			}
+			//			if attrib == (0x1 << 4) {
+			//				fmt.Printf("directory entry found")
+			//			}
+			//			fmt.Println("first file name: ", name, ".", extension, " size: ", size, " ")
+			//			cluster_begin := (uint32(data[0x14]) << 16) | (uint32(data[0x14+1]) << 24) | (uint32(data[0x1a]) << 0) | (uint32(data[0x1a+1]) << 8)
+			//			fmt.Printf("cluster begin number 0x%x\n", cluster_begin)
+			//			fmt.Printf("cluster data begin 0x%x\n", lba2addr(cluster2lba(cluster_begin)))
+			//			result.children = append(result.children, disdirinfo)
+			//			//readdir_cluster(cluster_begin)
 			addr += 0x20
 		}
 	}
-	return true, directory{}
+	return true, result
 }
 
 func getmbr() (bool, uint32) {
@@ -183,6 +298,7 @@ func getvolumeid(lba uint32) (bool, uint32) {
 	cluster_begin_lba = lba + uint32(vol_id.n_rsrv_sectors) + (2 * uint32(vol_id.sec_per_fat))
 	sectors_per_cluster = vol_id.sec_per_cluster
 	root_dir_first_cluster = vol_id.root_cluster
+	bytes_per_cluster = uint32(vol_id.bytes_per_sec) * uint32(vol_id.sec_per_cluster)
 	fmt.Printf("fat addr is 0x%x\n", lba2addr(fat_begin_lba))
 
 	//now read the fat into memory to speed up access times

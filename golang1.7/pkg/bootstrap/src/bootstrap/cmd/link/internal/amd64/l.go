@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/amd64/l.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/amd64/l.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/amd64/l.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/amd64/l.go:1
 // Inferno utils/6l/l.h
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/6l/l.h
 //

@@ -257,8 +257,16 @@ const (
 
 //go:nosplit
 func thread_init() {
-	for i := 0; i < maxthreads; i++ {
-		threads[i].id = uint32(i)
+	for i := uint32(0); i < maxthreads; i++ {
+		va := uintptr(unsafe.Pointer(&threads[i].id))
+		print("write to ", hex(va), " ")
+		pgnum := va >> PGSHIFT
+		pde := (*uint32)(unsafe.Pointer(kernpgdir + uintptr(pgnum*4)))
+		print("pde is ", hex(*pde), "\n")
+		if (*pde & 0x2) == 0 {
+			print("UNMAPPED")
+		}
+		threads[i].id = i
 	}
 	threads[0].state = ST_RUNNING
 	mycpu := cpunum()
@@ -696,6 +704,8 @@ func mem_init() {
 	//print("pages at: ", hex(pages), "\n")
 	physPageSize = uintptr(PGSIZE)
 
+	//threads = ((*[maxthreads]thread_t)(unsafe.Pointer(uintptr(boot_alloc(uint32(maxthreads * unsafe.Sizeof(thread_t{})))))))
+
 }
 
 //go:nosplit
@@ -795,17 +805,17 @@ func mp_init() {
 	//replace the push lr at the start of entry with a nop
 	*((*uint32)(unsafe.Pointer(uintptr(entry)))) = NOP
 
-	//cpu1
-	*cpu1bootaddr = entry
-	*cpu1bootarg = uint32(isr_stack[1])
-	//val := *scr
-	//*scr = val
-	DMB()
-	for *scr&(0x1<<14|0x1<<18) > 0 {
-	}
-	*scr |= 0x1 << 22
-	for cpustatus[1] == CPU_WFI {
-	}
+	//	//cpu1
+	//	*cpu1bootaddr = entry
+	//	*cpu1bootarg = uint32(isr_stack[1])
+	//	//val := *scr
+	//	//*scr = val
+	//	DMB()
+	//	for *scr&(0x1<<14|0x1<<18) > 0 {
+	//	}
+	//	*scr |= 0x1 << 22
+	//	for cpustatus[1] == CPU_WFI {
+	//	}
 
 	//	//cpu2
 	//	*cpu2bootaddr = entry
@@ -882,8 +892,8 @@ func trampoline() {
 func Release() {
 	stop = 0
 	DMB()
-	for cpustatus[1] < CPU_RELEASED {
-	}
+	//	for cpustatus[1] < CPU_RELEASED {
+	//	}
 	//	for cpustatus[2] < CPU_RELEASED {
 	//	}
 	//for cpustatus[3] < CPU_RELEASED {
@@ -1103,7 +1113,7 @@ func map_kernel() {
 			filesz := ph.p_filesz
 			pa := ph.p_pa
 			va := ph.p_va
-			//print("\tkernel pa: ", hex(pa), " va: ", hex(va), " size: ", hex(filesz), "\n")
+			print("\tkernel pa: ", hex(pa), " va: ", hex(va), " size: ", hex(filesz), "\n")
 			//map_region(pa, va, filesz, MEM_NORMAL_SMP)
 			map_region(pa, va, filesz, MEM_TYPE_DEVICE)
 		}

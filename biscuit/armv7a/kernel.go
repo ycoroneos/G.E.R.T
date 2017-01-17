@@ -88,10 +88,24 @@ func main() {
 	//	}
 	//	fir_main()
 	//	fmt.Println("done with fir test")
-	good, _ := fat32_som_start(read_som_sdcard)
-	if !good {
-		fmt.Println("fat32 init failure")
-	}
+	//	good, root := fat32_som_start(init_som_sdcard, read_som_sdcard)
+	//	if !good {
+	//		fmt.Println("fat32 init failure")
+	//	}
+	//	fmt.Println(root.getfilenames())
+	//	fmt.Println(root.getsubdirnames())
+	//	good, bootdir := root.direnter("BOOT")
+	//	if !good {
+	//		panic("dir entry failed")
+	//	} else {
+	//		fmt.Println(bootdir.getfilenames())
+	//		good, contents := bootdir.fileread("UENV.TXT")
+	//		if !good {
+	//			panic("file read failure")
+	//		}
+	//		fmt.Println(string(contents))
+	//	}
+
 	for {
 		//fmt.Println(<-irqchan)
 	}

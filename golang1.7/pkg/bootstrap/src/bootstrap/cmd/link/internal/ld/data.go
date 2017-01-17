@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/data.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/data.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/data.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/data.go:1
 // Derived from Inferno utils/6l/obj.c and utils/6l/span.c
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/6l/obj.c
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/6l/span.c

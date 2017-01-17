@@ -81,7 +81,7 @@ qemud: all
 	#$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 qemu: all
-	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -hda disk.bin
+	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 runtime:
 	cd ../../golang1.7/src && ./rebuild_arm.sh
 runtimeq:

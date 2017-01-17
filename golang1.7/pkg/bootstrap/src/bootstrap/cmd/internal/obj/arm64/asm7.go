@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/asm7.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/asm7.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/asm7.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/asm7.go:1
 // cmd/7l/asm.c, cmd/7l/asmout.c, cmd/7l/optab.c, cmd/7l/span.c, cmd/ld/sub.c, cmd/ld/mod.c, from Vita Nuova.
 // https://code.google.com/p/ken-cc/source/browse/
 //
