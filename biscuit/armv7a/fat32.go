@@ -160,6 +160,7 @@ func readfile_cluster(cluster, length uint32) (bool, []byte) {
 //this takes a cluster number for a directory as input and it follows the FAT
 //chain in order to compile a list of all the files and subdirectories
 func readdir_cluster(cluster uint32) (bool, directory) {
+	//fmt.Printf("readdir_cluster: 0x%x\n", lba2addr(cluster2lba(cluster)))
 	//first make a list of all the clusters that contain data
 	var clusters []uint32
 	clusters = append(clusters, cluster)
@@ -179,58 +180,48 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 		for {
 			//skip over long file entries
 			good, data := readbytes(32, addr)
-			if data[0] == 0xE5 {
-				addr += 0x20
-				continue
+			if !good {
+				panic("data read failure from sdcard")
+			}
+			if (data[0] == 0xE5) || (data[11] == 0xf) {
+				//fmt.Printf("skip unused or LFN 0x%x\n", addr)
+				//fmt.Println("\t", hex.EncodeToString(data))
+				//addr += 0x20
 			} else if data[0] == 0x0 {
 				//fmt.Println("reached end of directory")
 				break
-			}
-			for data[11] == 0xf {
-				if !good {
-					return false, directory{}
+			} else {
+				//			for data[11] == 0xf {
+				//				fmt.Printf("skip unused 0x%x\n", addr)
+				//				if !good {
+				//					return false, directory{}
+				//				}
+				//				addr += 0x20
+				//				good, data = readbytes(32, addr)
+				//			}
+				//fmt.Printf("cluster addr: 0x%x\n", addr)
+				//fmt.Println(data)
+				name := strings.TrimSpace(string(data[0:8]))
+				extension := strings.TrimSpace(string(data[8:11]))
+				attrib := data[11]
+				size := (uint32(data[0x1c] << 0)) | (uint32(data[0x1c+1] << 8)) | (uint32(data[0x1c+2] << 16)) | (uint32(data[0x1c+3] << 24))
+				cluster_begin := (uint32(data[0x14]) << 16) | (uint32(data[0x14+1]) << 24) | (uint32(data[0x1a]) << 0) | (uint32(data[0x1a+1]) << 8)
+				//fmt.Printf("%s ", name)
+				switch attrib {
+				case ATTR_DIRECTORY:
+					//fmt.Printf(" ->dir, cluster = %d\n", cluster_begin)
+					//result.children = append(result.children, makedirinfo(name, extension, attrib, size, cluster_begin))
+					//result.children = append(result.children, dirinfo{name, attrib, size, cluster_begin})
+					result.children = append(result.children, dirinfo{cluster_begin, size, name, attrib})
+				case ATTR_LFN:
+					addr += 0x20
+					continue
+				default:
+					//its a file
+					//fmt.Printf(" ->file\n")
+					result.files = append(result.files, fileinfo{cluster_begin, size, attrib, name, extension})
 				}
-				addr += 0x20
-				good, data = readbytes(32, addr)
 			}
-			//fmt.Printf("cluster addr: 0x%x\n", addr)
-			//fmt.Println(data)
-			name := strings.TrimSpace(string(data[0:8]))
-			extension := strings.TrimSpace(string(data[8:11]))
-			attrib := data[11]
-			size := (uint32(data[0x1c] << 0)) | (uint32(data[0x1c+1] << 8)) | (uint32(data[0x1c+2] << 16)) | (uint32(data[0x1c+3] << 24))
-			cluster_begin := (uint32(data[0x14]) << 16) | (uint32(data[0x14+1]) << 24) | (uint32(data[0x1a]) << 0) | (uint32(data[0x1a+1]) << 8)
-			//fmt.Printf("%s ", name)
-			switch attrib {
-			case ATTR_DIRECTORY:
-				//fmt.Printf(" ->dir, cluster = %d\n", cluster_begin)
-				//result.children = append(result.children, makedirinfo(name, extension, attrib, size, cluster_begin))
-				//result.children = append(result.children, dirinfo{name, attrib, size, cluster_begin})
-				result.children = append(result.children, dirinfo{cluster_begin, size, name, attrib})
-			case ATTR_LFN:
-				addr += 0x20
-				continue
-			default:
-				//its a file
-				//fmt.Printf(" ->file\n")
-				result.files = append(result.files, fileinfo{cluster_begin, size, attrib, name, extension})
-			}
-			//			disdirinfo.shortname = name
-			//			disdirinfo.extension = extension
-			//			disdirinfo.attribute = attrib
-			//			disdirinfo.size = size
-			//			if attrib == 0xf {
-			//				fmt.Printf("long filename condensed: ")
-			//			}
-			//			if attrib == (0x1 << 4) {
-			//				fmt.Printf("directory entry found")
-			//			}
-			//			fmt.Println("first file name: ", name, ".", extension, " size: ", size, " ")
-			//			cluster_begin := (uint32(data[0x14]) << 16) | (uint32(data[0x14+1]) << 24) | (uint32(data[0x1a]) << 0) | (uint32(data[0x1a+1]) << 8)
-			//			fmt.Printf("cluster begin number 0x%x\n", cluster_begin)
-			//			fmt.Printf("cluster data begin 0x%x\n", lba2addr(cluster2lba(cluster_begin)))
-			//			result.children = append(result.children, disdirinfo)
-			//			//readdir_cluster(cluster_begin)
 			addr += 0x20
 		}
 	}

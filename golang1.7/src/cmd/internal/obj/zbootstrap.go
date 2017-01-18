@@ -4,12 +4,12 @@ package obj
 
 import "runtime"
 
-const defaultGOROOT = `/Users/fruit/Documents/biscuit/golang1.7`
+const defaultGOROOT = `/home/yanni/biscuit/golang1.7`
 const defaultGO386 = `sse2`
 const defaultGOARM = `7`
 const defaultGOOS = runtime.GOOS
 const defaultGOARCH = runtime.GOARCH
 const defaultGO_EXTLINK_ENABLED = ``
-const version = `devel +8f5a78d Tue Jan 17 17:57:35 2017 -0500`
+const version = `devel +eeed469 Tue Jan 17 18:52:15 2017 -0500`
 const stackGuardMultiplier = 1
 const goexperiment = ``

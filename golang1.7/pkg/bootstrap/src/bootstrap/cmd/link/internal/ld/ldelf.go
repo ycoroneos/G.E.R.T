@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/ldelf.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/ldelf.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/ldelf.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/ldelf.go:1
 package ld
 
 import (

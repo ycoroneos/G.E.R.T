@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/math/big/ftoa.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/math/big/ftoa.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/math/big/ftoa.go:1
+//line /home/yanni/biscuit/golang1.7/src/math/big/ftoa.go:1
 // Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.

@@ -449,6 +449,8 @@ func card_data_read(instance uint32, length int, offset uint32) (int, []byte) {
 	var sector int
 	var cmd command_t
 
+	original_offset := offset
+	original_length := uint32(length)
 	/* Get uSDHC port according to instance */
 	if instance == 0 {
 		fmt.Printf("host_reset instance 0 is not valid\n")
@@ -504,7 +506,8 @@ func card_data_read(instance uint32, length int, offset uint32) (int, []byte) {
 	//fmt.Printf("card_data_read: Send CMD18.\n")
 
 	/* make slice */
-	out_data := make([]byte, length)
+	//out_data := make([]byte, length)
+	out_data := make([]byte, sector*BLK_LEN)
 	/* Send CMD18 */
 	if host_send_cmd(instance, &cmd) < 0 {
 		fmt.Printf("Fail to send CMD18.\n")
@@ -523,12 +526,12 @@ func card_data_read(instance uint32, length int, offset uint32) (int, []byte) {
 			/* Enable Interrupt */
 			dev.regbase.INT_STATUS_EN = 0xFFFFFFFF
 
-			for count := 0; count < length; count += 4 {
+			for count := 0; count < sector*BLK_LEN; count += 4 {
 				for (dev.regbase.PRES_STATE & (0x1 << 11)) == 0 {
 				}
 				data := dev.regbase.DATA_BUFF_ACC_PORT
 				for i := 0; i < 4; i++ {
-					if (count + i) > length {
+					if (count + i) > (sector * BLK_LEN) {
 						break
 					}
 					out_data[count+i] = byte((data >> (8 * uint32(i))) & 0xFF)
@@ -558,7 +561,7 @@ func card_data_read(instance uint32, length int, offset uint32) (int, []byte) {
 
 	//fmt.Printf("card_data_read: Data read successful.\n")
 
-	return 1, out_data
+	return 1, out_data[(original_offset - (offset * BLK_LEN)) : (original_offset-(offset*BLK_LEN))+original_length]
 
 }
 

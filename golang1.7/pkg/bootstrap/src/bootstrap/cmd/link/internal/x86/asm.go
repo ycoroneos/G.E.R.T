@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/x86/asm.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/x86/asm.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/x86/asm.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/x86/asm.go:1
 // Inferno utils/8l/asm.c
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/8l/asm.c
 //
