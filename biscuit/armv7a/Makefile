@@ -9,6 +9,7 @@ GOARCH := GOOS=linux GOARCH=arm GOARM=7
 GOLINKFLAGS := "-T 0x11000000 -E main.Entry"
 GOCMD := $(GOARCH) $(GOBIN)
 GO_SRC = $(wildcard *.go)
+#GO_SRC = kernel.go
 GO_DIR := go/
 GO_OBJ := $(BUILDIR)/kernel
 

@@ -1,4 +1,4 @@
-package main
+package embedded
 
 import "unsafe"
 import "fmt"
@@ -31,7 +31,7 @@ type GPT struct {
 
 var gpt *GPT = (*GPT)(unsafe.Pointer(uintptr(0x2098000)))
 
-func startGPT() bool {
+func StartGPT() bool {
 	fmt.Printf("GPT lives at %x\r\n", gpt)
 	gpt.CR = 0
 	gpt.CR |= (0x7 << 6) | (0x1 << 5)
@@ -41,4 +41,8 @@ func startGPT() bool {
 	gpt.CR |= 0x1
 	gpt.SR = 0x1
 	return true
+}
+
+func ClearGPTIntr() {
+	gpt.SR = 0x1
 }

@@ -1,4 +1,4 @@
-package main
+package embedded
 
 import "unsafe"
 import "fmt"
@@ -90,7 +90,7 @@ func cluster2lba(clusternum uint32) uint32 {
 ////////////////////////
 ////////////////////////
 
-func (dir directory) getfilenames() []string {
+func (dir directory) Getfilenames() []string {
 	var names []string
 	//first collect directories
 	for i := 0; i < len(dir.files); i++ {
@@ -99,7 +99,7 @@ func (dir directory) getfilenames() []string {
 	return names
 }
 
-func (dir directory) getsubdirnames() []string {
+func (dir directory) Getsubdirnames() []string {
 	var names []string
 	//first collect directories
 	for i := 0; i < len(dir.children); i++ {
@@ -109,7 +109,7 @@ func (dir directory) getsubdirnames() []string {
 }
 
 //enters a named subdirectory of the input
-func (dir directory) direnter(name string) (bool, directory) {
+func (dir directory) Direnter(name string) (bool, directory) {
 	for i := 0; i < len(dir.children); i++ {
 		if dir.children[i].shortname == name {
 			return readdir_cluster(dir.children[i].cluster)
@@ -119,7 +119,7 @@ func (dir directory) direnter(name string) (bool, directory) {
 }
 
 //reads the bytes of a named file in a directory
-func (dir directory) fileread(name string) (bool, []byte) {
+func (dir directory) Fileread(name string) (bool, []byte) {
 	for i := 0; i < len(dir.children); i++ {
 		if (dir.files[i].shortname + "." + dir.files[i].extension) == name {
 			return readfile_cluster(dir.files[i].cluster, dir.files[i].size)
@@ -309,7 +309,7 @@ func getvolumeid(lba uint32) (bool, uint32) {
 }
 
 //this returns an interface for navigating and modifying the directory structure
-func fat32_som_start(sdcard_init func() bool, reader_func readfunc) (bool, directory) {
+func Fat32_som_start(sdcard_init func() bool, reader_func readfunc) (bool, directory) {
 	readbytes = reader_func
 	if !sdcard_init() {
 		return false, directory{}

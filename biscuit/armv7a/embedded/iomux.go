@@ -1,4 +1,4 @@
-package main
+package embedded
 
 import "unsafe"
 import "fmt"

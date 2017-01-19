@@ -1,4 +1,4 @@
-package main
+package embedded
 
 /*
 * This entire damn driver was directly ported from the iMX6 bare metal sdk
@@ -1482,19 +1482,19 @@ func card_init(instance, bus_width uint32) int {
 
 //init the som sdcard at port 3 with 4bit bus width
 //go:nosplit
-func init_som_sdcard() bool {
+func Init_som_sdcard() bool {
 	return card_init(3, 4) > 0
 }
 
 //init the board sdcard at port 1 with 4bit bus width
 //go:nosplit
-func init_board_sdcard() bool {
+func Init_board_sdcard() bool {
 	return card_init(1, 4) > 0
 }
 
 ///read length bytes at byte offset from the start of the sdcard
 //go:nosplit
-func read_som_sdcard(length uint32, offset uint32) (bool, []byte) {
+func Read_som_sdcard(length uint32, offset uint32) (bool, []byte) {
 	val, data := card_data_read(uint32(3), int(length), offset)
 	status := val > 0
 	return status, data
@@ -1502,7 +1502,7 @@ func read_som_sdcard(length uint32, offset uint32) (bool, []byte) {
 
 ///read length bytes at byte offset from the start of the sdcard
 //go:nosplit
-func read_board_sdcard(length uint32, offset uint32) (bool, []byte) {
+func Read_board_sdcard(length uint32, offset uint32) (bool, []byte) {
 	val, data := card_data_read(uint32(1), int(length), offset)
 	status := val > 0
 	return status, data

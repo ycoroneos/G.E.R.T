@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/ppc64/asm9.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/ppc64/asm9.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/ppc64/asm9.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/ppc64/asm9.go:1
 // cmd/9l/optab.c, cmd/9l/asmout.c from Vita Nuova.
 //
 //	Copyright © 1994-1999 Lucent Technologies Inc.  All rights reserved.

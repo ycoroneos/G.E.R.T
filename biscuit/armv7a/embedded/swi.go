@@ -1,0 +1,3 @@
+package embedded
+
+func SWI()

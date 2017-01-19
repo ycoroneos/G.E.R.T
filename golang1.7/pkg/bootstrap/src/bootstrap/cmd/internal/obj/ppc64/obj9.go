@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/ppc64/obj9.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/ppc64/obj9.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/ppc64/obj9.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/ppc64/obj9.go:1
 // cmd/9l/noop.c, cmd/9l/pass.c, cmd/9l/span.c from Vita Nuova.
 //
 //	Copyright © 1994-1999 Lucent Technologies Inc.  All rights reserved.
