@@ -27,6 +27,36 @@ var IOMUX_SD1_DATA1 = ((*uint32)(unsafe.Pointer((uintptr(0x20E033C)))))
 var IOMUX_SD1_DATA2 = ((*uint32)(unsafe.Pointer((uintptr(0x20E034C)))))
 var IOMUX_SD1_DATA3 = ((*uint32)(unsafe.Pointer((uintptr(0x20E0344)))))
 
+var IOMUX_MUX_CTL_GPIO0 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0220))))
+var IOMUX_MUX_CTL_GPIO1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0224))))
+var IOMUX_MUX_CTL_GPIO2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0234))))
+var IOMUX_MUX_CTL_GPIO3 = ((*uint32)(unsafe.Pointer(uintptr(0x20E022C))))
+var IOMUX_MUX_CTL_GPIO4 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0238))))
+var IOMUX_MUX_CTL_GPIO5 = ((*uint32)(unsafe.Pointer(uintptr(0x20E023C))))
+var IOMUX_MUX_CTL_GPIO6 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0230))))
+var IOMUX_MUX_CTL_GPIO7 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0240))))
+var IOMUX_MUX_CTL_GPIO8 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0244))))
+var IOMUX_MUX_CTL_GPIO9 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0228))))
+var IOMUX_MUX_CTL_GPIO16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0248))))
+var IOMUX_MUX_CTL_GPIO17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E024C))))
+var IOMUX_MUX_CTL_GPIO18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0250))))
+var IOMUX_MUX_CTL_GPIO19 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0254))))
+
+var IOMUX_PAD_CTL_GPIO0 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05F0))))
+var IOMUX_PAD_CTL_GPIO1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05F4))))
+var IOMUX_PAD_CTL_GPIO2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0604))))
+var IOMUX_PAD_CTL_GPIO3 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05FC))))
+var IOMUX_PAD_CTL_GPIO4 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0608))))
+var IOMUX_PAD_CTL_GPIO5 = ((*uint32)(unsafe.Pointer(uintptr(0x20E060C))))
+var IOMUX_PAD_CTL_GPIO6 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0600))))
+var IOMUX_PAD_CTL_GPIO7 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0610))))
+var IOMUX_PAD_CTL_GPIO8 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0614))))
+var IOMUX_PAD_CTL_GPIO9 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05F8))))
+var IOMUX_PAD_CTL_GPIO16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0618))))
+var IOMUX_PAD_CTL_GPIO17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E061C))))
+var IOMUX_PAD_CTL_GPIO18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0620))))
+var IOMUX_PAD_CTL_GPIO19 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0624))))
+
 //go:nosplit
 func usdhc_iomux_config(instance uint32) {
 	switch instance {
@@ -63,13 +93,28 @@ const (
 	DRIVE_33R     = 7
 	SLEW_SLOW     = 0
 	SLEW_FAST     = 1
+	MUX_ALT0      = 0
+	MUX_ALT1      = 1
+	MUX_ALT2      = 2
+	MUX_ALT3      = 3
+	MUX_ALT4      = 4
+	MUX_ALT5      = 5
+	MUX_ALT6      = 6
+	MUX_ALT7      = 7
 )
 
-func MakeGPIOconfig(hysteresis, pull, pull_keep_mode, pull_keep_enabled, open_drain, drive_strength, slewrate uint8) uint32 {
+var pinmap = map[uint32]*uint32{}
+
+func makeGPIOmuxconfig(muxmode uint8) uint32 {
+	muxmode &= 7
+	return uint32(muxmode)
+}
+
+func makeGPIOpadconfig(hysteresis, pull, pull_keep_mode, pull_keep_enabled, open_drain, drive_strength, slewrate uint8) uint32 {
 	hysteresis &= 0x1
 	pull &= 0x3
 	pull_keep_mode &= 0x1
-	pull_keep_enable &= 0x1
+	pull_keep_enabled &= 0x1
 	open_drain &= 0x1
 	drive_strength &= 0x7
 	slewrate &= 0x1

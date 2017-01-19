@@ -33,7 +33,12 @@ func user_init() {
 		}
 		fmt.Println(string(contents))
 	}
+	embedded.WB_JP4_4.SetOutput()
 }
 
+var toggle = uint8(0)
+
 func user_loop() {
+	embedded.WB_JP4_4.Write(toggle)
+	toggle = ^toggle
 }

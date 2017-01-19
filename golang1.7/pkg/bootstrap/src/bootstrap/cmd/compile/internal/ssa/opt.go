@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/ssa/opt.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/ssa/opt.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/ssa/opt.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/ssa/opt.go:1
 // Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.

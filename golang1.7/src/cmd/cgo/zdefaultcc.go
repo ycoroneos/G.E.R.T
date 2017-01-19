@@ -2,6 +2,6 @@
 
 package main
 
-const defaultCC = `gcc`
-const defaultCXX = `g++`
+const defaultCC = `clang`
+const defaultCXX = `clang++`
 const defaultPkgConfig = `pkg-config`

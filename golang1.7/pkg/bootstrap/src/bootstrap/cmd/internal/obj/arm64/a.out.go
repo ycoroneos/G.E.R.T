@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/a.out.go
+// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/a.out.go
 
-//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/a.out.go:1
+//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/a.out.go:1
 // cmd/7c/7.out.h  from Vita Nuova.
 // https://code.google.com/p/ken-cc/source/browse/src/cmd/7c/7.out.h
 //
