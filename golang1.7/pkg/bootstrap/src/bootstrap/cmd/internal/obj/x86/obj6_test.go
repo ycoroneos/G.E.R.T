@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/x86/obj6_test.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/x86/obj6_test.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/x86/obj6_test.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/x86/obj6_test.go:1
 package x86_test
 
 import (

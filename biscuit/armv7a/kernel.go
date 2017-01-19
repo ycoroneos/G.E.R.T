@@ -35,67 +35,9 @@ func main() {
 		user_loop()
 	}
 	panic("user loop broke out")
-	//	embedded.GIC_init(false)
-	//	runtime.SetIRQcallback(irq)
-	//	runtime.Release()
-	//	embedded.Enable_interrupt(87, 2)
-	//	channel := make(chan string, 1)
-	//	channel <- "channel test pass"
-	//	val := <-channel
-	//	fmt.Println(val)
-	//	fmt.Println("REMEMBER THAT SKETCHY THING YOU DID WITH MAPPING AN EXTRA PAGE IN MAP_REGION")
-	//	//	for i := 0; i < 20; i++ {
-	//	//		go printer(channel)
-	//	//	}
-	//	//	for i := 0; i < 20; i++ {
-	//	//		fmt.Println(<-channel)
-	//	//	}
-	//	//fmt.Println("waiting")
-	//	//fmt.Println(makesgi())
-	//	//fmt.Println("got it")
-	//	fmt.Println(embedded.StartGPT())
-	//	go embedded.Gopherwatch()
-	//	//	for i := 0; i < 10000000; i++ {
-	//	//		fmt.Println(i)
-	//	//	}
-	//	//	fmt.Println("try to init sd card 1")
-	//	//	if !init_som_sdcard() {
-	//	//		fmt.Println("init sd card failure")
-	//	//	} else {
-	//	//		fmt.Println("done init sd card")
-	//	//		good, data := read_som_sdcard(8, 0x3000)
-	//	//		if good {
-	//	//			for i := 0; i < len(data); i++ {
-	//	//				fmt.Printf("\tbyte read %x\n", data[i])
-	//	//			}
-	//	//		}
-	//	//	}
-	//	//	fir_main()
-	//	//	fmt.Println("done with fir test")
-	//	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
-	//	if !good {
-	//		fmt.Println("fat32 init failure")
-	//	}
-	//	fmt.Println(root.Getfilenames())
-	//	fmt.Println(root.Getsubdirnames())
-	//	good, bootdir := root.Direnter("BOOT")
-	//	if !good {
-	//		panic("dir entry failed")
-	//	} else {
-	//		fmt.Println(bootdir.Getfilenames())
-	//		good, contents := bootdir.Fileread("UENV.TXT")
-	//		if !good {
-	//			panic("file read failure")
-	//		}
-	//		fmt.Println(string(contents))
-	//	}
-	//
-	//	//do nothing
-	//	for {
-	//		//fmt.Println(<-irqchan)
-	//	}
 }
 
+//add things here if you think they are critical for functionality
 func self_tests() {
 	fmt.Println("Hi from fmt")
 	channel := make(chan string, 1)
@@ -110,10 +52,12 @@ func self_tests() {
 	fmt.Println(val)
 }
 
+//I never read the git logs. Now I dont have to
 func self_warnings() {
 	fmt.Println("REMEMBER THAT SKETCHY THING YOU DID WITH MAPPING AN EXTRA PAGE IN MAP_REGION")
 }
 
+//If a user doesnt want IRQs then they should never enable one. The GIC will just be ON but do nothing
 func pre_init() {
 	//enable GIC
 	embedded.GIC_init(false)

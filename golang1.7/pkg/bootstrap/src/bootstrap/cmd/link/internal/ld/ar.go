@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/ar.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/ar.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ld/ar.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ld/ar.go:1
 // Inferno utils/include/ar.h
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/include/ar.h
 //
