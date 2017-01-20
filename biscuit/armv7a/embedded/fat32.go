@@ -74,6 +74,8 @@ var root_dir_first_cluster uint32
 var bytes_per_cluster uint32
 var fatcache []uint32
 
+var rootdir directory
+
 func lba2addr(lba uint32) uint32 {
 	return lba * BLKSIZE
 }
@@ -128,6 +130,35 @@ func (dir directory) Fileread(name string) (bool, []byte) {
 	return false, []byte{0}
 }
 
+func (dir directory) Openrelative(path string) (bool, []byte) {
+	splits := strings.Split(path, "/")
+	for i := 0; i < (len(splits) - 1); i++ {
+		good, newdir := dir.Direnter(splits[i])
+		if !good {
+			return false, []byte{0}
+		}
+		dir = newdir
+	}
+	return dir.Fileread(splits[len(splits)])
+}
+
+func Openabsolute(path string) (bool, []byte) {
+	if path[0] != '/' {
+		fmt.Println("warning: absolute path ", path, " does not start with '/'")
+		return rootdir.Openrelative(path)
+	} else {
+		return rootdir.Openrelative(path[1:])
+	}
+}
+
+func (dir directory) Cd(path string) (bool, []byte) {
+	if path[0] == '/' {
+		return Openabsolute(path)
+	} else {
+		return dir.Openrelative(path)
+	}
+}
+
 ///////////////////////
 ///////////////////////
 
@@ -169,8 +200,6 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 		clusters = append(clusters, cluster)
 	}
 	result := directory{}
-	//	result.me = dirinfo{"/", "", 0x0, cluster, 0x0} //size for the root directory?
-	//	result.parent = dirinfo{}
 	//fmt.Println("clusters for this dir are ", clusters)
 	for i := 0; i < len(clusters); i++ {
 		discluster := clusters[i]
@@ -191,16 +220,6 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 				//fmt.Println("reached end of directory")
 				break
 			} else {
-				//			for data[11] == 0xf {
-				//				fmt.Printf("skip unused 0x%x\n", addr)
-				//				if !good {
-				//					return false, directory{}
-				//				}
-				//				addr += 0x20
-				//				good, data = readbytes(32, addr)
-				//			}
-				//fmt.Printf("cluster addr: 0x%x\n", addr)
-				//fmt.Println(data)
 				name := strings.TrimSpace(string(data[0:8]))
 				extension := strings.TrimSpace(string(data[8:11]))
 				attrib := data[11]
@@ -210,8 +229,6 @@ func readdir_cluster(cluster uint32) (bool, directory) {
 				switch attrib {
 				case ATTR_DIRECTORY:
 					//fmt.Printf(" ->dir, cluster = %d\n", cluster_begin)
-					//result.children = append(result.children, makedirinfo(name, extension, attrib, size, cluster_begin))
-					//result.children = append(result.children, dirinfo{name, attrib, size, cluster_begin})
 					result.children = append(result.children, dirinfo{cluster_begin, size, name, attrib})
 				case ATTR_LFN:
 					addr += 0x20
@@ -326,5 +343,6 @@ func Fat32_som_start(sdcard_init func() bool, reader_func readfunc) (bool, direc
 	if !good {
 		return false, directory{}
 	}
+	rootdir = dir
 	return true, dir
 }
