@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm/a.out.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm/a.out.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm/a.out.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm/a.out.go:1
 // Inferno utils/5c/5.out.h
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/5c/5.out.h
 //

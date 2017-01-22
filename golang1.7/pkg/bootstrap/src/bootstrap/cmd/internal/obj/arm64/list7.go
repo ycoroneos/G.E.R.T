@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/list7.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/list7.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/arm64/list7.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/arm64/list7.go:1
 // cmd/7l/list.c and cmd/7l/sub.c from Vita Nuova.
 // https://code.google.com/p/ken-cc/source/browse/
 //

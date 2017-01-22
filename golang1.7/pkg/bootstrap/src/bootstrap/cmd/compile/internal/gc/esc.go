@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/gc/esc.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/gc/esc.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/compile/internal/gc/esc.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/compile/internal/gc/esc.go:1
 // Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.

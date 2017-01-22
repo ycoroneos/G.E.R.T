@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ppc64/obj.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ppc64/obj.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/link/internal/ppc64/obj.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/link/internal/ppc64/obj.go:1
 // Inferno utils/5l/obj.c
 // https://bitbucket.org/inferno-os/inferno-os/src/default/utils/5l/obj.c
 //

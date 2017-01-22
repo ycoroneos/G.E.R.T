@@ -1,6 +1,6 @@
-// Do not edit. Bootstrap copy of /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/mips/a.out.go
+// Do not edit. Bootstrap copy of /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/mips/a.out.go
 
-//line /Users/fruit/Documents/biscuit/golang1.7/src/cmd/internal/obj/mips/a.out.go:1
+//line /home/yanni/biscuit/golang1.7/src/cmd/internal/obj/mips/a.out.go:1
 // cmd/9c/9.out.h from Vita Nuova.
 //
 //	Copyright © 1994-1999 Lucent Technologies Inc.  All rights reserved.
