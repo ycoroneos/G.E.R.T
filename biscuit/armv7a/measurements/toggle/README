@@ -1,0 +1,5 @@
+This is a simple experiment which merely toggles a GPIO pin (GPIO3_27) as
+fast as possible
+
+summary:
+biscuit 133KHz

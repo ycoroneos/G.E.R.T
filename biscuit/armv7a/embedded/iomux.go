@@ -27,6 +27,7 @@ var IOMUX_SD1_DATA1 = ((*uint32)(unsafe.Pointer((uintptr(0x20E033C)))))
 var IOMUX_SD1_DATA2 = ((*uint32)(unsafe.Pointer((uintptr(0x20E034C)))))
 var IOMUX_SD1_DATA3 = ((*uint32)(unsafe.Pointer((uintptr(0x20E0344)))))
 
+//gpios
 var IOMUX_MUX_CTL_GPIO0 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0220))))
 var IOMUX_MUX_CTL_GPIO1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0224))))
 var IOMUX_MUX_CTL_GPIO2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0234))))
@@ -56,6 +57,17 @@ var IOMUX_PAD_CTL_GPIO16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0618))))
 var IOMUX_PAD_CTL_GPIO17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E061C))))
 var IOMUX_PAD_CTL_GPIO18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0620))))
 var IOMUX_PAD_CTL_GPIO19 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0624))))
+
+//SPI1
+var IOMUX_MUX_CTL_EIM_D17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0094))))
+var IOMUX_MUX_CTL_EIM_D18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0098))))
+var IOMUX_MUX_CTL_EIM_D16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0090))))
+var IOMUX_MUX_CTL_KEY_COL2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0208))))
+
+var IOMUX_PAD_CTL_EIM_D17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A8))))
+var IOMUX_PAD_CTL_EIM_D18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03AC))))
+var IOMUX_PAD_CTL_EIM_D16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A4))))
+var IOMUX_PAD_CTL_KEY_COL2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05D8))))
 
 //go:nosplit
 func usdhc_iomux_config(instance uint32) {

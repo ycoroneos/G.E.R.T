@@ -93,7 +93,7 @@ func (pin GPIO_pin) SetOutput() {
 //this is either hi or lo
 //section 28.4.3.2
 func (pin GPIO_pin) Write(val uint8) {
-	if (val & 0x1) == 1 {
+	if (val & 0x1) > 0 {
 		pin.gpioregs.dr |= (0x1 << pin.offset)
 	} else {
 		pin.gpioregs.dr &= ^(0x1 << pin.offset)
