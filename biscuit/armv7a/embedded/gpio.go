@@ -100,6 +100,25 @@ func (pin GPIO_pin) Write(val uint8) {
 	}
 }
 
+//directly set hi or lo
+func (pin GPIO_pin) SetHI() {
+	pin.gpioregs.dr |= (0x1 << pin.offset)
+}
+
+func (pin GPIO_pin) SetLO() {
+	pin.gpioregs.dr &= ^(0x1 << pin.offset)
+}
+
+//directly set hi or lo without caring about the other pins
+func (pin GPIO_pin) SetHInow() {
+	pin.gpioregs.dr = (0x1 << pin.offset)
+}
+
+func (pin GPIO_pin) SetLOnow() {
+	//pin.gpioregs.dr &= ^(0x1 << pin.offset)
+	pin.gpioregs.dr = 0
+}
+
 //this is either hi or lo
 //section 28.4.3.1
 func (pin GPIO_pin) Read() uint8 {

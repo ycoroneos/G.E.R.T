@@ -1,5 +1,12 @@
 This is a simple experiment which merely toggles a GPIO pin (GPIO3_27) as
-fast as possible
+fast as possible. In linux this is done with the sysfs API exposed by the kernel
+to userspace.
 
 summary:
-biscuit 133KHz
+biscuit 127KHz <--> 180KHz
+linux golang ~127Khz
+linux C ~263KHz
+
+Questions:
+1. Explain why Go is slower than C. Maybe a JTAG trace could help...
+2. Explain the variance in Biscuit. A JTAG trace could help again...
