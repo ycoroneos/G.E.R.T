@@ -29,9 +29,10 @@ output wire [7:0] ja
     wire reset=sw[0];
     wire counterclk;
     wire clk100mhz=sysclk;
-    wire signal=ja[0];
     assign ja[1] = counterclk;
+    assign led[0] = reset;
+    assign led[1] = counterclk;
     //100MHz/1000000 = 100Hz
-    clkdiv #(.LOGLENGTH(31), .COUNTVAL(1000000)) counterclkgen(.inclk(clk100mhz), .reset(reset), .newclk(counterclk));
-    counter #(.COUNTVAL(100)) counter0(.clk(counterclk), .reset(reset), .out(signal), .done(led[0]));
+    clkdiv #(.LOGLENGTH(31), .COUNTVAL(1000000/2)) counterclkgen(.inclk(clk100mhz), .reset(1'b0), .newclk(counterclk));
+    counter #(.COUNTVAL(10)) counter0(.clk(counterclk), .reset(reset), .out(ja[0]), .done(led[2]));
 endmodule

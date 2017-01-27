@@ -36,7 +36,7 @@ output wire newclk
         end
     else
         begin
-        if (count==COUNTVAL)
+        if (count==(COUNTVAL/2))
             begin
             count<=0;
             output_reg<=~output_reg;

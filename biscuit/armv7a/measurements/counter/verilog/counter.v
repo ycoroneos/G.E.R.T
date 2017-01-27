@@ -27,7 +27,7 @@ output wire out,
 output reg done
     );
     parameter COUNTVAL=100000;
-    reg [31:0] curcount = COUNTVAL;
+    reg [31:0] curcount = COUNTVAL*2;
     reg level=0;
     reg done=0;
     always @(posedge clk)
@@ -35,23 +35,21 @@ output reg done
         //reset logic
         if (reset)
             begin
-            curcount <= COUNTVAL;
+            curcount <= COUNTVAL*2;
             level<=0;
             done<=0;
             end
         else
             //flip on every positive edge
-            case (curcount)
-            32'h0:
-                begin
-                    done<=1;
-                end
-            default:
-                begin
-                curcount <= curcount - 1;
-                level <= ~level;
-                end
-            endcase
+            if (curcount == 0)
+            begin
+                done<=1;
+            end
+            else
+            begin
+            curcount<=curcount-1;
+            level <= ~level;
+            end
     end
     assign out=level;
 endmodule
