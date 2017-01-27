@@ -34,10 +34,13 @@ func user_init() {
 		fmt.Println(string(contents))
 	}
 	//embedded.WB_JP4_4.SetOutput()
-	embedded.WB_JP4_6.SetOutput()
+	//embedded.WB_JP4_6.SetOutput()
+	embedded.WB_JP4_6.SetInput()
+	embedded.WB_JP4_6.EnableIntr(embedded.INTR_RISING, func() {})
+	embedded.Enable_interrupt(103, 0) //send GPIO3 interrupt to CPU0
 }
 
 func user_loop() {
-	embedded.WB_JP4_6.SetLO()
-	embedded.WB_JP4_6.SetHI()
+	//	embedded.WB_JP4_6.SetLO()
+	//	embedded.WB_JP4_6.SetHI()
 }

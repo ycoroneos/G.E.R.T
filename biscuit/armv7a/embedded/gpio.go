@@ -45,6 +45,8 @@ var gpios = [...]*gpio{
 	((*gpio)(unsafe.Pointer(uintptr(GPIO6_BASE)))),
 }
 
+var int_table [6][32]func()
+
 /*
 * Turns out individual pins are complicated things in the iMX6.
 * Lets use go to make them easier to use
@@ -65,6 +67,31 @@ const (
 	INTR_RISING  = 2
 	INTR_FALLING = 3
 )
+
+//go:nosplit
+func ClearIntr(gpiobank uint8) {
+	gpio := gpios[gpiobank-1]
+	gpio.isr = 0xFFFFFFFF
+}
+
+//go:nosplit
+//go:nowritebarrierec
+func ISR(num uint16) {
+	switch num {
+	case 102:
+	case 103:
+		//read which pins caused interrupt
+		mask := gpios[2].isr
+		for i := uint32(0); i < 31; i++ {
+			if (mask & (0x1 << i)) > 0 {
+				int_table[2][i]()
+			}
+		}
+		//clear them
+		gpios[2].isr = mask
+	default:
+	}
+}
 
 //section 28.4.3.1
 func (pin GPIO_pin) SetInput() {
@@ -134,8 +161,9 @@ func (pin GPIO_pin) GetPinNum() uint32 {
 	return GetPinNum(pin.base, pin.offset)
 }
 
-func (pin GPIO_pin) EnableIntr(mode uint8) {
+func (pin GPIO_pin) EnableIntr(mode uint8, intr_func func()) {
 	mode &= 0x3
+	int_table[pin.base-1][pin.offset] = intr_func
 	if pin.offset >= 16 {
 		icr := &pin.gpioregs.icr2
 		offset := pin.offset - 16

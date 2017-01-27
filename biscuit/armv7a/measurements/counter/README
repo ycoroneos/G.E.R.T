@@ -1,0 +1,3 @@
+This tests the maximum interrupt frequency. I made some RTL which sends out
+a predetermined amount of pulses at a variable frequency from my fpga. The job
+of Biscuit is simply to count them and then I can see how many it misses.

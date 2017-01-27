@@ -25,6 +25,8 @@ func irq(irqnum uint32) {
 	case 87:
 		embedded.Addtime(1)
 		embedded.ClearGPTIntr()
+	case 103:
+		embedded.ClearIntr(3)
 	default:
 		//fmt.Printf("IRQ %d on cpu %d\n", irqnum, runtime.Cpunum())
 	}
