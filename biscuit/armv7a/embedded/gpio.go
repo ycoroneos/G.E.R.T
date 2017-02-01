@@ -76,7 +76,7 @@ func ClearIntr(gpiobank uint8) {
 
 //go:nosplit
 //go:nowritebarrierec
-func ISR(num uint16) {
+func GPIO_ISR(num uint32) {
 	switch num {
 	case 102:
 	case 103:
