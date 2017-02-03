@@ -1,2 +1,0 @@
-cmd_gpio.c:15:12:name_to_gpio	0	static
-cmd_gpio.c:118:12:do_gpio	24	static

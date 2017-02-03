@@ -1,3 +1,0 @@
-dev.c:38:6:ext4fs_set_blk_dev	16	static
-dev.c:49:5:ext4fs_devread	40	dynamic
-dev.c:138:5:ext4_read_superblock	16	static

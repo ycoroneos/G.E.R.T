@@ -1,2 +1,0 @@
-syslib.c:21:6:sdelay	0	static
-syslib.c:31:5:wait_on_value	12	static

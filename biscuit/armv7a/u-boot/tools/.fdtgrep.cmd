@@ -1,1 +1,0 @@
-cmd_tools/fdtgrep := cc  -o tools/fdtgrep tools/lib/libfdt/fdt.o tools/lib/libfdt/fdt_ro.o tools/lib/libfdt/fdt_rw.o tools/lib/libfdt/fdt_strerror.o tools/lib/libfdt/fdt_wip.o tools/lib/libfdt/fdt_region.o tools/fdtgrep.o  

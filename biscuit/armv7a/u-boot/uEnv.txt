@@ -1,4 +1,0 @@
-bootargs=console=ttyO0,115200n8 root=/dev/mmcblk0p2 mem=128M rootwait
-bootcmd=mmc rescan; fatload mmc 0:1 0x70000000 kernel2.elf; bootelf -p 0x70000000
-uenvcmd=boot
-

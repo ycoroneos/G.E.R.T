@@ -1,9 +1,0 @@
-cpu.c:76:5:get_imx_reset_cause	0	static
-cpu.c:114:10:imx_ddr_size	8	static
-cpu.c:137:13:get_imx_type	0	static
-cpu.c:169:5:print_cpuinfo	24	static
-cpu.c:234:5:cpu_eth_init	0	static
-cpu.c:250:5:cpu_mmc_init	0	static
-cpu.c:257:5:get_ahb_clk	8	static
-cpu.c:270:6:arch_preboot_os	0	static
-cpu.c:287:6:set_chipselect_size	16	static

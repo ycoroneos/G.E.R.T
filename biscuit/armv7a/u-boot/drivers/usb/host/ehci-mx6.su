@@ -1,7 +1,0 @@
-ehci-mx6.c:120:12:wait_for_bit.constprop	16	static
-ehci-mx6.c:189:5:usb_phy_mode	0	static
-ehci-mx6.c:292:12:board_usb_phy_mode	0	static
-ehci-mx6.c:306:12:board_ehci_hcd_init	0	static
-ehci-mx6.c:321:12:board_ehci_power	0	static
-ehci-mx6.c:326:5:ehci_hcd_init	32	static
-ehci-mx6.c:375:5:ehci_hcd_stop	0	static

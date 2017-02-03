@@ -1,3 +1,0 @@
-s_record.c:156:12:hex1_bin	0	static
-s_record.c:167:12:hex2_bin	16	static
-s_record.c:14:5:srec_decode	32	static

@@ -1,9 +1,0 @@
-hashtable.c:428:13:_hdelete.isra.1	16	static
-hashtable.c:718:12:drop_var_from_set.part.2	24	static
-hashtable.c:100:5:hcreate_r	16	static
-hashtable.c:139:6:hdestroy_r	16	static
-hashtable.c:201:5:hmatch_r	32	static
-hashtable.c:271:5:hsearch_r	64	static
-hashtable.c:442:5:hdelete_r	64	static
-hashtable.c:777:5:himport_r	88	dynamic
-hashtable.c:967:5:hwalk_r	16	static

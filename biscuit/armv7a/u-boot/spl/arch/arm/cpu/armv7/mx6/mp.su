@@ -1,5 +1,0 @@
-mp.c:33:5:cpu_reset	0	static
-mp.c:40:5:cpu_status	8	static
-mp.c:46:5:cpu_release	24	static
-mp.c:73:5:is_core_valid	8	static
-mp.c:83:5:cpu_disable	0	static

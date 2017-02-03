@@ -1,3 +1,0 @@
-cpu.c:25:13:cpu_cache_initialization	0	static
-cpu.c:27:5:cleanup_before_linux_select	8	static
-cpu.c:81:5:cleanup_before_linux	0	static

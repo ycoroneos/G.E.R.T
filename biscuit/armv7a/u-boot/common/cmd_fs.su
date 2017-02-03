@@ -1,5 +1,0 @@
-cmd_fs.c:23:12:do_size_wrapper	16	static
-cmd_fs.c:36:12:do_load_wrapper	16	static
-cmd_fs.c:54:12:do_save_wrapper	16	static
-cmd_fs.c:71:12:do_ls_wrapper	16	static
-cmd_fs.c:85:12:do_fstype_wrapper	0	static

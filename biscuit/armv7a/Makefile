@@ -4,7 +4,7 @@ SDCARD?=INVALID
 GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
 
-GOBIN := ../../golang1.7/bin/go
+GOBIN := ../../golang_embedded/bin/go
 GOARCH := GOOS=linux GOARCH=arm GOARM=7
 GOLINKFLAGS := "-T 0x11000000 -E main.Entry"
 GOCMD := $(GOARCH) $(GOBIN)
@@ -84,7 +84,7 @@ qemud: all
 qemu: all
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 runtime:
-	cd ../../golang1.7/src && ./rebuild_arm.sh
+	cd ../../golang_embedded/src && ./rebuild_arm.sh
 runtimeq:
 	cd ../src && ./rebuild_arm_quick.sh
 bytecode: test.s
@@ -103,5 +103,5 @@ sdcard:
 	sudo umount /mnt/usb
 	sync
 uboot:
-	cd $(shell pwd)/u-boot && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
+	cd $(shell pwd)/uboot_wandboard && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
 print-%: ; @echo $*=$($*)

@@ -1,1 +1,0 @@
-cmd_drivers/video/built-in.o :=  arm-none-eabi-ld.bfd     -r -o drivers/video/built-in.o drivers/video/cfb_console.o drivers/video/mxc_ipuv3_fb.o drivers/video/ipu_common.o drivers/video/ipu_disp.o drivers/video/bridge/built-in.o 
