@@ -1,12 +1,6 @@
 [submodule "golang_embedded"]
 	path = golang_embedded
 	url = git@github.com:ycoroneos/golang_embedded.git
-[submodule "biscuit/armv7a/u-boot"]
-	path = biscuit/armv7a/u-boot
-	url = git://git.denx.de/u-boot.git
-[submodule "biscuit/armv7a/uboot_wandboard"]
-	path = biscuit/armv7a/uboot_wandboard
-	url = git@github.com:ycoroneos/uboot_wandboard.git
 [submodule "biscuit/armv7a/imx6_platform_sdk"]
 	path = biscuit/armv7a/imx6_platform_sdk
 	url = git@github.com:ycoroneos/imx6_platform_sdk.git

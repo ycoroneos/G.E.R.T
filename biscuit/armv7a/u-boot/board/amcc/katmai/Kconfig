@@ -1,0 +1,16 @@
+if TARGET_KATMAI
+
+config SYS_BOARD
+	default "katmai"
+
+config SYS_VENDOR
+	default "amcc"
+
+config SYS_CONFIG_NAME
+	default "katmai"
+
+config DISPLAY_BOARDINFO
+	bool
+	default y
+
+endif

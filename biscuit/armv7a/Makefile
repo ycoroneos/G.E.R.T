@@ -103,5 +103,5 @@ sdcard:
 	sudo umount /mnt/usb
 	sync
 uboot:
-	cd $(shell pwd)/uboot_wandboard && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
+	cd $(shell pwd)/u-boot && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
 print-%: ; @echo $*=$($*)

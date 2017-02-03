@@ -1,0 +1,77 @@
+if ARCH_UNIPHIER
+
+config SYS_CONFIG_NAME
+	default "uniphier"
+
+config ARCH_UNIPHIER_PH1_SLD3
+	bool "UniPhier PH1-sLD3 SoC"
+	help
+	  This enables support for UniPhier PH1-sLD3 SoC.
+
+config ARCH_UNIPHIER_PH1_LD4
+	bool "UniPhier PH1-LD4 SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3
+	help
+	  This enables support for UniPhier PH1-LD4 SoC.
+
+config ARCH_UNIPHIER_PH1_PRO4
+	bool "UniPhier PH1-Pro4 SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3 && \
+		   !ARCH_UNIPHIER_PH1_LD4 && \
+		   !ARCH_UNIPHIER_PH1_SLD8
+	help
+	  This enables support for UniPhier PH1-Pro4 SoC.
+
+config ARCH_UNIPHIER_PH1_SLD8
+	bool "UniPhier PH1-sLD8 SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3
+	help
+	  This enables support for UniPhier PH1-sLD8 SoC.
+
+config ARCH_UNIPHIER_PH1_PRO5
+	bool "UniPhier PH1-Pro5 SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3 && \
+		   !ARCH_UNIPHIER_PH1_LD4 && \
+		   !ARCH_UNIPHIER_PH1_SLD8
+	help
+	  This enables support for UniPhier PH1-Pro5 SoC.
+
+config ARCH_UNIPHIER_PROXSTREAM2
+	bool "UniPhier ProXstream2 SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3 && \
+		   !ARCH_UNIPHIER_PH1_LD4 && \
+		   !ARCH_UNIPHIER_PH1_SLD8
+	help
+	  This enables support for UniPhier ProXstream2 SoC.
+
+config ARCH_UNIPHIER_PH1_LD6B
+	bool "UniPhier PH1-LD6b SoC"
+	depends on !ARCH_UNIPHIER_PH1_SLD3 && \
+		   !ARCH_UNIPHIER_PH1_LD4 && \
+		   !ARCH_UNIPHIER_PH1_SLD8
+	help
+	  This enables support for UniPhier PH1-LD6b SoC.
+
+config MICRO_SUPPORT_CARD
+	bool "Use Micro Support Card"
+	help
+	  This option provides support for the expansion board, available
+	  on some UniPhier reference boards.
+
+	  Say Y to use the on-board UART, Ether, LED devices.
+
+config CMD_PINMON
+	bool "Enable boot mode pins monitor command"
+	default y
+	help
+	  The command "pinmon" shows the state of the boot mode pins.
+	  The boot mode pins are latched when the system reset is deasserted
+	  and determine which device the system should load a boot image from.
+
+config CMD_DDRPHY_DUMP
+	bool "Enable dump command of DDR PHY parameters"
+	help
+	  The command "ddrphy" shows the resulting parameters of DDR PHY
+	  training; it is useful for the evaluation of DDR PHY training.
+
+endif

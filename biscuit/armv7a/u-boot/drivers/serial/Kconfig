@@ -1,0 +1,226 @@
+#
+# Serial device configuration
+#
+
+menu "Serial drivers"
+
+config REQUIRE_SERIAL_CONSOLE
+	bool "Require a serial port for console"
+	# Running without a serial console is not supported by the
+	# non-dm serial code
+	depends on DM_SERIAL
+	default y
+	help
+	  Require a serial port for the console, and panic if none is found
+	  during serial port initialization (default y). Set this to n on
+	  boards which have no debug serial port whatsoever.
+
+config DM_SERIAL
+	bool "Enable Driver Model for serial drivers"
+	depends on DM
+	help
+	  Enable driver model for serial. This replaces
+	  drivers/serial/serial.c with the serial uclass, which
+	  implements serial_putc() etc. The uclass interface is
+	  defined in include/serial.h.
+
+config DEBUG_UART
+	bool "Enable an early debug UART for debugging"
+	help
+	  The debug UART is intended for use very early in U-Boot to debug
+	  problems when an ICE or other debug mechanism is not available.
+
+	  To use it you should:
+	  - Make sure your UART supports this interface
+	  - Enable CONFIG_DEBUG_UART
+	  - Enable the CONFIG for your UART to tell it to provide this interface
+	        (e.g. CONFIG_DEBUG_UART_NS16550)
+	  - Define the required settings as needed (see below)
+	  - Call debug_uart_init() before use
+	  - Call debug_uart_putc() to output a character
+
+	  Depending on your platform it may be possible to use this UART before
+	  a stack is available.
+
+	  If your UART does not support this interface you can probably add
+	  support quite easily. Remember that you cannot use driver model and
+	  it is preferred to use no stack.
+
+	  You must not use this UART once driver model is working and the
+	  serial drivers are up and running (done in serial_init()). Otherwise
+	  the drivers may conflict and you will get strange output.
+
+choice
+	prompt "Select which UART will provide the debug UART"
+	depends on DEBUG_UART
+	default DEBUG_UART_NS16550
+
+config DEBUG_UART_ALTERA_JTAGUART
+	bool "Altera JTAG UART"
+	help
+	  Select this to enable a debug UART using the altera_jtag_uart driver.
+	  You will need to provide parameters to make this work. The driver will
+	  be available until the real driver model serial is running.
+
+config DEBUG_UART_ALTERA_UART
+	bool "Altera UART"
+	help
+	  Select this to enable a debug UART using the altera_uart driver.
+	  You will need to provide parameters to make this work. The driver will
+	  be available until the real driver model serial is running.
+
+config DEBUG_UART_NS16550
+	bool "ns16550"
+	help
+	  Select this to enable a debug UART using the ns16550 driver. You
+	  will need to provide parameters to make this work. The driver will
+	  be available until the real driver model serial is running.
+
+config DEBUG_EFI_CONSOLE
+	bool "EFI"
+	depends on EFI_APP
+	help
+	  Select this to enable a debug console which calls back to EFI to
+	  output to the console. This can be useful for early debugging of
+	  U-Boot when running on top of EFI (Extensive Firmware Interface).
+	  This is a type of BIOS used by PCs.
+
+config DEBUG_UART_S5P
+	bool "Samsung S5P"
+	help
+	  Select this to enable a debug UART using the serial_s5p driver. You
+	  will need to provide parameters to make this work. The driver will
+	  be available until the real driver-model serial is running.
+
+config DEBUG_UART_ZYNQ
+	bool "Xilinx Zynq"
+	help
+	  Select this to enable a debug UART using the serial_zynq driver. You
+	  will need to provide parameters to make this work. The driver will
+	  be available until the real driver-model serial is running.
+
+config DEBUG_UART_APBUART
+	depends on LEON3
+	bool "Gaisler APBUART"
+	help
+	  Select this to enable a debug UART using the serial_leon3 driver. You
+	  will need to provide parameters to make this work. The driver will
+	  be available until the real driver model serial is running.
+
+endchoice
+
+config DEBUG_UART_BASE
+	hex "Base address of UART"
+	depends on DEBUG_UART
+	help
+	  This is the base address of your UART for memory-mapped UARTs.
+
+	  A default should be provided by your board, but if not you will need
+	  to use the correct value here.
+
+config DEBUG_UART_CLOCK
+	int "UART input clock"
+	depends on DEBUG_UART
+	help
+	  The UART input clock determines the speed of the internal UART
+	  circuitry. The baud rate is derived from this by dividing the input
+	  clock down.
+
+	  A default should be provided by your board, but if not you will need
+	  to use the correct value here.
+
+config DEBUG_UART_SHIFT
+	int "UART register shift"
+	depends on DEBUG_UART
+	default 0 if DEBUG_UART
+	help
+	  Some UARTs (notably ns16550) support different register layouts
+	  where the registers are spaced either as bytes, words or some other
+	  value. Use this value to specify the shift to use, where 0=byte
+	  registers, 2=32-bit word registers, etc.
+
+config DEBUG_UART_BOARD_INIT
+	bool "Enable board-specific debug UART init"
+	depends on DEBUG_UART
+	help
+	  Some boards need to set things up before the debug UART can be used.
+	  On these boards a call to debug_uart_init() is insufficient. When
+	  this option is enabled, the function board_debug_uart_init() will
+	  be called when debug_uart_init() is called. You can put any code
+	  here that is needed to set up the UART ready for use, such as set
+	  pin multiplexing or enable clocks.
+
+config DEBUG_UART_ANNOUNCE
+	bool "Show a message when the debug UART starts up"
+	depends on DEBUG_UART
+	help
+	  Enable this option to show a message when the debug UART is ready
+	  for use. You will see a message like "<debug_uart> " as soon as
+	  U-Boot has the UART ready for use (i.e. your code calls
+	  debug_uart_init()). This can be useful just as a check that
+	  everything is working.
+
+config ALTERA_JTAG_UART
+	bool "Altera JTAG UART support"
+	depends on DM_SERIAL
+	help
+	  Select this to enable an JTAG UART for Altera devices.The JTAG UART
+	  core implements a method to communicate serial character streams
+	  between a host PC and a Qsys system on an Altera FPGA. Please find
+	  details on the "Embedded Peripherals IP User Guide" of Altera.
+
+config ALTERA_JTAG_UART_BYPASS
+	bool "Bypass output when no connection"
+	depends on ALTERA_JTAG_UART
+	help
+	  Bypass console output and keep going even if there is no JTAG
+	  terminal connection with the host. The console output will resume
+	  once the JTAG terminal is connected. Without the bypass, the console
+	  output will wait forever until a JTAG terminal is connected. If you
+	  not are sure, say Y.
+
+config ALTERA_UART
+	bool "Altera UART support"
+	depends on DM_SERIAL
+	help
+	  Select this to enable an UART for Altera devices. Please find
+	  details on the "Embedded Peripherals IP User Guide" of Altera.
+
+config SYS_NS16550
+	bool "NS16550 UART or compatible"
+	help
+	  Support NS16550 UART or compatible. This can be enabled in the
+	  device tree with the correct input clock frequency. If the input
+	  clock frequency is not defined in the device tree, the macro
+	  CONFIG_SYS_NS16550_CLK defined in a legacy board header file will
+	  be used. It can be a constant or a function to get clock, eg,
+	  get_serial_clock().
+
+config SANDBOX_SERIAL
+	bool "Sandbox UART support"
+	depends on SANDBOX
+	help
+	  Select this to enable a seral UART for sandbox. This is required to
+	  operate correctly, otherwise you will see no serial output from
+	  sandbox. The emulated UART will display to the console and console
+	  input will be fed into the UART. This allows you to interact with
+	  U-Boot.
+
+	  The operation of the console is controlled by the -t command-line
+	  flag. In raw mode, U-Boot sees all characters from the terminal
+	  before they are processed, including Ctrl-C. In cooked mode, Ctrl-C
+	  is processed by the terminal, and terminates U-Boot. Valid options
+	  are:
+
+	     -t raw-with-sigs	Raw mode, Ctrl-C will terminate U-Boot
+	     -t raw		Raw mode, Ctrl-C is processed by U-Boot
+	     -t cooked		Cooked mode, Ctrl-C terminates
+
+config UNIPHIER_SERIAL
+	bool "Support for UniPhier on-chip UART"
+	depends on ARCH_UNIPHIER
+	help
+	  If you have a UniPhier based board and want to use the on-chip
+	  serial ports, say Y to this option. If unsure, say N.
+
+endmenu

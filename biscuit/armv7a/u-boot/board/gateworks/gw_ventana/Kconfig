@@ -1,0 +1,12 @@
+if TARGET_GW_VENTANA
+
+config SYS_BOARD
+	default "gw_ventana"
+
+config SYS_VENDOR
+	default "gateworks"
+
+config SYS_CONFIG_NAME
+	default "gw_ventana"
+
+endif
