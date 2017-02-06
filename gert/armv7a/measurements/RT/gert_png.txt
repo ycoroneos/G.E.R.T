@@ -1,0 +1,160 @@
+Model:DS1054Z
+SN:DS1ZA182813000
+Manufacturer:RIGOL TECHNOLOGIES
+Board Ver:0.1.4
+Firmware Ver:0.2.3.11
+BOOT Ver:0.0.1.4
+CPLD Ver:1.1
+SoftWare Ver:00.04.03.SP2
+
+
+	DSO Vertical System 
+CH1:On
+Scale:2.000000V
+Position:0.000000V
+Coupling:DC
+Bandwidth Limit:20M
+Probe Ratio:10X
+Unit:V
+
+CH2:On
+Scale:2.000000V
+Position:-4.360000V
+Coupling:DC
+Bandwidth Limit:OFF
+Probe Ratio:10X
+Unit:V
+
+CH3:Off
+Scale:1.000000V
+Position:0.000000V
+Coupling:DC
+Bandwidth Limit:OFF
+Probe Ratio:10X
+Unit:V
+
+CH4:Off
+Scale:1.000000V
+Position:0.000000V
+Coupling:DC
+Bandwidth Limit:OFF
+Probe Ratio:10X
+Unit:V
+
+	DSO Horizontal System
+Delay:Off
+Time Mode:YT
+Time Scale:2.000000e-06s
+Delay Time Scale:1.000000e-08s
+Time Offset:0.000000e+00s
+Delay Time Offset:0.000000e+00s
+
+	DSO Acquire System
+Acquire Mode:Normal
+Memory Depth:12000pts
+Average Num:2
+Sampling Rate:500000000Sa/s
+
+	DSO Trigger System
+Trigger Mode:Edge
+Trigger Source:CH2
+Trigger Edge Slope:Rising
+Trigger Sweep:Single
+Trigger Coupling:DC
+Trigger Noise Reject:Off
+Trigger HoldOff:1.600000e-08s
+
+CH1 Level:1.600000V
+CH2 Level:1.320000V
+CH3 Level:0.000000V
+CH4 Level:0.000000V
+
+Pulse Condition:Positive More
+Pulse High Time:0.000002s
+Pulse Low Time:0.000001s
+
+Slope Condition:Positive More
+Slope High Time:0.000002s
+Slope Low Time:0.000001s
+Slope Win:Win Up
+Slope Level1:4.000000V
+Slope Level2:0.000000V
+
+Video Polarity:Positive
+Video Sync:All Lines
+Video Standard:NTSC
+Video Line:1
+
+Runt Polarity:Positive
+Runt Condition:Do not care
+Runt Win:Win Up
+
+Windows Type:Rising
+Windows Pos:Enter
+Window Time:0.000001s
+
+NCycle Edge:Rise
+NCycle Time:0.000001s
+NCycle Num:2
+
+Pattern CH1:X
+Pattern CH2:X
+Pattern CH3:X
+Pattern CH4:X
+
+Delay A:CH1
+Delay B:CH2
+Delay A Slope:Rising
+Delay B Slope:Rising
+Delay Range:More
+Delay High:0.000002s
+Delay Low:0.000001s
+
+TimeOut Slope:Rising
+TimeOut:1.600000e-08s
+
+Duration Type:More
+Dura. High:0.000002s
+Dura. Low:0.000001s
+
+Setup/Hold Clk:CH2
+Setup/Hold Data:CH1
+Setup/Hold Slope:Rising
+Setup/Hold Patt.:H
+Setup/Hold Type:Setup
+Setup Time:0.000001s
+Hold Time:0.000001s
+
+RS232 Source:CH2
+RS232 Type:Frame Start
+RS232 Stop Bit:1
+RS232 Parity:None
+RS232 Data Bit:8
+RS232 Baudrate:9600
+RS232 Data:90
+
+IIC Clock Source:CH1
+IIC Data Source:CH2
+IIC Type:Start
+IIC Address:1
+IIC Direction:Read
+IIC Address Length:7
+IIC Byte Length:1
+IIC Data:82
+
+SPI SCLK:CH1
+SPI SDIO:CH2
+SPI Mode:CS
+SPI CS Mode:Low
+SPI Edge:Rise
+SPI Timeout:0.000001s
+SPI Data Length:8
+SPI Data:82
+
+	LA System
+D0~D7  Threshold Type:TTL
+D0~D7  Threshold Value:1.400000V
+D8~D15 Threshold Type:TTL
+D8~D15 Threshold Value:1.400000V
+D0~D7  Status:0000 0000
+D8~D15 Stauts:0000 0000

@@ -42,6 +42,10 @@ var IOMUX_MUX_CTL_GPIO16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0248))))
 var IOMUX_MUX_CTL_GPIO17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E024C))))
 var IOMUX_MUX_CTL_GPIO18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0250))))
 var IOMUX_MUX_CTL_GPIO19 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0254))))
+var IOMUX_MUX_CTL_EIM_DA11 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0140))))
+var IOMUX_MUX_CTL_EIM_D27 = ((*uint32)(unsafe.Pointer(uintptr(0x20E00C0))))
+var IOMUX_MUX_CTL_EIM_BCLK = ((*uint32)(unsafe.Pointer(uintptr(0x20E0158))))
+var IOMUX_MUX_CTL_ENET_RX_ER = ((*uint32)(unsafe.Pointer(uintptr(0x20E01D8))))
 
 var IOMUX_PAD_CTL_GPIO0 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05F0))))
 var IOMUX_PAD_CTL_GPIO1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05F4))))
@@ -57,6 +61,10 @@ var IOMUX_PAD_CTL_GPIO16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0618))))
 var IOMUX_PAD_CTL_GPIO17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E061C))))
 var IOMUX_PAD_CTL_GPIO18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0620))))
 var IOMUX_PAD_CTL_GPIO19 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0624))))
+var IOMUX_PAD_CTL_EIM_DA11 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0454))))
+var IOMUX_PAD_CTL_EIM_D27 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03D4))))
+var IOMUX_PAD_CTL_EIM_BCLK = ((*uint32)(unsafe.Pointer(uintptr(0x20E046C))))
+var IOMUX_PAD_CTL_ENET_RX_ER = ((*uint32)(unsafe.Pointer(uintptr(0x20E04EC))))
 
 //SPI1
 var IOMUX_MUX_CTL_EIM_D17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0094))))
@@ -113,6 +121,9 @@ const (
 	MUX_ALT5      = 5
 	MUX_ALT6      = 6
 	MUX_ALT7      = 7
+	SPEED_LOW     = 0
+	SPEED_MEDIUM  = 1
+	SPEED_FAST    = 3
 )
 
 var pinmap = map[uint32]*uint32{}
@@ -122,7 +133,7 @@ func makeGPIOmuxconfig(muxmode uint8) uint32 {
 	return uint32(muxmode)
 }
 
-func makeGPIOpadconfig(hysteresis, pull, pull_keep_mode, pull_keep_enabled, open_drain, drive_strength, slewrate uint8) uint32 {
+func makeGPIOpadconfig(hysteresis, pull, pull_keep_mode, pull_keep_enabled, open_drain, speed, drive_strength, slewrate uint32) uint32 {
 	hysteresis &= 0x1
 	pull &= 0x3
 	pull_keep_mode &= 0x1
@@ -130,5 +141,6 @@ func makeGPIOpadconfig(hysteresis, pull, pull_keep_mode, pull_keep_enabled, open
 	open_drain &= 0x1
 	drive_strength &= 0x7
 	slewrate &= 0x1
-	return (uint32(hysteresis) << 16) | (uint32(pull) << 14) | (uint32(pull_keep_mode) << 13) | (uint32(pull_keep_enabled) << 12) | (uint32(open_drain) << 11) | (uint32(drive_strength) << 3) | (uint32(slewrate))
+	speed &= 0x3
+	return (uint32(hysteresis) << 16) | (uint32(pull) << 14) | (uint32(pull_keep_mode) << 13) | (uint32(pull_keep_enabled) << 12) | (uint32(open_drain) << 11) | (uint32(speed) << 6) | (uint32(drive_strength) << 3) | (uint32(slewrate))
 }

@@ -52,16 +52,16 @@ type SPI_periph struct {
 func (spi SPI_periph) Begin(mode, freq, datalength uint8) {
 	//put the gpio pins on push/pull mode with their appropriate alternate functions
 	*spi.mosi.muxctl = makeGPIOmuxconfig(spi.mosi.alt)
-	*spi.mosi.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, DRIVE_33R, SLEW_FAST)
+	*spi.mosi.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, SPEED_FAST, DRIVE_33R, SLEW_FAST)
 
 	*spi.miso.muxctl = makeGPIOmuxconfig(spi.miso.alt)
-	*spi.miso.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, DRIVE_33R, SLEW_FAST)
+	*spi.miso.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, SPEED_FAST, DRIVE_33R, SLEW_FAST)
 
 	*spi.sclk.muxctl = makeGPIOmuxconfig(spi.sclk.alt)
-	*spi.sclk.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, DRIVE_33R, SLEW_FAST)
+	*spi.sclk.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, SPEED_FAST, DRIVE_33R, SLEW_FAST)
 
 	*spi.cs.muxctl = makeGPIOmuxconfig(spi.cs.alt)
-	*spi.cs.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, DRIVE_33R, SLEW_FAST)
+	*spi.cs.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, SPEED_FAST, DRIVE_33R, SLEW_FAST)
 
 	//ungate the module clock
 	//Put 0x3F into CCM_CCGR1

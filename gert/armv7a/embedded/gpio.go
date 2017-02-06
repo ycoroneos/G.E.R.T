@@ -98,7 +98,7 @@ func (pin GPIO_pin) SetInput() {
 	//set gpio mode in iomux
 	mux := makeGPIOmuxconfig(MUX_ALT5)
 	*pin.muxctl = mux
-	pad := makeGPIOpadconfig(0, PULLDOWN_100K, 1, 1, 0, DRIVE_HIZ, SLEW_FAST)
+	pad := makeGPIOpadconfig(1, PULLUP_100K, 1, 1, 0, SPEED_FAST, DRIVE_260R, SLEW_FAST)
 	*pin.padctl = pad
 
 	//set gdir to 0
@@ -110,7 +110,7 @@ func (pin GPIO_pin) SetOutput() {
 	//set gpio mode in iomux
 	mux := makeGPIOmuxconfig(MUX_ALT5)
 	*pin.muxctl = mux
-	pad := makeGPIOpadconfig(0, PULLDOWN_100K, 1, 1, 0, DRIVE_HIZ, SLEW_FAST)
+	pad := makeGPIOpadconfig(1, PULLUP_100K, 1, 1, 0, SPEED_FAST, DRIVE_260R, SLEW_FAST)
 	*pin.padctl = pad
 
 	//set gdir to 1

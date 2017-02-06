@@ -1,0 +1,7 @@
+Round-trip interrupt latency test. Pin 3_11 is set up to trigger on a falling
+edge. In response, pin 3_12 rises. The time between the two events is measured
+on the scope.
+
+Results
+GERT ~6.3 us
+
