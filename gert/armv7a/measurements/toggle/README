@@ -3,7 +3,7 @@ fast as possible. In linux this is done with the sysfs API exposed by the kernel
 to userspace.
 
 summary:
-biscuit 127KHz <--> 180KHz
+GERT 127KHz <--> 180KHz
 linux golang ~127Khz
 linux C ~263KHz
 

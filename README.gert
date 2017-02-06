@@ -1,0 +1,38 @@
+#G · E · R · T
+#o   m   u   i
+#l   b   n   m
+#a   e       e
+#n   d
+#g   d
+#    e
+#    d
+
+This is a modification of the Go runtime to run baremetal on armv7a SOCs. The current supported
+SOC is the imx6q.
+
+
+Look in the golang_embedded submodule to find the modified runtime
+
+
+Look in gert/armv7a to find examples for the Wandboard Quad as well as the
+embedded package which provides drivers for some of the imx6 periherals
+
+
+##To Build
+git submodule init
+git submodule update
+cd gert/armv7a && make clean && make runtime && make
+
+
+##To Run it in QEMU
+cd gert/armv7a && make clean && make runtime && make qemu
+
+
+##Debugging
+You can use gdb with QEMU or you can directly JTAG the board.
+
+###QEMU debug
+make qemud (then fire up gdb in another terminal)
+
+###JTAG debug
+Scripts for attaching to different cores are provided for the JLinkGDBServer. This has been verified to work on the Segger JLink EDU.
