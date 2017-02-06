@@ -9,8 +9,7 @@ g   d
 
 This is a modification of the Go runtime to run baremetal on armv7a SOCs. The current supported
 SOC is the imx6q because it is very well documented. The Samsung Exynos 4412 has been supported
-in the past (and may resurface), but the ideal future goal is to support the Broadcom BCM2837 (raspi 3)
-if/when a good datasheet is released.
+in the past (and may resurface), but the ideal future goal is to support the Broadcom BCM2837 (raspi 3) if/when a good datasheet is released.
 
 
 Look in the golang_embedded submodule to find the modified runtime
