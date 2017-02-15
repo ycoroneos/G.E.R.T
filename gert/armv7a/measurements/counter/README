@@ -4,4 +4,10 @@ of Biscuit is simply to count them and then I can see how many it misses.
 10 pulses are sent
 
 Results:
-Biscuit : 135KHz <-> 161KHz (Missed 1 pulse at 161KHz)
+GERT ISR : 135KHz <-> 161KHz (Missed 1 pulse at 161KHz)
+
+C Linux Polling : 156KHz <-> 161KHz (Missed 4 pulses at 161KHz)
+C Linux ISR : How do without a kernel module ?
+
+Go Linux Polling : 50KHz <-> 100KHz (Missed 10 pulses at 100KHz)
+Go Linux ISR : May not be possible
