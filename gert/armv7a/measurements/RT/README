@@ -4,4 +4,4 @@ on the scope.
 
 Results
 GERT ~6.3 us
-
+Linux polling C ~10us
