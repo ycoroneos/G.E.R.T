@@ -49,7 +49,7 @@ type SPI_periph struct {
 
 //SPI has 3 types of modes which affect the polarity of the clock and the resting state of the data signals
 //data length is how many bits each SPI frame contains. 7,8,16 are common amounts
-func (spi SPI_periph) Begin(mode, freq, datalength uint8) {
+func (spi *SPI_periph) Begin(mode, freq, datalength uint8) {
 	//put the gpio pins on push/pull mode with their appropriate alternate functions
 	*spi.mosi.muxctl = makeGPIOmuxconfig(spi.mosi.alt)
 	*spi.mosi.padctl = makeGPIOpadconfig(0, PULLDOWN_100K, 0, 0, 0, SPEED_FAST, DRIVE_33R, SLEW_FAST)
