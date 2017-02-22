@@ -1,5 +1,9 @@
 package embedded
 
+import (
+	"unsafe"
+)
+
 //SPI1 Pins
 // MOSI EIM D18
 
@@ -20,3 +24,5 @@ var WB_SPI1 = SPI_periph{SPI_pin{"mosi", 1, IOMUX_MUX_CTL_EIM_D17, IOMUX_PAD_CTL
 	0,
 	0,
 	1}
+
+var WB_DEFAULT_UART = UART{((*UART_regs)(unsafe.Pointer(uintptr(0x2020000))))}

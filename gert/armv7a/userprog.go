@@ -42,6 +42,9 @@ func user_init() {
 }
 
 func user_loop() {
+	fmt.Printf("waiting for input: ")
+	data := string(embedded.WB_DEFAULT_UART.Read(10)[:])
+	fmt.Printf("got %s\n", data)
 	//embedded.WB_JP4_6.SetLO()
 	//embedded.WB_JP4_6.SetHI()
 	//	embedded.WB_JP4_4.SetLO()
