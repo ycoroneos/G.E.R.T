@@ -25,7 +25,11 @@ var WB_SPI1 = SPI_periph{SPI_pin{"mosi", 1, IOMUX_MUX_CTL_EIM_D17, IOMUX_PAD_CTL
 	0,
 	1}
 
+//var WB_PWM1 = PWM_periph{PWM_pin{"JP1_17", 2, IOMUX_MUX_CTL_DISP0_DAT8, IOMUX_PAD_CTL_DISP0_DAT8}, ((*PWM_regs)(unsafe.Pointer(uintptr(0x2080000))))}
+//var WB_PWM2 = PWM_periph{PWM_pin{"JP1_19", 2, IOMUX_MUX_CTL_DISP0_DAT9, IOMUX_PAD_CTL_DISP0_DAT9}, ((*PWM_regs)(unsafe.Pointer(uintptr(0x2084000))))}
+
 var WB_PWM3 = PWM_periph{PWM_pin{"JP1_3", 2, IOMUX_MUX_CTL_SD4_DATA1, IOMUX_PAD_CTL_SD4_DATA1}, ((*PWM_regs)(unsafe.Pointer(uintptr(0x2088000))))}
-var WB_PWM4 = PWM_periph{PWM_pin{"JP1_5", 2, IOMUX_MUX_CTL_SD4_DATA2, IOMUX_PAD_CTL_SD4_DATA2}, ((*PWM_regs)(unsafe.Pointer(uintptr(0x208C000))))}
+
+//var WB_PWM4 = PWM_periph{PWM_pin{"JP1_5", 2, IOMUX_MUX_CTL_SD4_DATA2, IOMUX_PAD_CTL_SD4_DATA2}, ((*PWM_regs)(unsafe.Pointer(uintptr(0x208C000))))}
 
 var WB_DEFAULT_UART = UART{((*UART_regs)(unsafe.Pointer(uintptr(0x2020000))))}

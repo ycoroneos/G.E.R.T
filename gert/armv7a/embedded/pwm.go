@@ -31,6 +31,8 @@ type PWM_periph struct {
 
 func (pwm *PWM_periph) Begin(freq khz) {
 	//section 51.5 of the DQRM
+	*pwm.output.muxctl = makeGPIOmuxconfig(pwm.output.alt)
+	*pwm.output.padctl = makeGPIOpadconfig(1, PULLDOWN_100K, 1, 1, 0, SPEED_FAST, DRIVE_260R, SLEW_FAST)
 
 	//disable pwm
 	pwm.regs.CR = 0
@@ -54,7 +56,7 @@ func (pwm *PWM_periph) Begin(freq khz) {
 	pwm.regs.PR = 0xFFFF
 
 	//enable pwm
-	pwm.regs.CR |= 1
+	//pwm.regs.CR |= 1
 }
 
 func (pwm *PWM_periph) Stop() {
