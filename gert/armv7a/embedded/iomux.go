@@ -77,6 +77,13 @@ var IOMUX_PAD_CTL_EIM_D18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03AC))))
 var IOMUX_PAD_CTL_EIM_D16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A4))))
 var IOMUX_PAD_CTL_KEY_COL2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05D8))))
 
+//PWM
+var IOMUX_MUX_CTL_SD4_DATA1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0320))))
+var IOMUX_PAD_CTL_SD4_DATA1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0708))))
+
+var IOMUX_MUX_CTL_SD4_DATA2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0324))))
+var IOMUX_PAD_CTL_SD4_DATA2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E070C))))
+
 //go:nosplit
 func usdhc_iomux_config(instance uint32) {
 	switch instance {

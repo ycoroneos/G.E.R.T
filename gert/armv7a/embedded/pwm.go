@@ -25,11 +25,8 @@ type PWM_pin struct {
 }
 
 type PWM_periph struct {
-	regs           *PWM_regs
-	output         PWM_pin
-	mode           uint8
-	frequency      uint8
-	channel_select uint8
+	output PWM_pin
+	regs   *PWM_regs
 }
 
 func (pwm *PWM_periph) Begin(freq khz) {
