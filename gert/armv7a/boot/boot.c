@@ -123,35 +123,6 @@ void trap(struct trapframe *tf)
   while (stub) {};
 }
 
-
-//static void load_go()
-//{
-//  size_t binsize = gobin_end - gobin_start;
-//  cprintf("go bin size : 0x%x\r\n", binsize);
-//  boot_memset((char *)(RAM_START + RAM_SIZE - ONE_MEG), 0, ONE_MEG);
-//  boot_memset((char *)go_load_addr, 0, binsize+stacksize+ONE_MEG);
-//  boot_memcpy((char *)go_load_addr, (char *)gobin_start, binsize);
-//  cprintf("loaded at 0x%x\r\n", go_load_addr);
-//  cprintf("first 10 words are:\r\n");
-//  uint32_t *in = (uint32_t *)(gobin_start);
-//  uint32_t *out = (uint32_t *)(go_load_addr);
-//  for (unsigned i=0; i<10; ++i)
-//  {
-//    cprintf("\t0x%x vs 0x%x\r\n", out[i], in[i]);
-//  }
-//  uint32_t nwords = binsize /4;
-//  cprintf("verifying: ");
-//  for (unsigned i=0; i<nwords; ++i)
-//  {
-//    if (in[i] != out[i])
-//    {
-//      cprintf("mismatch at address 0x%x\r\n", &out[i]);
-//      panic("verify failed");
-//    }
-//  }
-//  cprintf(" complete!\r\n");
-//}
-
 static void load_go()
 {
   struct Elf *elfhdr=(struct Elf*)gobin_start;
@@ -195,6 +166,8 @@ int main()
   consoleinit();
   cprintf("---------------------------------------------\r\n");
   cprintf("Welcome to Biscuit-ARM Bootloader, 16 is %x hex!\r\n",16);
+  ////boot_memset((void*)(0x10000000), 0xffffffff, 0x60000000);
+  boot_memset((void*)(0x7FD00000), 0xffffffff, 0x100000);
 
   float a=1.25;
   float b =a*3;
@@ -202,12 +175,6 @@ int main()
   //load our kernel
   load_go();
   uint32_t kernel_start = gobin_start;
-//  uint32_t kernel_size = gobin_end - gobin_start + stacksize;
-//  asm volatile("mov r0, %0"
-//      :
-//      :"r"(kernel_start)
-//      :"r0"
-//      );
   asm volatile("mov r5, %0"
       :
       :"r"(kernel_start)
