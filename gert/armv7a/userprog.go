@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var event_chan chan interface{}
+
 func user_init() {
 
 	//play with the SD card a bit
@@ -25,20 +27,21 @@ func user_init() {
 		}
 		fmt.Println(string(contents))
 	}
+	event_chan = make(chan interface{})
 	//embedded.WB_JP4_4.SetOutput()
 	//embedded.WB_JP4_4.SetLO()
 	//embedded.WB_JP4_6.SetInput()
 	//embedded.WB_JP4_6.EnableIntr(embedded.INTR_FALLING, inc)
 	//embedded.Enable_interrupt(103, 0) //send GPIO3 interrupt to CPU0
 
-	embedded.WB_PWM1.Begin(0x10)
-	embedded.WB_PWM1.SetDuty(0.5)
-
-	embedded.WB_PWM2.Begin(0xF000)
-	embedded.WB_PWM2.SetDuty(0.5)
-
-	embedded.WB_PWM3.Begin(0xFF00)
-	embedded.WB_PWM3.SetDuty(0.5)
+	//	embedded.WB_PWM1.Begin(0x10)
+	//	embedded.WB_PWM1.SetDuty(0.5)
+	//
+	//	embedded.WB_PWM2.Begin(0xF000)
+	//	embedded.WB_PWM2.SetDuty(0.5)
+	//
+	//	embedded.WB_PWM3.Begin(0xFF00)
+	//	embedded.WB_PWM3.SetDuty(0.5)
 
 	//send the GPT interrupt to CPU1
 	//embedded.Enable_interrupt(87, 1)
@@ -51,9 +54,17 @@ func user_init() {
 }
 
 func user_loop() {
-	fmt.Printf("waiting for input: ")
-	data := string(embedded.WB_DEFAULT_UART.Read(10)[:])
-	fmt.Printf("got %s\n", data)
+
+	//make an event loop
+	select {
+	case event := <-event_chan:
+		fmt.Println("%v\n", event)
+	default:
+	}
+
+	//	fmt.Printf("waiting for input: ")
+	//	data := string(embedded.WB_DEFAULT_UART.Read(10)[:])
+	//	fmt.Printf("got %s\n", data)
 	//embedded.WB_JP4_6.SetLO()
 	//embedded.WB_JP4_6.SetHI()
 	//	embedded.WB_JP4_4.SetLO()
