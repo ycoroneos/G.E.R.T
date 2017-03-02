@@ -10,24 +10,34 @@ var event_chan chan interface{}
 func user_init() {
 
 	//play with the SD card a bit
-	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
-	if !good {
-		fmt.Println("fat32 init failure")
-	}
-	fmt.Println(root.Getfilenames())
-	fmt.Println(root.Getsubdirnames())
-	good, bootdir := root.Direnter("BOOT")
-	if !good {
-		panic("dir entry failed")
-	} else {
-		fmt.Println(bootdir.Getfilenames())
-		good, contents := bootdir.Fileread("UENV.TXT")
-		if !good {
-			panic("file read failure")
+	//	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
+	//	if !good {
+	//		fmt.Println("fat32 init failure")
+	//	}
+	//	fmt.Println(root.Getfilenames())
+	//	fmt.Println(root.Getsubdirnames())
+	//	good, bootdir := root.Direnter("BOOT")
+	//	if !good {
+	//		panic("dir entry failed")
+	//	} else {
+	//		fmt.Println(bootdir.Getfilenames())
+	//		good, contents := bootdir.Fileread("UENV.TXT")
+	//		if !good {
+	//			panic("file read failure")
+	//		}
+	//		fmt.Println(string(contents))
+	//	}
+	event_chan = make(chan interface{}, 10)
+	event_chan <- 54
+	event_chan <- 23
+	event_chan <- 96
+	event_chan <- "HENLO"
+	event_chan <- 33.33
+	go func() {
+		for {
+			event_chan <- string(embedded.WB_DEFAULT_UART.Read(1)[:])
 		}
-		fmt.Println(string(contents))
-	}
-	event_chan = make(chan interface{})
+	}()
 	//embedded.WB_JP4_4.SetOutput()
 	//embedded.WB_JP4_4.SetLO()
 	//embedded.WB_JP4_6.SetInput()
@@ -58,7 +68,7 @@ func user_loop() {
 	//make an event loop
 	select {
 	case event := <-event_chan:
-		fmt.Println("%v\n", event)
+		fmt.Printf("%v\n", event)
 	default:
 	}
 

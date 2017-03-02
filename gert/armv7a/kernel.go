@@ -19,16 +19,24 @@ func Entry() {
 //the runtime calls main after it's done setting up
 func main() {
 	//test things like channels and whatnot
+	fmt.Printf("self tests ...")
 	self_tests()
+	fmt.Printf("done!\n")
 
 	//print out some warnings for myself so I dont forget possibly sketchy things I have done
+	fmt.Printf("warnings ...")
 	self_warnings()
+	fmt.Printf("done!\n")
 
 	//init the GIC and turn on interrupts
+	fmt.Printf("pre-init ...")
 	pre_init()
+	fmt.Printf("done!\n")
 
 	//user-provided init code
+	fmt.Printf("user init ...")
 	user_init()
+	fmt.Printf("done!\n")
 
 	//user main loop
 	for {
