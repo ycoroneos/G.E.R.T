@@ -1,4 +1,4 @@
-target remote :2331
+target remote :3330
 symbol-file obj/kernel.elf
 layout asm
-b runtime.catch
+b symtab.go:280
