@@ -27,6 +27,8 @@ type PWM_pin struct {
 type PWM_periph struct {
 	output PWM_pin
 	regs   *PWM_regs
+	period khz
+	duty   float32
 }
 
 func (pwm *PWM_periph) Begin(freq khz) {
@@ -43,7 +45,8 @@ func (pwm *PWM_periph) Begin(freq khz) {
 	pwm.regs.CR |= clk_ipg << 16
 
 	//set the prescalar, which effectively sets the switching frequency
-	prescale := freq & 0xFFF
+	//prescale := freq & 0xFFF
+	prescale := 0
 	pwm.regs.CR |= uint32(prescale) << 4
 
 	//turn of all pwm interrupts
@@ -52,11 +55,13 @@ func (pwm *PWM_periph) Begin(freq khz) {
 	//clear all the things in the status register
 	pwm.regs.SR = 0xFF
 
-	//set the period to the max, we will use the prescalar to change the period
-	pwm.regs.PR = 0xFFFF
+	//pwm.regs.PR = 0xFFFF
+	pwm.regs.PR = uint32(freq)
+	pwm.period = freq
+	pwm.duty = 0
 
 	//enable pwm
-	//pwm.regs.CR |= 1
+	pwm.regs.CR |= 1
 }
 
 func (pwm *PWM_periph) Stop() {
@@ -65,13 +70,18 @@ func (pwm *PWM_periph) Stop() {
 
 func (pwm *PWM_periph) SetFreq(freq khz) {
 	//we can technically change the divider while its running
-	cr := pwm.regs.CR
-	cr &= ^uint32(0xFFF)
-	cr |= (uint32(freq) & 0xFFF)
-	pwm.regs.CR = cr
+	//cr := pwm.regs.CR
+	//cr &= ^uint32(0xFFF)
+	//cr |= (uint32(freq) & 0xFFF)
+	//pwm.regs.CR = cr
+	pwm.period = freq
+	pwm.regs.PR = uint32(freq)
+	pwm.SetDuty(pwm.duty)
 }
 
 func (pwm *PWM_periph) SetDuty(dutycycle float32) {
-	realduty := uint32(0xFFFF * dutycycle)
-	pwm.regs.SAR = realduty
+	pwm.duty = dutycycle
+	pwm.regs.SAR = uint32(float32(pwm.period) * pwm.duty)
+	//	realduty := uint32(0xFFFF * dutycycle)
+	//	pwm.regs.SAR = realduty
 }

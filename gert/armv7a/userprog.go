@@ -31,13 +31,13 @@ func user_init() {
 	//embedded.WB_JP4_6.EnableIntr(embedded.INTR_FALLING, inc)
 	//embedded.Enable_interrupt(103, 0) //send GPIO3 interrupt to CPU0
 
-	//embedded.WB_PWM1.Begin(0xFF)
-	//embedded.WB_PWM1.SetDuty(0.5)
+	embedded.WB_PWM1.Begin(0x10)
+	embedded.WB_PWM1.SetDuty(0.5)
 
-	//embedded.WB_PWM2.Begin(0xFF)
-	//embedded.WB_PWM2.SetDuty(0.5)
+	embedded.WB_PWM2.Begin(0xF000)
+	embedded.WB_PWM2.SetDuty(0.5)
 
-	embedded.WB_PWM3.Begin(0xFF)
+	embedded.WB_PWM3.Begin(0xFF00)
 	embedded.WB_PWM3.SetDuty(0.5)
 
 	//send the GPT interrupt to CPU1
