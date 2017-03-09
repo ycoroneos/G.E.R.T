@@ -6,6 +6,7 @@ import (
 )
 
 var event_chan chan interface{}
+var drive *embedded.MDD10A_controller
 
 func user_init() {
 
@@ -27,12 +28,8 @@ func user_init() {
 	//		}
 	//		fmt.Println(string(contents))
 	//	}
+	drive = embedded.MakeMDD10A(embedded.WB_PWM1, embedded.WB_PWM2, embedded.WB_JP4_4, embedded.WB_JP4_6)
 	event_chan = make(chan interface{}, 10)
-	event_chan <- 54
-	event_chan <- 23
-	event_chan <- 96
-	event_chan <- "HENLO"
-	event_chan <- 33.33
 	go func() {
 		for {
 			event_chan <- string(embedded.WB_DEFAULT_UART.Read(1)[:])
@@ -68,8 +65,24 @@ func user_loop() {
 	//make an event loop
 	select {
 	case event := <-event_chan:
+		//if event != oldevent {
 		fmt.Printf("%v\n", event)
+		switch event {
+		case "w":
+			drive.Forward(0.5)
+		case "s":
+			drive.Backward(0.5)
+		case "a":
+			drive.TurnLeft(0.5)
+		case "d":
+			drive.TurnRight(0.5)
+		case " ":
+			drive.Stop()
+		}
+		//}
+		//oldevent = event
 	default:
+		//drive.Stop()
 	}
 
 	//	fmt.Printf("waiting for input: ")
@@ -85,15 +98,4 @@ func user_loop() {
 	//	}
 	//embedded.Sleep(2)
 	//fmt.Printf("count is %d\n", count)
-}
-
-//var ping bool
-var count uint32
-
-//go:nosplit
-func inc() {
-	count += 1
-	//	if count%5 == 0 {
-	//		ping = true
-	//	}
 }

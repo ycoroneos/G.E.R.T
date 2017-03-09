@@ -1,9 +1,5 @@
 package embedded
 
-//import (
-//	"math"
-//)
-
 type MDD10A_controller struct {
 	PWM1 PWM_periph
 	DIR1 GPIO_pin
@@ -22,11 +18,6 @@ func MakeMDD10A(pwm1, pwm2 PWM_periph, dir1, dir2 GPIO_pin) *MDD10A_controller {
 	return &MDD10A_controller{pwm1, dir1, pwm2, dir2}
 }
 
-//func (c *MDD10A_controller) Translate(vector [2]float32) {
-//	//first normalize
-//	norm2:=math.Sqrt(vector[0]*vector[0] + vector[1]*vector[1])
-//	unit:=[2]float32{vector[0]/norm2, vector[1]/norm2}
-//}
 func (c *MDD10A_controller) move(speed1, speed2 float32, dir1, dir2 bool) {
 	if dir1 {
 		c.DIR1.SetHI()

@@ -1,6 +1,6 @@
 target remote :3330
 symbol-file obj/kernel.elf
-break symtab.go:280
+break proc.go:454
 continue
 set $i=0
 while ($i<1000)
