@@ -74,5 +74,5 @@ func pre_init() {
 	runtime.SetIRQcallback(irq)
 
 	//Release spinning cpus
-	runtime.Release()
+	//runtime.Release()
 }

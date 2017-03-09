@@ -71,11 +71,13 @@ var IOMUX_MUX_CTL_EIM_D17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0094))))
 var IOMUX_MUX_CTL_EIM_D18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0098))))
 var IOMUX_MUX_CTL_EIM_D16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0090))))
 var IOMUX_MUX_CTL_KEY_COL2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0208))))
+var IOMUX_MUX_CTL_EIM_EB2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E008C))))
 
 var IOMUX_PAD_CTL_EIM_D17 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A8))))
 var IOMUX_PAD_CTL_EIM_D18 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03AC))))
 var IOMUX_PAD_CTL_EIM_D16 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A4))))
 var IOMUX_PAD_CTL_KEY_COL2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E05D8))))
+var IOMUX_PAD_CTL_EIM_EB2 = ((*uint32)(unsafe.Pointer(uintptr(0x20E03A0))))
 
 //PWM
 var IOMUX_MUX_CTL_SD4_DATA1 = ((*uint32)(unsafe.Pointer(uintptr(0x20E0320))))
