@@ -3,6 +3,9 @@ package main
 import (
 	"./embedded"
 	"fmt"
+	"runtime"
+	"time"
+	"unsafe"
 )
 
 var event_chan chan interface{}
@@ -30,11 +33,15 @@ func user_init() {
 	//	}
 	drive = embedded.MakeMDD10A(embedded.WB_PWM1, embedded.WB_PWM2, embedded.WB_JP4_4, embedded.WB_JP4_6)
 	event_chan = make(chan interface{}, 10)
-	go func() {
-		for {
-			event_chan <- string(embedded.WB_DEFAULT_UART.Read(1)[:])
-		}
-	}()
+	//	go func() {
+	//		for {
+	//			event_chan <- string(embedded.WB_DEFAULT_UART.Read(1)[:])
+	//		}
+	//	}()
+	//fmt.Printf("press key to continue\n")
+	//embedded.WB_DEFAULT_UART.Read(1)
+	fmt.Printf("wait 10 sec... \n")
+	time.Sleep(10 * time.Second)
 	//embedded.WB_JP4_4.SetOutput()
 	//embedded.WB_JP4_4.SetLO()
 	//embedded.WB_JP4_6.SetInput()
@@ -62,6 +69,21 @@ func user_init() {
 
 func user_loop() {
 
+	globaltimerbase := 0xA00000 + 0x200
+	//valhi := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x4))))
+	//vallo := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x0))))
+	//cfg := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x8))))
+	valhi := unsafe.Pointer(uintptr(globaltimerbase + 0x4))
+	vallo := unsafe.Pointer(uintptr(globaltimerbase + 0x0))
+	cfg := unsafe.Pointer(uintptr(globaltimerbase + 0x8))
+	for {
+		fmt.Printf("%x %x %x\n", *((*uint32)(valhi)), *((*uint32)(vallo)), *((*uint32)(cfg)))
+		hi, lo := runtime.ReadClock(uintptr(globaltimerbase+0x4), uintptr(globaltimerbase))
+		fmt.Printf("runtime %x %x\n", hi, lo)
+		fmt.Printf("press key to continue\n")
+		embedded.WB_DEFAULT_UART.Read(1)
+	}
+
 	//make an event loop
 	select {
 	case event := <-event_chan:
@@ -78,6 +100,7 @@ func user_loop() {
 			drive.TurnRight(0.5)
 		case " ":
 			drive.Stop()
+			//		fmt.Printf("%x %x %x\n", valhi, vallo, cfg)
 		}
 		//}
 		//oldevent = event
