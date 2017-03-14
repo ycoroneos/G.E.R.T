@@ -1,0 +1,346 @@
+%% This file is for producing a Doctoral Thesis proposal.  It should be fairly
+%% self-explanatory.  
+
+\documentclass{article}
+\begin{document}
+
+\bibliographystyle{plain}
+\pagestyle{empty}
+\markboth{{\sc thesis proposal}}{{\sc thesis proposal}}
+\def\title{Parallel Processor Architecture}
+\def\author{Peter Nuth}
+\def\addrone{305 Memorial Drive, 606C}
+\def\addrtwo{Cambridge, MA  02139}
+
+\def\degree{Doctor of Philosophy}
+%% Added \deptname for PhD proposals in other fields.
+%% Krishna Sethuraman (1990)
+\def\deptname{Electrical Engineering \\ and Computer Science}
+\def\laboratory{Artificial Intelligence Laboratory}
+
+\def\submissiondate{\today}
+\def\completiondate{September 1990}
+
+\def\supervisor{Professor William J. Dally}
+\def\supertitleone{Associate Professor of Electrical Engineering}
+\def\supertitletwo{and Computer Science}
+
+\def\readerone{Professor Arvind}
+\def\readeronetitleone{Professor of Electrical Engineering}
+\def\readeronetitletwo{and Computer Science}
+
+\def\readertwo{Professor Thomas Knight}
+\def\readertwotitleone{Assistant Professor of Electrical Engineering}
+\def\readertwotitletwo{and Computer Science}
+
+\def\readerthree{Professor William J. Dally}
+\def\readerthreetitleone{Associate Professor of Electrical Engineering}
+\def\readerthreetitletwo{and Computer Science}
+
+
+\def\abstract{
+The proposed research
+is a study of processor architecture for 
+large scale parallel computer systems.
+The thesis introduces mechanisms
+for fast context switching, 
+synchronization between tasks,
+and run-time binding of 
+variable names to processor memory.
+Various design tradeoffs are evaluated 
+through simulation of a processor running a typical load.
+This work contains
+estimates of
+the speed and complexity of the different 
+alternatives as implemented in  VLSI.
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% You Should Not Need To Modify Anything Below Here %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Cover Page - Author signs %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{center}
+{\Large \bf 
+   Massachusetts Institute of Technology
+\\ Department of \deptname \\}
+\vspace{.25in}
+{\Large \bf
+   Proposal for Thesis Research in Partial Fulfillment
+\\ of the Requirements for the Degree of
+\\ \degree \\}
+\end{center}
+
+\vspace{.5in}
+
+\def\sig{{\small \sc (Signature of Author)}}
+
+\begin{tabular}{rlc}
+   {\small \sc Title:}                       & \multicolumn{2}{l}{\title}
+\\ {\small \sc Submitted by:}
+                            & \author  & \\
+                            & \addrone & \\
+                            & \addrtwo & \\ \cline{3-3}
+			    &	       & \makebox[2in][c]{\sig}
+\\ {\small \sc Date of Submission:}          & \multicolumn{2}{l}{\submissiondate}
+\\ {\small \sc Expected Date of Completion:} & \multicolumn{2}{l}{\completiondate}
+\\ {\small \sc Laboratory:}                  & \multicolumn{2}{l}{\laboratory}
+\end{tabular}
+
+
+\vspace{.75in}
+{\bf \sc Brief Statement of the Problem:}
+
+\abstract
+
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage %%% Supervision Agreement %%%
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{flushright}
+   Massachusetts Institute of Technology
+\\ Department of \deptname
+\\ Cambridge, Massachusetts 02139
+\end{flushright}
+
+\underline{\bf Doctoral Thesis Supervision Agreement}
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc To:}   & Department Graduate Committee
+\\ {\small \sc From:} & \supervisor
+\end{tabular}
+
+\vspace{.25in}
+The program outlined in the proposal:
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc Title:}  & \title
+\\ {\small \sc Author:} & \author
+\\ {\small \sc Date:}   & \submissiondate
+\end{tabular}
+
+\vspace{.25in}
+is adequate for a Doctoral thesis.
+I believe that appropriate readers for this thesis would be:
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc Reader 1:} & \readerone
+\\ {\small \sc Reader 2:} & \readertwo
+%\\ {\small \sc Reader 3:} & \readerthree
+\end{tabular}
+
+\vspace{.25in}
+Facilities and support for the research outlined in the proposal are available.
+I am willing to supervise the thesis and evaluate the thesis report.
+
+\vspace{.25in}
+\begin{tabular}{crc}
+  \hspace{2in} & {\sc Signed:} & \\ \cline{3-3}
+               &               & {\small \sc \supertitleone} \\
+               &               & {\small \sc \supertitletwo} \\
+               &               &                             \\
+               & {\sc Date:}   & \\ \cline{3-3}
+\end{tabular}
+
+\vspace{0in plus 1fill}
+
+Comments: \\
+\begin{tabular}{c}
+  \hspace{6.25in} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+%  \mbox{} \\ \cline{1-1} \mbox{} \\
+%  \mbox{} \\ \cline{1-1} \mbox{} \\
+%  \mbox{} \\ \cline{1-1} \mbox{} \\
+\end{tabular}
+
+          %%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage  %%% Reader I Agreement %%%
+          %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{flushright}
+   Massachusetts Institute of Technology
+\\ Department of \deptname
+\\ Cambridge, Massachusetts 02139
+\end{flushright}
+
+\underline{\bf Doctoral Thesis Reader Agreement}
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc To:}   & Department Graduate Committee
+\\ {\small \sc From:} & \readerone
+\end{tabular}
+
+\vspace{.25in}
+The program outlined in the proposal:
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc Title:}          & \title
+\\ {\small \sc Author:}         & \author
+\\ {\small \sc Date:}           & \submissiondate
+\\ {\small \sc Supervisor:}     & \supervisor
+\\ {\small \sc Other Reader:}   & \readertwo
+%\\ {\small \sc Other Reader:}   & \readerthree
+\end{tabular}
+
+\vspace{.25in}
+is adequate for a Doctoral thesis.
+I am willing to aid in guiding the research
+and in evaluating the thesis report as a reader.
+
+\vspace{.25in}
+\begin{tabular}{crc}
+  \hspace{2in} & {\sc Signed:} & \\ \cline{3-3}
+               &               & {\small \sc \readeronetitleone} \\
+               &               & {\small \sc \readeronetitletwo} \\
+               &               &                                 \\
+               & {\sc Date:}   & \\ \cline{3-3}
+\end{tabular}
+
+\vspace{0in plus 1fill}
+
+Comments: \\
+\begin{tabular}{c}
+  \hspace{6.25in} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+\end{tabular}
+
+
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage  %%% Reader II Agreement %%%
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{flushright}
+   Massachusetts Institute of Technology
+\\ Department of \deptname
+\\ Cambridge, Massachusetts 02139
+\end{flushright}
+
+\underline{\bf Doctoral Thesis Reader Agreement}
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc To:}   & Department Graduate Committee
+\\ {\small \sc From:} & \readertwo
+\end{tabular}
+
+\vspace{.25in}
+The program outlined in the proposal:
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc Title:}          & \title
+\\ {\small \sc Author:}         & \author
+\\ {\small \sc Date:}           & \submissiondate
+\\ {\small \sc Supervisor:}     & \supervisor
+\\ {\small \sc Other Reader:}   & \readerone
+%\\ {\small \sc Other Reader:}   & \readerthree
+\end{tabular}
+
+\vspace{.25in}
+is adequate for a Doctoral thesis.
+I am willing to aid in guiding the research
+and in evaluating the thesis report as a reader.
+
+\vspace{.25in}
+\begin{tabular}{crc}
+  \hspace{2in} & {\sc Signed:} & \\ \cline{3-3}
+               &               & {\small \sc \readertwotitleone} \\
+               &               & {\small \sc \readertwotitletwo} \\
+               &               &                                 \\
+               & {\sc Date:}   & \\ \cline{3-3}
+\end{tabular}
+
+\vspace{0in plus 1fill}
+
+Comments: \\
+\begin{tabular}{c}
+  \hspace{6.25in} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+\end{tabular}
+\newpage
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage  %%% Reader III Agreement %%%
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{flushright}
+   Massachusetts Institute of Technology
+\\ Department of \deptname
+\\ Cambridge, Massachusetts 02139
+\end{flushright}
+
+\underline{\bf Doctoral Thesis Reader Agreement}
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc To:}   & Department Graduate Committee
+\\ {\small \sc From:} & \readerthree
+\end{tabular}
+
+\vspace{.25in}
+The program outlined in the proposal:
+
+\vspace{.25in}
+\begin{tabular}{rl}
+   {\small \sc Title:}          & \title
+\\ {\small \sc Author:}         & \author
+\\ {\small \sc Date:}           & \submissiondate
+\\ {\small \sc Supervisor:}     & \supervisor
+\\ {\small \sc Other Reader:}   & \readerone
+\\ {\small \sc Other Reader:}   & \readertwo
+\end{tabular}
+
+\vspace{.25in}
+is adequate for a Doctoral thesis.
+I am willing to aid in guiding the research
+and in evaluating the thesis report as a reader.
+
+\vspace{.25in}
+\begin{tabular}{crc}
+  \hspace{2in} & {\sc Signed:} & \\ \cline{3-3}
+               &               & {\small \sc \readerthreetitleone} \\
+               &               & {\small \sc \readerthreetitletwo} \\
+               &               &                                 \\
+               & {\sc Date:}   & \\ \cline{3-3}
+\end{tabular}
+
+\vspace{0in plus 1fill}
+
+Comments: \\
+\begin{tabular}{c}
+  \hspace{6.25in} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+  \mbox{} \\ \cline{1-1} \mbox{} \\
+\end{tabular}
+\newpage
+
+\end{document}
+
+
+
+

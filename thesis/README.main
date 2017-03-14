@@ -1,0 +1,54 @@
+This file explains the options available to you for editting the file
+main.tex.
+
+The commands in the this file allow you to specify options such as
+spacing, double-sided printing, a draft copy, etc.   By default, 12pt
+and lgrind are included; lgrind is the 2e style for including code in
+your thesis.
+
+\documentclass[12pt]{mitthesis}
+\usepackage{lgrind}
+\pagestyle{plain}
+
+You can add options in the documentclass line as follows:
+
+	o  singlespace
+
+	\documentclass[12pt,singlespace]{mitthesis}
+	
+	o  twoside
+
+	\documentclass[12pt,twoside]{mitthesis}
+
+	o  draft   (make sure to change the pagestyle to drafthead as
+			well)
+
+	\documentclass[12pt,draft]{mitthesis}
+	\usepackage{lgrind}
+	\pagestyle{drafthead}
+
+	o vi   (for course vi and course viii theses)
+
+	\documentclass[12pt,vi]{mitthesis}
+
+Any options you would use for report.sty will work here as well.
+
+
+You should not need to change the first three lines and last two lines
+below.  Be sure to include an \include command for each file you are
+including in your thesis.
+  
+\include{cover}
+\pagestyle{plain}
+\include{contents}
+\include{chap1}
+\include{chap2}
+\appendix
+\include{appa}
+\include{appb}
+\include{biblio}
+\end{document}
+
+Comment: to include appendices use a single \appendix command followed by
+a number of \include{} commands as many files as needed, each of which
+should contain a \chapter{} command for the appendix title.

@@ -1,0 +1,67 @@
+To comment out part of an entry in BibTeX, you can use:
+
+	@Comment{body of text}
+
+If you wish to comment out the entire entry, just remove the @ sign in
+front of the entry type (i.e., get rid of the '@' in "@Book").
+
+*************************************************************************
+
+You can specify fixed strings (say if you needed to use it multiple
+times in your BibTeX file) with the @String command:
+
+	@String(Leslie-Lamport = {Leslie Lamport})
+
+and then you could use it in various entries:
+
+	@Book{latex,
+		Author = Leslie-Lamport,
+		Title = "\LaTeX",
+		...
+		Year = "1993"}
+
+*************************************************************************
+
+The required fields are not prefaced with OPT.  Those that are optional
+*are* prefaced with OPT (remember to delete those three characters should
+you wish to use those fields).
+
+[Note:
+     For most entry types the "author" information is simply the AUTHOR
+field.  However:  For the @Book and @Inbook entry types it's the AUTHOR
+field, but if there's no author then it's the EDITOR field; for the
+@Manual entry type it's the AUTHOR field, but if there's no author then
+it's the ORGANIZATION field; and for the @Proceedings entry type it's
+the EDITOR filed, but if there's no editor then it's the ORGANIZATION
+field.]
+
+To use this, just have your main.tex specify the following:
+
+	\bibliography{main}
+	\bibliographystyle{plain}
+
+There are several options for bibliographystyle:
+
+        plain   normal style - listed in ABC order and labeled numerically
+        unsrt   same as plain except entries appear in order of citation
+        alpha   same as plain except entry labels are used
+        abbrv   same as plain except uses abbreviations for first names,
+                month names, and journal names
+
+Now that you have the basis for a bibliography, you have to run both
+latex and bibtex on the document.  First, you should run latex (to
+create a foo.aux file, which bibtex reads).  Then run bibtex once to get
+some of the citations and create a .bbl file.  Then run latex again so
+that the cross references between the text file and the bibliography are
+correct.  You may want to repeat running bibtex and latex on the file to
+make sure that all cross references are correct.  Be warned that
+adding/deleting citations and sources will require running bibtex again.
+
+For more information on this topic, please refer the following pages in
+the LaTeX manual by Leslie Lamport:
+
+        72-74    Bibliography and Citation
+        74-74    BibTeX
+        140-147  Format of the .bib File (also gives info on other entry types)        187-188  Bibliography and Citation
+
+                 ----------------------------------------

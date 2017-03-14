@@ -1,0 +1,28 @@
+This file gives an overview on what you will need to do to create a
+bibliographic database for references, as well as create the actual
+bibliography for your thesis.
+
+You should not need to touch the file biblio.tex.  This merely tells
+latex to look for the file with the bibliographic info.  The file you
+want to edit is main.bib.  For each entry, use the appropriate style
+as designated in the file.
+
+Citing your references:
+
+When you cite a reference, you need to use the ``key'' you declare in
+main.bib for the entry.  No one ever sees the keys, but you'll want to
+use something you will easily remember.  For instance, if you had an
+entry with:
+
+	key=geer1
+
+Then you would use \cite{geer1} to reference it within your thesis.
+
+NOTE: You can not include references in your bibliography that are
+never cited in your paper by default. If you need to do this, create a
+key for the entry and at the end of your thesis include the line:
+
+\nocite{key}
+
+This should be done for every entry which is not explicitly cited.
+
