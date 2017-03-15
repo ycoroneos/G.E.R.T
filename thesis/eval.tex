@@ -1,0 +1,54 @@
+%% This is an example first chapter.  You should put chapter/appendix that you
+%% write into a separate file, and add a line \include{yourfilename} to
+%% main.tex, where `yourfilename.tex' is the name of the chapter/appendix file.
+%% You can process specific files by typing their names in at the 
+%% \files=
+%% prompt when you run the file main.tex through LaTeX.
+\chapter{Evaluation}
+
+G.E.R.T is evaluated for usability and performance. Usability refers to the
+ability of an engineer to easily express their desires for system behavior
+in the framework that G.E.R.T provides. These constraints essentially
+boil down to the feature set of the Go language. Performance is based on
+G.E.R.T's ability on synthetic timing benchmarks as well as its measured
+capability on two case studies: a mobile sensor platform robot and a mirror
+galvanometer laser projector.
+
+Writing enough drivers to make an SOC functional constitutes a huge pain so,
+for its initial implementation, G.E.R.T is written specifically for the
+Freescale i.MX6 Quad which implements the ARM Cortex A-9 MPCore architecture.
+This SOC was chosen because it has four cores, 2GB of RAM, and a very well
+written datasheet. It is the author's opinion that more manufacturers release
+complete datasheets for their SOCs so that researchers and hobbysists
+aren't limited to such a small set. Drivers were written for the UART, ECSPI, USDHC,
+PWM, GPT, IOMUX, and GPIO peripherals.
+
+All timing benchmarks were also run on Debian Linux userspace using the sysfs
+drivers that the Linux kernel provides. 
+
+
+\section{Usability Evaluation}
+
+Talk about new sensor integration primitives and concurrent
+state machines that go makes possible and nearly effortless to
+implement.
+
+
+\section{Synthetic Timing Evaluation}\label{ch1:opts}
+
+In order for G.E.R.T to be a feasible solution for performant embedded systems it
+must be able to quickly receive and respond to external events, such as interrupts.
+Two benchmarks were constructed to measure the interrupt latency. The first is a pulse
+counter where an FPGA is programmed to send $n$ pulses at $f$ frequency and G.E.R.T must
+count them. The second benchmark is a simple interrupt latency test where G.E.R.T simply
+toggles a pin upon noticing a rising edge on a different pin.
+
+
+Another timing benchmark was constructed to measure the maximum frequency
+that G.E.R.T can toggle a pin at. Large software systems often introduce
+an unecessary code "tax" that occurs when performing basic operations and this must
+be quantified. An output pin on the iMX6 can be toggled with only 3 lines of bare-metal
+assembly, but the Go and C compiler emit something much more complicated for the same
+basic operation (quantify). For this test, a pin is toggled as fast as possible and
+the frequency is measured.
+
