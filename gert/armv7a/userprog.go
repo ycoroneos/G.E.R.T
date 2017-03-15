@@ -78,8 +78,8 @@ func user_loop() {
 	cfg := unsafe.Pointer(uintptr(globaltimerbase + 0x8))
 	for {
 		fmt.Printf("%x %x %x\n", *((*uint32)(valhi)), *((*uint32)(vallo)), *((*uint32)(cfg)))
-		hi, lo := runtime.ReadClock(uintptr(globaltimerbase+0x4), uintptr(globaltimerbase))
-		fmt.Printf("runtime %x %x\n", hi, lo)
+		ticks := runtime.ReadClock(uintptr(globaltimerbase+0x4), uintptr(globaltimerbase))
+		fmt.Printf("runtime %x\n", ticks)
 		fmt.Printf("press key to continue\n")
 		embedded.WB_DEFAULT_UART.Read(1)
 	}
