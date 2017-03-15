@@ -3,9 +3,9 @@ package main
 import (
 	"./embedded"
 	"fmt"
-	"runtime"
+	//	"runtime"
 	"time"
-	"unsafe"
+	//	"unsafe"
 )
 
 var event_chan chan interface{}
@@ -69,19 +69,24 @@ func user_init() {
 
 func user_loop() {
 
-	globaltimerbase := 0xA00000 + 0x200
-	//valhi := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x4))))
-	//vallo := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x0))))
-	//cfg := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x8))))
-	valhi := unsafe.Pointer(uintptr(globaltimerbase + 0x4))
-	vallo := unsafe.Pointer(uintptr(globaltimerbase + 0x0))
-	cfg := unsafe.Pointer(uintptr(globaltimerbase + 0x8))
+	//	globaltimerbase := 0xA00000 + 0x200
+	//	//valhi := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x4))))
+	//	//vallo := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x0))))
+	//	//cfg := *((*uint32)(unsafe.Pointer(uintptr(globaltimerbase + 0x8))))
+	//	valhi := unsafe.Pointer(uintptr(globaltimerbase + 0x4))
+	//	vallo := unsafe.Pointer(uintptr(globaltimerbase + 0x0))
+	//	cfg := unsafe.Pointer(uintptr(globaltimerbase + 0x8))
+	//	for {
+	//		fmt.Printf("%x %x %x\n", *((*uint32)(valhi)), *((*uint32)(vallo)), *((*uint32)(cfg)))
+	//		hi, lo := runtime.ReadClock(uintptr(globaltimerbase+0x4), uintptr(globaltimerbase))
+	//		fmt.Printf("runtime %x %x\n", hi, lo)
+	//		fmt.Printf("press key to continue\n")
+	//		embedded.WB_DEFAULT_UART.Read(1)
+	//	}
+
 	for {
-		fmt.Printf("%x %x %x\n", *((*uint32)(valhi)), *((*uint32)(vallo)), *((*uint32)(cfg)))
-		ticks := runtime.ReadClock(uintptr(globaltimerbase+0x4), uintptr(globaltimerbase))
-		fmt.Printf("runtime %x\n", ticks)
-		fmt.Printf("press key to continue\n")
-		embedded.WB_DEFAULT_UART.Read(1)
+		fmt.Printf("wait a sec...\n")
+		time.Sleep(1 * time.Second)
 	}
 
 	//make an event loop
