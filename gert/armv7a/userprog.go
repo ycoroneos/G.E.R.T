@@ -3,8 +3,7 @@ package main
 import (
 	"./embedded"
 	"fmt"
-	//	"runtime"
-	"time"
+	//"time"
 	//	"unsafe"
 )
 
@@ -39,12 +38,18 @@ func user_init() {
 		}
 	}()
 
-	go func() {
-		for {
-			time.Sleep(2 * time.Second)
-			event_chan <- "Poll!"
-		}
-	}()
+	//	go func() {
+	//		for {
+	//			time.Sleep(2 * time.Second)
+	//			event_chan <- "Poll!"
+	//		}
+	//	}()
+	//	go func() {
+	//		for {
+	//			time.Sleep(300 * time.Millisecond)
+	//			event_chan <- "Poll fast!"
+	//		}
+	//	}()
 	//fmt.Printf("press key to continue\n")
 	//embedded.WB_DEFAULT_UART.Read(1)
 	//fmt.Printf("wait 10 sec... \n")
@@ -81,6 +86,8 @@ func user_loop() {
 		//if event != oldevent {
 		fmt.Printf("%v\n", event)
 		switch event {
+		case "p":
+			fmt.Printf("spi\n")
 		case "w":
 			drive.Forward(0.5)
 		case "s":
@@ -95,7 +102,7 @@ func user_loop() {
 		}
 		//}
 		//oldevent = event
-	default:
+		//	default:
 		//drive.Stop()
 	}
 

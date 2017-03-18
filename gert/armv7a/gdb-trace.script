@@ -1,6 +1,6 @@
-target remote :3330
+target remote :1234
 symbol-file obj/kernel.elf
-break proc.go:454
+break runtime.GC
 continue
 set $i=0
 while ($i<1000)
