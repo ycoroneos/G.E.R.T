@@ -105,6 +105,7 @@ func (spi *SPI_periph) Begin(mode, freq, datalength, channel uint32) {
 	spi.datalength = datalength
 }
 
+//assumes datalength < 32bits
 func (spi *SPI_periph) Send(data uint32) {
 	mask := uint32(1<<spi.datalength) - uint32(1)
 	data = data & mask
@@ -114,4 +115,16 @@ func (spi *SPI_periph) Send(data uint32) {
 	//}
 
 	spi.regs.txdata = data
+}
+
+//assumes datalength < 32 bits
+func (spi *SPI_periph) Exchange(data uint32) uint32 {
+	mask := uint32(1<<spi.datalength) - uint32(1)
+	data = data & mask
+	spi.regs.txdata = data
+
+	//wait for rx fifo to get data
+	for spi.regs.status&(0x1<<3) == 0 {
+	}
+	return spi.regs.rxdata
 }
