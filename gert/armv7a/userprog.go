@@ -92,13 +92,13 @@ func user_loop() {
 			fmt.Printf("spi\n")
 			embedded.WB_SPI1.Send(0xAA)
 		case "w":
-			drive.Forward(0.2)
+			drive.Forward(0.5)
 		case "s":
-			drive.Backward(0.2)
+			drive.Backward(0.5)
 		case "a":
-			drive.TurnRight(0.2)
+			drive.TurnRight(0.5)
 		case "d":
-			drive.TurnLeft(0.2)
+			drive.TurnLeft(0.5)
 		case " ":
 			drive.Stop()
 			//		fmt.Printf("%x %x %x\n", valhi, vallo, cfg)
