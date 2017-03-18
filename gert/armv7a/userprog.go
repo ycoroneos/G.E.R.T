@@ -69,6 +69,8 @@ func user_init() {
 	//	embedded.WB_PWM3.Begin(0xFF00)
 	//	embedded.WB_PWM3.SetDuty(0.5)
 
+	embedded.WB_SPI1.Begin(0, 10, 8, 0)
+
 	//send the GPT interrupt to CPU1
 	//embedded.Enable_interrupt(87, 1)
 
@@ -88,6 +90,7 @@ func user_loop() {
 		switch event {
 		case "p":
 			fmt.Printf("spi\n")
+			embedded.WB_SPI1.Send(0xAA)
 		case "w":
 			drive.Forward(0.5)
 		case "s":

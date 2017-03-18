@@ -16,6 +16,7 @@ var WB_JP4_6 = GPIO_pin{"JP4_6", 3, 27, gpios[3-1], IOMUX_MUX_CTL_EIM_D27, IOMUX
 var WB_JP4_8 = GPIO_pin{"JP4_8", 6, 31, gpios[6-1], IOMUX_MUX_CTL_EIM_BCLK, IOMUX_PAD_CTL_EIM_BCLK}
 var WB_JP4_10 = GPIO_pin{"JP4_10", 1, 24, gpios[1-1], IOMUX_MUX_CTL_ENET_RX_ER, IOMUX_PAD_CTL_ENET_RX_ER}
 
+//SPI clock is 59.2MHz
 var WB_SPI1 = SPI_periph{SPI_pin{"mosi", 1, IOMUX_MUX_CTL_EIM_D18, IOMUX_PAD_CTL_EIM_D18},
 	SPI_pin{"miso", 1, IOMUX_MUX_CTL_EIM_D17, IOMUX_PAD_CTL_EIM_D17},
 	SPI_pin{"sclk", 1, IOMUX_MUX_CTL_EIM_D16, IOMUX_PAD_CTL_EIM_D16},
@@ -24,6 +25,7 @@ var WB_SPI1 = SPI_periph{SPI_pin{"mosi", 1, IOMUX_MUX_CTL_EIM_D18, IOMUX_PAD_CTL
 		SPI_pin{"channel1", 0, IOMUX_MUX_CTL_KEY_COL2, IOMUX_PAD_CTL_KEY_COL2},
 	},
 	((*SPI_regs)(unsafe.Pointer(uintptr(0x2008000)))),
+	0,
 	0,
 	0}
 
