@@ -3,7 +3,7 @@ package main
 import (
 	"./embedded"
 	"fmt"
-	//"time"
+	"time"
 	//	"unsafe"
 )
 
@@ -37,6 +37,13 @@ func user_init() {
 	go func() {
 		for {
 			event_chan <- string(embedded.WB_DEFAULT_UART.Read(1)[:])
+		}
+	}()
+
+	go func() {
+		for {
+			event_chan <- adc.Read(0)
+			time.Sleep(2 * time.Second)
 		}
 	}()
 
