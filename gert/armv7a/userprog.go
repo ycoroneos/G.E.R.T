@@ -9,6 +9,7 @@ import (
 
 var event_chan chan interface{}
 var drive *embedded.MDD10A_controller
+var adc *embedded.MCP3008_controller
 
 func user_init() {
 
@@ -30,6 +31,7 @@ func user_init() {
 	//		}
 	//		fmt.Println(string(contents))
 	//	}
+	adc = embedded.MakeMCP3008(embedded.WB_SPI1)
 	drive = embedded.MakeMDD10A(embedded.WB_PWM1, embedded.WB_PWM2, embedded.WB_JP4_4, embedded.WB_JP4_6)
 	event_chan = make(chan interface{}, 10)
 	go func() {
@@ -69,7 +71,7 @@ func user_init() {
 	//	embedded.WB_PWM3.Begin(0xFF00)
 	//	embedded.WB_PWM3.SetDuty(0.5)
 
-	embedded.WB_SPI1.Begin(0, 10, 8, 0)
+	//	embedded.WB_SPI1.Begin(0, 10, 8, 0)
 
 	//send the GPT interrupt to CPU1
 	//embedded.Enable_interrupt(87, 1)
@@ -89,8 +91,9 @@ func user_loop() {
 		fmt.Printf("%v\n", event)
 		switch event {
 		case "p":
-			fmt.Printf("spi\n")
-			embedded.WB_SPI1.Send(0xAA)
+			//embedded.WB_SPI1.Send(0xAA)
+			val := adc.Read(0)
+			fmt.Printf("adc reads %f\n", val)
 		case "w":
 			drive.Forward(0.5)
 		case "s":
