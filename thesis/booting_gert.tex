@@ -1,0 +1,62 @@
+\chapter{Booting the Go Runtime}
+
+Even though Go code is compiled, it relies on a runtime to coordinate certain actions with the OS.
+Timers, locks, and file descriptors are just a few of the OS abstractions that the runtime hinges on
+in order to function at all. This means that getting compiled Go code to run bare metal on an SOC requires
+more than just a boot loader, the Go runtime itself must be modified to work without any OS abstractions.
+This poses a bootstrapping problem because any modifications made to the Go runtime's initialization
+process must not inadvertently cause it to use an abstraction that does not yet exist. For example,
+creating a new object with $make()$ would be disasterous if the GC has not yet been initialized.
+In observation of these constraints, G.E.R.T boots via a 3-stage process. The first stage is u-boot, which
+configures the clocks and copies the second stage off of an sdcard into memory before jumping into it. The second
+stage bootloader is a small C program which contains the entire G.E.R.T kernel ELF in its data section. This stage sets
+up the inital Go stack and loads the G.E.R.T ELF into memory before jumping to its entry point. The third stage
+of the bootloader lives inside G.E.R.T and is mostly written in Go, along with some Plan 9 assembly. It finishes the
+boot process.
+
+
+
+Working off the
+initial stack from stage 2, the stage 3 bootloader enumerates all of RAM into page tables and creates an idenity mapping
+with a new stack before turning on the MMU. After this, a thread scheduler is setup and synchronization primitives, like
+$futex()$ are enabled. Additional CPU's are booted in main after the Go runtime has finished initializing.
+
+\section{System Specification}
+G.E.R.T is written on a Freescale i.MX6 Quad SOC which implements the (32 bit) ARMv7a Cortex A9 MPCore architecture.
+The SOC sits on a Wandboard Quad baseboard. The i.MX6 Quad has 2GB of RAM and a wealth of memory mapped peripherals.
+Look at the memory map below. The rest of this chapter will discuss the implementation details of booting and
+running the Go runtime bare-metal on this SOC.
+
+\section{Stage 1 Bring Up}
+The u-boot loader is used to initialize device clocks and load the G.E.R.T bootloader into RAM.
+When the SOC is powered on, the program counter starts executing from ROM. The code in the ROM reads
+u-boot into RAM and jumps into it. U-boot programs the myriad of frequency dividers which are required
+to run the i.MX6 at a frequency of 792MHz per core. After this, u-boot is instructed to load the G.E.R.T
+kernel off the sdcard and into RAM at address 0x50000000. This address is specifically chosen because it
+does not overlap with any ELF program headers of the G.E.R.T kernel which are loaded in stage 2. After
+the stage 2 bootloader is in RAM, uboot jumps into it.
+
+\section{Stage 2 Decompression}
+The G.E.R.T bootloader sets up the initial Go stack and decompresses the Go kernel
+ELF into RAM. Much like Linux, the kernel of G.E.R.T is wrapped in a custom
+bootloader stage. This is necessary because G.E.R.T is compiled as a user space
+Linux program which expects a stack and the standard ELF auxiliary vectors. By
+default, the Go compiler links all programs at address 0x0. This would normally
+be a disaster for the i.MX6 because the first megabyte of RAM is either inaccessable
+or reserved for peripherals. One solution around this is to simply turn on the MMU
+in the stage 2 bootloader but this creates a headache with preserving page tables
+across the transition to Go land. An alternative, and much simpler, solution is to
+just change the link address of the Go ELF. This is the preferred approach so
+the link address was changed to 0x10000000. After loading the Go binary into RAM,
+the stage 2 bootloader reserves 4kb of initial stack and jumps into G.E.R.T.
+
+\section{Stage 3 Go Abstraction Synthesis}
+The thread scheduler and virtual memory system are statically initialized
+in order to prevent Go runtime subsystems from running before the environment
+is ready. At the beginning of execution, G.E.R.T is in a really constrained
+spot: Linux is not there but the Go runtime thinks it is. Specifically, there
+is no scheduler, no virtual memory, no syscalls. Nothing but a 4kb stack
+and the program counter. This is clearly inadequate for the Go runtime
+to do anything but crash, but G.E.R.T creates all of these missing subsystems
+(in Go) before the runtime actually uses them.
+

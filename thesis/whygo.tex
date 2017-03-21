@@ -1,0 +1,47 @@
+\chapter{Why Write Low Level System Code in Go?}
+
+Modern embedded systems are composed of multicore SOCs that require
+careful thought about race conditions and event serialization. Like
+operating system kernels, most of these embedded systems are still implemented
+in C because it is a simplistic language that makes it good for "bare-metal"
+development.
+
+
+outline:
+computers are quicker and multicore programming is scary, but everyone still uses C
+
+C's simplicity makes it error prone for concurrent programs.
+Because C is very simple, the programmer must implement additional complexities in order to write
+concurrent programs.
+
+try2:
+Low-level system code has been written in C since the 1970's because it is powerful
+and reliable. C can be used to express any operation a computer can do and it can also be
+compiled to fast byte code. Once, during an interview, an engineer even remarked: "If you
+can't do it in C, you can't do it". This does not mean that C is always the best choice though.
+
+Even though multicore systems are commonplace now, kernels are still written in C.
+
+Writing complex concurrent programs in C is too hard. Because C is very simple,
+the programmer must implement additional complexities in order to write
+concurrent programs.
+
+
+There are very
+few built-in abstractions so it is left to the programmer to layer additional complexities
+in order to accomplish a task.
+
+
+try 1:
+Low-level system code has been written in C since the 1970's because C is powerful
+and reliable. C can be used to express any operation a computer can do and it doesn't come
+with any baggage like languages with a runtime do. C is also easy to learn because it doesn't
+require advanced degrees in order to comprehend, like Haskell and Coq do. The problems with C
+only begin to show when concurrency comes into play. C, by itself, has no idea of concurrency
+or concurrent programming patterns. It is really all up to the programmer to lay down these
+abstractions. Combined with the burden of manual memory management, concurrent programming in C
+almost always results in pouring over JTAG trace logs for hints of a race condition.
+  Faced with this bleak outlook, perhaps it is reasonable to take a performance hit in exchange for
+faster development and less bugs. After all, computers have gotten significantly quicker in
+the last 20 years. This is where Go can come in. Go is meant to be a systems language
+that provides fundamental support for concurrency and cummincation

@@ -33,6 +33,14 @@
 \usepackage[T1]{fontenc}
 \pagestyle{plain}
 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
 %% This bit allows you to either specify only the files which you wish to
 %% process, or `all' to process all files which you \include.
 %% Krishna Sethuraman (1990).
@@ -51,12 +59,14 @@
 % \include{signature}
 \pagestyle{plain}
 \include{contents}
-\include{chap1}
+%\include{chap1}
+\include{whygo}
+\include{booting_gert}
 %\include{chap2}
 \include{eval}
 \appendix
-\include{appa}
-\include{appb}
-\include{biblio}
+%\include{appa}
+%\include{appb}
+%\include{biblio}
 \end{document}
 

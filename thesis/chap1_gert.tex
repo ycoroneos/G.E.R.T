@@ -1,0 +1,23 @@
+\chapter{Booting the Go Runtime}
+
+Even though Go code is compiled, it relies on a runtime to coordinate certain actions with the OS.
+Timers, locks, and file descriptors are just a few of the OS abstractions that the runtime hinges on
+in order to function at all. This means that getting compiled Go code to run bare metal on an SOC requires
+more than just a boot loader, the Go runtime itself must be modified to work without any OS abstractions.
+This poses a bootstrapping problem because any modifications made to the Go runtime's initialization
+process must not inadvertently cause it to use an abstraction that does not yet exist. For example,
+creating a new object with $make()$ would be disasterous if the GC has not yet been initialized.
+In observation of these constraints, G.E.R.T boots via a 3-stage process. The first stage is u-boot, which
+configures the clocks and copies the second stage off of an sdcard into memory before jumping into it. The second
+stage bootloader is a small C program which contains the entire G.E.R.T kernel ELF in its data section. This stage sets
+up the inital Go stack and loads the G.E.R.T ELF into memory before jumping to its entry point. The third stage
+of the bootloader lives inside G.E.R.T and is mostly written in Go, along with some Plan 9 assembly. It finishes the
+boot process.
+
+
+
+Working off the
+initial stack from stage 2, the stage 3 bootloader enumerates all of RAM into page tables and creates an idenity mapping
+with a new stack before turning on the MMU. After this, a thread scheduler is setup and synchronization primitives, like
+$futex()$ are enabled. Additional CPU's are booted in main after the Go runtime has finished initializing.
+
