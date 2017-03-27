@@ -84,7 +84,7 @@ qemud: all
 qemu: all
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 qemu-record: all
-	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -icount shift=7,rr=record,rrfile=replay.bin -net none
+	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -trace events=tracefile
 qemu-replay: all
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -icount shift=7,rr=replay,rrfile=replay.bin -net none
 runtime:
