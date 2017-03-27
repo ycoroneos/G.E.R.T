@@ -40,25 +40,25 @@ func user_init() {
 		}
 	}()
 
+	//	go func() {
+	//		for {
+	//			event_chan <- adc.Read(0)
+	//			time.Sleep(2 * time.Second)
+	//		}
+	//	}()
+
 	go func() {
 		for {
-			event_chan <- adc.Read(0)
 			time.Sleep(2 * time.Second)
+			event_chan <- "Poll!"
 		}
 	}()
-
-	//	go func() {
-	//		for {
-	//			time.Sleep(2 * time.Second)
-	//			event_chan <- "Poll!"
-	//		}
-	//	}()
-	//	go func() {
-	//		for {
-	//			time.Sleep(300 * time.Millisecond)
-	//			event_chan <- "Poll fast!"
-	//		}
-	//	}()
+	go func() {
+		for {
+			time.Sleep(300 * time.Millisecond)
+			event_chan <- "Poll fast!"
+		}
+	}()
 	//fmt.Printf("press key to continue\n")
 	//embedded.WB_DEFAULT_UART.Read(1)
 	//fmt.Printf("wait 10 sec... \n")
