@@ -3,6 +3,7 @@ package main
 import (
 	"./embedded"
 	"fmt"
+	"math"
 	"time"
 	//	"unsafe"
 )
@@ -46,6 +47,7 @@ func user_init() {
 			time.Sleep(2 * time.Second)
 		}
 	}()
+	fmt.Printf("pi is %v \n", pi(50))
 
 	//	go func() {
 	//		for {
@@ -126,4 +128,22 @@ func user_loop() {
 	//	}
 	//embedded.Sleep(2)
 	//fmt.Printf("count is %d\n", count)
+}
+
+// pi launches n goroutines to compute an
+// approximation of pi.
+func pi(n int) float64 {
+	ch := make(chan float64)
+	for k := 0; k <= n; k++ {
+		go term(ch, float64(k))
+	}
+	f := 0.0
+	for k := 0; k <= n; k++ {
+		f += <-ch
+	}
+	return f
+}
+
+func term(ch chan float64, k float64) {
+	ch <- 4 * math.Pow(-1, k) / (2*k + 1)
 }
