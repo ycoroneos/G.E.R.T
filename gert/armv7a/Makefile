@@ -20,8 +20,8 @@ AS_OBJ := $(patsubst boot/%.s,$(BUILDIR)/%.s.o,$(AS_SRC))
 BOOT_OBJ := $(AS_OBJ) $(C_OBJ)
 BOOT_TARGET := $(BUILDIR)/bootloader
 
-QEMU := qemu-system-arm
-#QEMU := ~/qemu-2.8.0/arm-softmmu/qemu-system-arm
+#QEMU := qemu-system-arm
+QEMU := ~/qemu/arm-softmmu/qemu-system-arm
 
 CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
           -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/
@@ -84,7 +84,7 @@ qemud: all
 qemu: all
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 qemu-record: all
-	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -trace events=tracefile
+	$(QEMU) -trace events=trace_events -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 qemu-replay: all
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -icount shift=7,rr=replay,rrfile=replay.bin -net none
 runtime:

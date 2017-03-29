@@ -63,7 +63,6 @@ func self_tests() {
 //I never read the git logs. Now I dont have to
 func self_warnings() {
 	fmt.Println("REMEMBER THAT SKETCHY THING YOU DID WITH MAPPING AN EXTRA PAGE IN MAP_REGION")
-	fmt.Println("sysmon is currently disabled in proc.go:func main()")
 }
 
 //If a user doesnt want IRQs then they should never enable one. The GIC will just be ON but do nothing
