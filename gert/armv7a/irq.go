@@ -25,12 +25,16 @@ func irq(irqnum uint32) {
 	case 87:
 		embedded.Addtime(1)
 		embedded.ClearGPTIntr()
+	case 99:
+		inc()
+		embedded.ClearIntr(1)
 	case 103:
 		//embedded.Addtime(1)
 		//embedded.GPIO_ISR(irqnum)
-		embedded.WB_JP4_4.SetHI()
+		//embedded.WB_JP4_4.SetHI()
 		//inc()
 		embedded.ClearIntr(3)
+		//embedded.ClearIntr(1)
 	default:
 		//fmt.Printf("IRQ %d on cpu %d\n", irqnum, runtime.Cpunum())
 	}

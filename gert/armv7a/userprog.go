@@ -49,6 +49,15 @@ func user_init() {
 	}()
 	fmt.Printf("pi is %v \n", pi(50))
 
+	go func() {
+		for {
+			old := count
+			time.Sleep(1 * time.Second)
+			new := count
+			event_chan <- new - old
+		}
+	}()
+
 	//	go func() {
 	//		for {
 	//			time.Sleep(100 * time.Millisecond)
@@ -59,10 +68,11 @@ func user_init() {
 	//embedded.WB_DEFAULT_UART.Read(1)
 	//fmt.Printf("wait 10 sec... \n")
 	//time.Sleep(10 * time.Second)
-	//embedded.WB_JP4_4.SetOutput()
-	//embedded.WB_JP4_4.SetLO()
-	//embedded.WB_JP4_6.SetInput()
-	//embedded.WB_JP4_6.EnableIntr(embedded.INTR_FALLING, inc)
+	//embedded.WB_JP4_10.SetOutput()
+	//embedded.WB_JP4_10.SetLO()
+	embedded.WB_JP4_10.SetInput()
+	embedded.WB_JP4_10.EnableIntr(embedded.INTR_FALLING, inc)
+	embedded.Enable_interrupt(99, 0) //send GPIO1 interrupt to CPU0
 	//embedded.Enable_interrupt(103, 0) //send GPIO3 interrupt to CPU0
 
 	//	embedded.WB_PWM1.Begin(0x10)
@@ -98,16 +108,15 @@ func user_loop() {
 			val := adc.Read(0)
 			fmt.Printf("adc reads %v\n", val)
 		case "w":
-			drive.Forward(0.5)
+			drive.Forward(0.2)
 		case "s":
-			drive.Backward(0.5)
+			drive.Backward(0.2)
 		case "a":
-			drive.TurnRight(0.5)
+			drive.TurnRight(0.2)
 		case "d":
-			drive.TurnLeft(0.5)
+			drive.TurnLeft(0.2)
 		case " ":
 			drive.Stop()
-			//		fmt.Printf("%x %x %x\n", valhi, vallo, cfg)
 		}
 		//}
 		//oldevent = event
@@ -128,6 +137,12 @@ func user_loop() {
 	//	}
 	//embedded.Sleep(2)
 	//fmt.Printf("count is %d\n", count)
+}
+
+var count uint32
+
+func inc() {
+	count += 1
 }
 
 // pi launches n goroutines to compute an
