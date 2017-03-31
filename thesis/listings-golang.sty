@@ -1,0 +1,23 @@
+%% Golang definition for listings
+%% http://github.io/julienc91/lstlistings-golang
+%%
+\RequirePackage{listings}
+
+\lstdefinelanguage{Golang}%
+  {morekeywords=[1]{package,import,func,type,struct,return,defer,panic,%
+     recover,select,var,const,iota,},%
+   morekeywords=[2]{string,uint,uint8,uint16,uint32,uint64,int,int8,int16,%
+     int32,int64,bool,float32,float64,complex64,complex128,byte,rune,uintptr,%
+     error,interface},%
+   morekeywords=[3]{map,slice,make,new,nil,len,cap,copy,close,true,false,%
+     delete,append,real,imag,complex,chan,},%
+   morekeywords=[4]{for,break,continue,range,goto,switch,case,fallthrough,if,%
+     else,default,},%
+   morekeywords=[5]{Println,Printf,Error,},%
+   sensitive=true,%
+   morecomment=[l]{//},%
+   morecomment=[s]{/*}{*/},%
+   morestring=[b]',%
+   morestring=[b]",%
+   morestring=[s]{`}{`},%
+   }

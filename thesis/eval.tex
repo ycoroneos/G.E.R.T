@@ -6,49 +6,168 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Evaluation}
 
-G.E.R.T is evaluated for usability and performance. Usability refers to the
-ability of an engineer to easily express their desires for system behavior
-in the framework that G.E.R.T provides. These constraints essentially
-boil down to the feature set of the Go language. Performance is based on
-G.E.R.T's ability on synthetic timing benchmarks as well as its measured
-capability on two case studies: a mobile sensor platform robot and a mirror
-galvanometer laser projector.
+G.E.R.T is evaluated in conditions that are representative of embedded workloads.
+The first few tests are benchmarks which measure G.E.R.T's maximum interrupt
+frequency and pin toggle rate. The last two tests are each case studies: a mobile
+sensor platform and a scanning-mirror galvanometer laser projector.
 
-Writing enough drivers to make an SOC functional constitutes a huge pain so,
-for its initial implementation, G.E.R.T is written specifically for the
-Freescale i.MX6 Quad which implements the ARM Cortex A-9 MPCore architecture.
-This SOC was chosen because it has four cores, 2GB of RAM, and a very well
-written datasheet. It is the author's opinion that more manufacturers release
-complete datasheets for their SOCs so that researchers and hobbysists
-aren't limited to such a small set. Drivers were written for the UART, ECSPI, USDHC,
-PWM, GPT, IOMUX, and GPIO peripherals.
+\section{Pin Toggle Frequency}
+This test measures the raw speed at which G.E.R.T can toggle a simple GPIO pin on
+the iMX6 Quad SOC. In ARM assembly, this can be implemented in 3 lines. Higher pin
+toggling frequency represents more efficient code. In realistic workloads, GPIO pins
+would not be switched at more than a few kilohertz because there are usually dedicated
+peripherals for servicing complicated protocols, but the data is still an informative
+benchmark. G.E.R.T can produce a true PWM signal by using its PWM peripheral, as shown
+in the mobile sensor platform case study.
 
-All timing benchmarks were also run on Debian Linux userspace using the sysfs
-drivers that the Linux kernel provides. 
+<table>
 
 
-\section{Usability Evaluation}
+\section{Interrupt Response Time}
+This test measures the time it takes G.E.R.T to respond to an external event
+with another external event. Specifically, it is the time it takes to produce
+a rising edge on a GPIO pin in response to a falling edge on a different GPIO pin.
 
-Talk about new sensor integration primitives and concurrent
-state machines that go makes possible and nearly effortless to
-implement.
+<table>
+
+\section{Pulse Counting}
+This test measures G.E.R.T's ability to count incoming pulses. This is a very
+important metric because motor encoders operate by sending out pulses to indicate
+motor rotation frequency and direction. The pulses are provided by a Xilinx Artix 7
+FPGA and they are variable in frequency and count. In the mobile sensor platform
+case study below, the pulses are provided by an encoder.
+
+<table>
 
 
-\section{Synthetic Timing Evaluation}\label{ch1:opts}
+\section{Case Study: Robot Sensor Platform}
+In order to evaluate G.E.R.T on a realistic workload, I put it on a robot that was
+donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
+motors with encoders and Sharp infrared distance sensors. I wrote a program in Go using
+G.E.R.T to interface all of these event sources at the same time.
 
-In order for G.E.R.T to be a feasible solution for performant embedded systems it
-must be able to quickly receive and respond to external events, such as interrupts.
-Two benchmarks were constructed to measure the interrupt latency. The first is a pulse
-counter where an FPGA is programmed to send $n$ pulses at $f$ frequency and G.E.R.T must
-count them. The second benchmark is a simple interrupt latency test where G.E.R.T simply
-toggles a pin upon noticing a rising edge on a different pin.
+\subsection{Overview}
+The main body of the program is an event loop which waits for events coming out of an event channel.
+Independent goroutines monitor each sensor and send events into the event channel. The code for the
+event loop is shown below.
+
+\begin{figure}[h]
+\begin{lstlisting}
+select {
+	case event := <-event_chan:
+		fmt.Printf("%v\n", event)
+		switch event {
+...
+\end{lstlisting}
+\end{figure}
+
+Golang's higher order functions and closures were also leveraged in order to create a sensor polling helper function
+as shown below.
+
+\begin{figure}[h]
+\begin{lstlisting}
+type Pollfunc func() interface{}
+
+func Poll(f Pollfunc, period time.Duration,
+sink chan interface{}) chan bool {
+	kill := make(chan bool)
+	go func(kill chan bool) {
+		for {
+			select {
+			case <-kill:
+				return
+			default:
+				if period > 0 {
+					time.Sleep(period)
+				}
+				sink <- f()
+			}
+		}
+	}(kill)
+	return kill
+}
+\end{lstlisting}
+\end{figure}
+
+The GPIO library was also configured to use interrupts in order to count pulses on the encoder as shown below.
+
+\begin{figure}[h]
+\begin{lstlisting}
+	embedded.WB_JP4_10.SetInput()
+	embedded.WB_JP4_10.EnableIntr(embedded.INTR_FALLING)
+	embedded.Enable_interrupt(99, 0) //send GPIO1 interrupt to CPU0
+.
+.
+.
+//go:nosplit
+//go:nowritebarrierec
+func irq(irqnum uint32) {
+	switch irqnum {
+...
+	case 99:
+		inc()
+		embedded.ClearIntr(1)
+...
+	}
+}
+.
+.
+.
+func inc() {
+	count += 1
+}
+
+\end{lstlisting}
+\end{figure}
+
+With these powerful set of abstractions, adding events or sensors into the event loop
+is very simple because only a Pollfunc() must be implemented. As an added bonus, this
+G.E.R.T program is automatically concurrent because the Go and G.E.R.T schedulers will
+move idle cpus to any available goroutine. The robot implementation is not finished though
+because the motors and distance sensor must be interfaced with.
+
+\subsection{PWM Motor Control}
+The robot has an MDD10A motor speed controller for controlling the two drive motors. This device
+expects a pulse-width modulated signal (PWM) on its input pins in order to direct power into the
+motors. A PWM signal has a constant period but the signal is a logical "on" for part of the time
+and "off" for the rest of the time. The ratio of "on" time vs the period is called the duty cycle.
+It is this percentage which the motor controller translates into a speed for the motor.\\
+
+The iMX6Q includes an on-board PWM peripheral which can output several channels of PWM
+at a variety of periods and duty cycles. G.E.R.T contains a driver for this in its "embedded"
+package. The PWM peripheral requires no maintenance once it is configured so the cost of outputting
+a PWM signal is essentially a few loads and stores every time the period or duty cycle changes.
+
+\subsection{Distance Sensor Reading}
+The Sharp distance sensor outputs an analog voltage proportional to its distance from the nearest object.
+A Microchip MCP3008 8-channel ADC is used to convert this into a digital signal. The MCP3008 only talks in clocked
+serial (SPI) though, with 24bit data frames. Luckily, the iMX6Q also has an SPI peripheral. Much like the
+PWM peripheral, it has multiple channel that can each concurrently send and receive data. The "embedded"
+package also contains a driver for the ECSPI peripheral and it works much the same way the PWM driver - 
+requiring no input from the user other than the data to transmit and the length of the expected response.
+
+\subsection{Encoder Reading}
+Encoders emit a pulse every time the motor rotates a known amount. This amount is variable depending on the
+encoder resolution. The encoders on the test motors emit pulses at a max rate of 4KHz, corresponding to
+maximum motor speed. G.E.R.T had no difficulty picking up these pulses because this frequency is far less than
+the max pulse frequency in the benchmarks above.
+
+\subsection{Complications}
+Systems do not work perfectly, and this robot is no exception. When the motor controller turns on,
+it emits so much noise into the rest of the circuit that SPI stops working and the iMX6Q registers
+interrupts that did not happen. This is because the iMX6 uses 3.3v logic signals but the noise spikes
+in excess of 5v. To deal with this, the motor is run off of its own dedicated power supply
+when taking encoder measurements.
+
+\subsection{Result}
+G.E.R.T is a plausible system for robots with sensors. It is not too slow to miss encoder pulses
+and Go's language features effortlessly allow for useful primitives such as event loops and Polling function
+types. As with any embedded system though, care must be taken to minimize the influence of noise or else nothing
+will work.
 
 
-Another timing benchmark was constructed to measure the maximum frequency
-that G.E.R.T can toggle a pin at. Large software systems often introduce
-an unecessary code "tax" that occurs when performing basic operations and this must
-be quantified. An output pin on the iMX6 can be toggled with only 3 lines of bare-metal
-assembly, but the Go and C compiler emit something much more complicated for the same
-basic operation (quantify). For this test, a pin is toggled as fast as possible and
-the frequency is measured.
-
+\section{Case Study: Laser Projector}
+A scanning-mirror galvanometer laser projector is a device that deflects a laser beam off of several mirrors in
+order to draw an image on another surface. If the entire image can be scanned faster than 24Hz, then the light appears
+to blend and the human brain perceives it as a single image rather than many points. The maximum rate at which the
+projector can trace points is bounded below by the speed of the galvos and bounded above by the speed of the software.

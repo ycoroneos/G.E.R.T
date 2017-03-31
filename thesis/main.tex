@@ -27,6 +27,9 @@
 
 \documentclass[12pt,twoside]{mitthesis}
 \usepackage{lgrind}
+\usepackage{listings}
+\usepackage{listings-golang}
+\usepackage{color}
 %% These have been added at the request of the MIT Libraries, because
 %% some PDF conversions mess up the ligatures.  -LB, 1/22/2014
 \usepackage{cmap}
@@ -49,6 +52,18 @@
 %process all files:}
 %\def\all{all}
 %\ifx\files\all \typeout{Including all files.} \else \typeout{Including only \files.} \includeonly{\files} \fi
+
+\lstset{ % add your own preferences
+    frame=single,
+    basicstyle=\footnotesize,
+    keywordstyle=\color{blue},
+    numbers=left,
+    numbersep=5pt,
+    showstringspaces=false, 
+    stringstyle=\color{blue},
+    tabsize=4,
+    language=Golang % this is it !
+}
 
 \begin{document}
 

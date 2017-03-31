@@ -14,13 +14,6 @@ import "./embedded"
 //go:nosplit
 //go:nowritebarrierec
 func irq(irqnum uint32) {
-	//	//irqnum := gic_cpu.interrupt_acknowledge_register
-	//	if len(irqchan) == cap(irqchan) {
-	//		// Channel was full, but might not be by now
-	//	} else {
-	//		// Channel wasn't full, but might be by now
-	//		irqchan <- runtime.Cpunum()
-	//	}
 	switch irqnum {
 	case 87:
 		embedded.Addtime(1)
@@ -29,12 +22,7 @@ func irq(irqnum uint32) {
 		inc()
 		embedded.ClearIntr(1)
 	case 103:
-		//embedded.Addtime(1)
-		//embedded.GPIO_ISR(irqnum)
-		//embedded.WB_JP4_4.SetHI()
-		//inc()
 		embedded.ClearIntr(3)
-		//embedded.ClearIntr(1)
 	default:
 		//fmt.Printf("IRQ %d on cpu %d\n", irqnum, runtime.Cpunum())
 	}
