@@ -3,8 +3,9 @@ package main
 import (
 	"./embedded"
 	"fmt"
-	"math"
+	//	"math"
 	"time"
+	//"unsafe"
 )
 
 var event_chan chan interface{}
@@ -42,7 +43,7 @@ func user_init() {
 		return adc.Read(0)
 	}, 2*time.Second, event_chan)
 
-	fmt.Printf("pi is %v \n", pi(50))
+	//fmt.Printf("pi is %v \n", pi(50))
 
 	go func() {
 		for {
@@ -52,6 +53,19 @@ func user_init() {
 			event_chan <- new - old
 		}
 	}()
+
+	embedded.WB_JP4_10.SetOutput()
+	//out := ((*uint32)(unsafe.Pointer(uintptr(0x209C000))))
+	for {
+		//embedded.WB_JP4_10.SetHInow()
+		//embedded.WB_JP4_10.SetLOnow()
+		//*out = 0xFFFF
+		//*out = 0xFFFF0000
+		embedded.WB_JP4_10.SetHI()
+		embedded.WB_JP4_10.SetLO()
+		//embedded.Set(unsafe.Pointer(uintptr(0x209C000)), uint32(0x0))
+		//embedded.Set(unsafe.Pointer(uintptr(0x209C000)), uint32(0xFFFFFFFF))
+	}
 
 	embedded.WB_JP4_10.SetInput()
 	embedded.WB_JP4_10.EnableIntr(embedded.INTR_FALLING, inc)

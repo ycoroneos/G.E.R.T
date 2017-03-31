@@ -13,14 +13,40 @@ sensor platform and a scanning-mirror galvanometer laser projector.
 
 \section{Pin Toggle Frequency}
 This test measures the raw speed at which G.E.R.T can toggle a simple GPIO pin on
-the iMX6 Quad SOC. In ARM assembly, this can be implemented in 3 lines. Higher pin
+the iMX6 Quad SOC. In ARM assembly, this can be implemented in 4 lines. Higher pin
 toggling frequency represents more efficient code. In realistic workloads, GPIO pins
 would not be switched at more than a few kilohertz because there are usually dedicated
 peripherals for servicing complicated protocols, but the data is still an informative
-benchmark. G.E.R.T can produce a true PWM signal by using its PWM peripheral, as shown
-in the mobile sensor platform case study.
+benchmark. Results are shown below in figure \ref{fig:toggle}. If PWM is desired,
+G.E.R.T can produce a true PWM signal by using its PWM peripheral, as shown
+in the robot sensor platform case study. \\
 
-<table>
+As expected, assembly is much faster than any of the other platforms. Additionally,
+it is no surprise that GERT outperforms Go running in userspace Linux. It is not obvious
+why GERT is slower than userspace C code though. An inspection of the GERT bytecode
+yields the answer. To toggle a single GPIO pin in GERT, while using the embedded package,
+takes 47 instructions. Of these 47 instructions, 2 are function calls, 19 are loads, and 11
+are stores. This clutter is a result of the abstractions present in the embedded package.
+When the same pin is toggled in GERT by directly manipulating the memory addresses (
+instead of using the embedded library abstractions) the
+frequency jumps to 500KHz. This measurement is indicated by the G.E.R.T unlayered row
+in figure \ref{fig:toggle}.
+
+\begin{figure} [h]
+\begin{center}
+  \begin{tabular}{ | l | l |}
+    \hline
+    Platform & Avg GPIO Toggle Rate \\ \hline
+    ASM & 1.65MHz \\ \hline
+    G.E.R.T Unlayered & 568KHz \\ \hline
+    Linux C & 263KHz \\ \hline
+    G.E.R.T & 154KHz \\ \hline
+    Linux Go & 127 KHz \\
+    \hline
+  \end{tabular}
+\end{center}
+  \caption{GPIO Toggle Rates of Different Platforms}  \label{fig:toggle}
+\end{figure}
 
 
 \section{Interrupt Response Time}

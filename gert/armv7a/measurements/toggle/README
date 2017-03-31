@@ -6,6 +6,7 @@ summary:
 GERT 127KHz <--> 180KHz
 linux golang ~127Khz
 linux C ~263KHz
+GERT plan 9 assembly 568KHz
 
 Questions:
 1. Explain why Go is slower than C. Maybe a JTAG trace could help...

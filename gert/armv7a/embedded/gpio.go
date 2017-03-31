@@ -47,6 +47,8 @@ var gpios = [...]*gpio{
 
 var int_table [6][32]func()
 
+func Set(ptr unsafe.Pointer, val uint32)
+
 /*
 * Turns out individual pins are complicated things in the iMX6.
 * Lets use go to make them easier to use
@@ -129,21 +131,25 @@ func (pin GPIO_pin) Write(val uint8) {
 
 //directly set hi or lo
 func (pin GPIO_pin) SetHI() {
-	pin.gpioregs.dr |= (0x1 << pin.offset)
+	//pin.gpioregs.dr |= (0x1 << pin.offset)
+	Set(unsafe.Pointer(uintptr(pin.gpioregs.dr)), pin.gpioregs.dr|uint32(0x1<<pin.offset))
 }
 
 func (pin GPIO_pin) SetLO() {
-	pin.gpioregs.dr &= ^(0x1 << pin.offset)
+	//pin.gpioregs.dr &= ^(0x1 << pin.offset)
+	Set(unsafe.Pointer(uintptr(pin.gpioregs.dr)), pin.gpioregs.dr&uint32(^(0x1<<pin.offset)))
 }
 
 //directly set hi or lo without caring about the other pins
 func (pin GPIO_pin) SetHInow() {
-	pin.gpioregs.dr = (0x1 << pin.offset)
+	//pin.gpioregs.dr = (0x1 << pin.offset)
+	Set(unsafe.Pointer(uintptr(pin.gpioregs.dr)), uint32(0x1<<pin.offset))
 }
 
 func (pin GPIO_pin) SetLOnow() {
 	//pin.gpioregs.dr &= ^(0x1 << pin.offset)
-	pin.gpioregs.dr = 0
+	//pin.gpioregs.dr = 0
+	Set(unsafe.Pointer(uintptr(pin.gpioregs.dr)), uint32(0x0))
 }
 
 //this is either hi or lo

@@ -178,22 +178,22 @@ set_loop:
 	// FPEXC = r3
 	FMXR FPEXC, r3
 
-	//	/////////////////////////////////
-	//	// gpio toggle
-	//	mov  r1, #0x0
-	//	ldr  r2, =0xFFFFFFFF
-	//	movw r3, #0x209C
-	//	lsl  r3, r3, #12
-	//	add  r3, r3, #4
-	//	str  r2, [r3]
-	//	sub  r3, r3, #4
-	//
-	// gpio:
-	//	str r1, [r3]
-	//	str r2, [r3]
-	//	b   gpio
-	//
-	//	//////////////////////////////////
+	/////////////////////////////////
+	// gpio toggle
+	mov  r1, #0x0
+	ldr  r2, =0xFFFFFFFF
+	movw r3, #0x209C
+	lsl  r3, r3, #12
+	add  r3, r3, #4
+	str  r2, [r3]
+	sub  r3, r3, #4
+
+gpio:
+	str r1, [r3]
+	str r2, [r3]
+	b   gpio
+
+	//////////////////////////////////
 
 	// Call boot_main
 	ldr r3, L_main_func
