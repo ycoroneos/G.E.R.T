@@ -14,19 +14,20 @@
 
 Embedded systems are becoming increasingly complicated due
 to the emergence of SOC's (system-on-a-chip) with multiple cores, dizzying amounts of peripherals, and
-complicated virtual memory systems that mirror that of x86. However,
+complicated virtual memory systems. Despite this,
 performant embedded programs are still largely written from scratch in
-C, which leads to constant re-implementation of the same subsystems. This wastes time and increases the likelihood of bugs.
-Real-Time Operating Systems (RTOS's) do exist but they impose their own
-driver models and are also written in C, still increasing the likelyhood
-of bugs.\par
-  This thesis explores a system named G.E.R.T : a modified a version of the Go runtime intended to run
-bare-metal on ARMv7a SOC's in order to evaluate
+C, which leads to constant re-implementation of the same subsystems and difficult bugs.
+\\
+
+
+This thesis explores a new system called G.E.R.T, the Golang Embedded RunTime, for ARM processors.
+GERT is a modified version of the Go runtime for
+bare-metal operation on ARMv7a SOC's in order to evaluate
 the effectiveness of using a high-level, type-safe, and garbage collected
-language for embedded applications. G.E.R.T, the Golang Embedded RunTime,
+language for embedded applications. G.E.R.T
 provides the multiprocessor support and basic memory abstractions of a
-typical RTOS while also freeing the user to leverage the language features
-of Go in order to develop custom driver models and build more complicated
-concurrent programs that are easier to reason about than similar ones
+typical embedded toolkit while also freeing the user to leverage the language features
+of Go in order to develop
+concurrent embedded programs that are easier to reason about than similar ones
 written in C.
 

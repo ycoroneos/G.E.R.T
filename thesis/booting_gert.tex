@@ -27,6 +27,10 @@ The SOC sits on a Wandboard Quad baseboard. The i.MX6 Quad has 2GB of RAM and a 
 Look at the memory map below. The rest of this chapter will discuss the implementation details of booting and
 running the Go runtime bare-metal on this SOC.
 
+<memory map of imx6 here>
+
+<memory map of GERT here>
+
 \section{Stage 1 Bring Up}
 The u-boot loader is used to initialize device clocks and load the G.E.R.T bootloader into RAM.
 When the SOC is powered on, the program counter starts executing from ROM. The code in the ROM reads
@@ -36,7 +40,7 @@ kernel off the sdcard and into RAM at address 0x50000000. This address is specif
 does not overlap with any ELF program headers of the G.E.R.T kernel which are loaded in stage 2. After
 the stage 2 bootloader is in RAM, uboot jumps into it.
 
-\section{Stage 2 Decompression}
+\section{Stage 2 Kernel Decompression}
 The G.E.R.T bootloader sets up the initial Go stack and decompresses the Go kernel
 ELF into RAM. Much like Linux, the kernel of G.E.R.T is wrapped in a custom
 bootloader stage. This is necessary because G.E.R.T is compiled as a user space
@@ -45,18 +49,26 @@ default, the Go compiler links all programs at address 0x0. This would normally
 be a disaster for the i.MX6 because the first megabyte of RAM is either inaccessable
 or reserved for peripherals. One solution around this is to simply turn on the MMU
 in the stage 2 bootloader but this creates a headache with preserving page tables
-across the transition to Go land. An alternative, and much simpler, solution is to
+across the transition to Go. An alternative, and much simpler, solution is to
 just change the link address of the Go ELF. This is the preferred approach so
-the link address was changed to 0x10000000. After loading the Go binary into RAM,
-the stage 2 bootloader reserves 4kb of initial stack and jumps into G.E.R.T.
+the link address was changed to 0x10000000, which is the start of RAM.
+After loading the Go binary into RAM, the stage 2 bootloader reserves
+4kb of initial stack and jumps into G.E.R.T.
 
-\section{Stage 3 Go Abstraction Synthesis}
+\section{Stage 3 Go Runtime}
 The thread scheduler and virtual memory system are statically initialized
 in order to prevent Go runtime subsystems from running before the environment
 is ready. At the beginning of execution, G.E.R.T is in a really constrained
 spot: Linux is not there but the Go runtime thinks it is. Specifically, there
 is no scheduler, no virtual memory, no syscalls. Nothing but a 4kb stack
 and the program counter. This is clearly inadequate for the Go runtime
-to do anything but crash, but G.E.R.T creates all of these missing subsystems
+to do anything but crash, so G.E.R.T creates all of these missing subsystems
 (in Go) before the runtime actually uses them.
+
+
+\subsection{Virtual Memory Setup}
+\subsection{Thread Scheduling and Trapframes}
+\subsection{Interrupts}
+\subsection{Keeping Time}
+\subsection{Booting Secondary CPUs}
 
