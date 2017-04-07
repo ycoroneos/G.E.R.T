@@ -6,36 +6,54 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Evaluation}
 
-G.E.R.T is evaluated in conditions that are representative of embedded workloads.
-The first few tests are benchmarks which measure G.E.R.T's maximum interrupt
-frequency and pin toggle rate. The last two tests are each case studies: a robot
-sensor platform and a scanning-mirror galvanometer laser projector. The test SOC
-is the Freescale i.MX6Quad. Depending on the test, it is either running assembly,
-GERT, or Debian 8 "Jessie" with hardfloat support. A Teensy 3.2 is used for comparison
-on a few of the latency tests because of its Cortex M4 processor. All timing
-measurements are taken using a Rigol DS1054Z oscilloscope.
+G.E.R.T is a toolkit for embedded applications which is written in Go.
+The goal is for the programmer to be able to implement concurrent embedded programs
+which are as performant as the equivalent C implementation, but without having to
+worry about concurency itself. In order to evaluate G.E.R.T, there are two questions that must be answered:
 
-\section{Pin Toggle Frequency}
-This test measures the raw speed at which G.E.R.T can toggle a simple GPIO pin on
-the iMX6 Quad SOC. In ARM assembly, this can be implemented in 4 lines. Higher pin
-toggling frequency represents more efficient code. In realistic workloads, GPIO pins
+\begin{enumerate}
+  \item Does G.E.R.T retain good performance despite the costly abstractions of Go?
+  \item Do the concurrency patterns of Go simplify the task of the programmer?
+\end{enumerate}
+
+The first question is addressed by benchmarks below which measure G.E.R.T's
+speed in creating and responding to external events. Pin toggle (\ref{sec:pin_toggle})
+measures the maximum pin toggle frequency. Interrupt response time (\ref{sec:int_time})
+measures the time it takes to respond to an external interrupt. Pulse counting
+(\ref{sec:pulse_count}) counts number of pulses at increasing frequencies.
+
+The second question is harder to answer because difficulty is a subjective
+measure. I attempt to show that G.E.R.T presents a nicer framework for
+concurrency through two case studies: a robot sensor platform (\ref{sec:robot})
+,which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
+which traces images onto a surface by rotating mirrors at high speeds.
+
+In all tests, G.E.R.T is run on an i.MX6Quad SOC and all measurements are taken
+with a Rigol DS1054Z oscilloscope. When G.E.R.T is compared to Linux, the SOC
+runs Debian 8 "Jessie" with hardfloat support. G.E.R.T is also occasionally
+compared to a Teensy 3.2 running C. The Teensy 3.2 uses a Cortex M4, which is specifically
+intended for microcontroller applications, and has good real-time performance. Its event
+response times represent a good comparison point for G.E.R.T and Linux.
+
+
+%%G.E.R.T is evaluated in conditions that are representative of embedded workloads.
+%%The first few tests are benchmarks which measure G.E.R.T's maximum interrupt
+%%frequency and pin toggle rate. The last two tests are each case studies: a robot
+%%sensor platform and a scanning-mirror galvanometer laser projector. The test SOC
+%%is the Freescale i.MX6Quad. Depending on the test, it is either running assembly,
+%%GERT, or Debian 8 "Jessie" with hardfloat support. A Teensy 3.2 is used for comparison
+%%on a few of the latency tests because of its Cortex M4 processor. All timing
+%%measurements are taken using a Rigol DS1054Z oscilloscope.
+
+\section{Pin Toggle Frequency}\label{sec:pin_toggle}
+This test measures the speed at which G.E.R.T can toggle a simple GPIO pin on
+the iMX6 Quad SOC. In ARM assembly, this can be implemented in 4 lines, but compilers and 
+abstractions can increase the instruction count. Higher pin
+toggling frequency indicates less code in the critical path. In realistic workloads, GPIO pins
 would not be switched at more than a few kilohertz because there are usually dedicated
 peripherals for servicing complicated protocols, but the data is still an informative
-benchmark. Results are shown below in figure \ref{fig:toggle}. If PWM is desired,
-G.E.R.T can produce a true PWM signal by using its PWM peripheral, as shown
-in the robot sensor platform case study. \\
+benchmark for abstraction cost. Results are shown in figure \ref{fig:toggle}.
 
-As expected, assembly is much faster than any of the other platforms. Additionally,
-it is no surprise that GERT outperforms Go running in userspace Linux. It is not obvious
-why GERT is slower than userspace C code though. An inspection of the GERT bytecode
-yields the answer. To toggle a single GPIO pin in GERT, while using the embedded package,
-takes 47 instructions. Of these 47 instructions, 2 are function calls, 19 are loads, and 11
-are stores. This slowdown is a result of the abstractions present in the embedded package because
-it models each GPIO pin as a Go interface, which comes at a cost.
-When the same pin is toggled in GERT by directly manipulating the memory addresses,
-instead of using the embedded library GPIO abstractions, the
-frequency jumps to 500KHz. This measurement is indicated by the G.E.R.T unlayered row
-in figure \ref{fig:toggle}.
 
 \begin{figure} [h]
 \begin{center}
@@ -46,27 +64,64 @@ in figure \ref{fig:toggle}.
     G.E.R.T Unlayered & 568KHz \\ \hline
     Linux C & 263KHz \\ \hline
     G.E.R.T & 154KHz \\ \hline
-    Linux Go & 127 KHz \\
+    Linux Go & 127KHz \\
     \hline
   \end{tabular}
 \end{center}
   \caption{GPIO Toggle Rates of Different Platforms}  \label{fig:toggle}
 \end{figure}
 
+The results show that G.E.R.T does suffer a performance decrease because of
+Go's abstraction cost, but it is tolerable. Go's abstraction cost is already
+evident from the two Linux benchmarks,
+what is not clear is exactly why G.E.R.T underperforms user-space Linux C code.
+Without all of the syscalls a user-space program must endure, there should have
+been a speed increase.
 
-\section{Interrupt Response Time}
+The slowdown is caused by Go's
+interfaces. GPIO pins are represented by an interface in the G.E.R.T embedded package.
+In order to toggle a single pin with these interfaces requires 47 instructions:
+2 function calls, 19 loads, and 11 stores. If the benchmark program does not use the
+embedded package, but toggles the GPIO directly with regular functions,
+G.E.R.T achieves a significant speedup. This is indicated by the G.E.R.T unlayered
+row in figure \ref{fig:toggle}.
+
+%%s expected, assembly is much faster than any of the other platforms. Additionally,
+%it is no surprise that GERT outperforms Go running in userspace Linux. It is not obvious
+%why GERT is slower than userspace C code though. An inspection of the GERT bytecode
+%yields the answer. To toggle a single GPIO pin in GERT, while using the embedded package,
+%takes 47 instructions. Of these 47 instructions, 2 are function calls, 19 are loads, and 11
+%are stores. This slowdown is a result of the abstractions present in the embedded package because
+%it models each GPIO pin as a Go interface, which comes at a cost.
+%When the same pin is toggled in GERT by directly manipulating the memory addresses,
+%instead of using the embedded library GPIO abstractions, the
+%frequency jumps to 500KHz. This measurement is indicated by the G.E.R.T unlayered row
+%in figure \ref{fig:toggle}.
+
+\section{Interrupt Response Time}\label{sec:int_time}
 This test measures the time it takes G.E.R.T to respond to an external event
 with another external event. Specifically, it is the time it takes to produce
 a rising edge on a GPIO pin in response to a falling edge on a different GPIO pin.
-In Linux, the userspace sysfs driver exposed no methods to attach interrupts
-so a polling loop was used. Results are shown below in figure \ref{fig:RT}.
-GERT's advantage is due to its exposed interrupt interface. Utilizing interrupts
-in Linux would have required a kernel module since the sysfs driver provided
-no way to interface user-level interrupt handlers. GERT's reponse time is more
-than adequate for non real-time systems and it may even be appropriate for
-true real-time systems, depending on what the timing deadlines are. For
-comparison, a Teensy 3.2 is included in the table because the Cortex M4
-microcontroller that is has is specifically intended for embedded applications. \\
+A Teensy 3.2 is included in this test to establish a baseline for good
+response time. G.E.R.T and the Teensy detect the event with interrupt routines
+but Linux polls because the userspace sysfs driver does not expose interrupt
+attachment points. Results are shown below in figure \ref{fig:RT}.
+
+In more complicated programs, a polling loop is disasterous because the program
+can miss events. G.E.R.T allows the programmer to directly interface with the
+interrupt controller in order to write true interrupt service routines that miss
+events far less often. To get the same behavior in Linux,
+the programmer either has to write a kernel module or hope that a better driver
+will eventually trickle into the kernel.
+
+
+%%GERT's advantage is due to its exposed interrupt interface. Utilizing interrupts
+%%in Linux would have required a kernel module since the sysfs driver provided
+%%no way to interface user-level interrupt handlers. GERT's reponse time is more
+%%than adequate for non real-time systems and it may even be appropriate for
+%%true real-time systems, depending on what the timing deadlines are. For
+%%comparison, a Teensy 3.2 is included in the table because the Cortex M4
+%%microcontroller that is has is specifically intended for embedded applications. \\
 
 
 The Teensy has the fastest interrupt response time but G.E.R.T isn't far behind.
@@ -89,7 +144,18 @@ programmed in C.
   \caption{Event Response Times of Different Platforms}  \label{fig:RT}
 \end{figure}
 
-\section{Pulse Counting}
+The event response times follow the increasing abstraction cost for each system.
+The Teensy is very fast because its interrupt controller is vectored and interrupts
+do not cause a stack switch. This means that Corex M4 can flip a pin within a few cycles
+of receiving the interrupt. G.E.R.T is slower because the iMX6 does not have a
+vectored interrupt controller, the interrupt stack must be switched, and the
+interrupt handler is written in Go. When G.E.R.T gets an interrupt, it must save its
+current state, decide which interrupt it received, and execute its handler. This is
+much more complicated than the Cortex M4, but G.E.R.T benefits from the very high
+clock rate of the iMX6 (792MHz vs 96MHz).
+
+
+\section{Pulse Counting}\label{sec:pulse_count}
 This test measures G.E.R.T's ability to count incoming pulses. This is a very
 important metric because motor encoders operate by sending out pulses to indicate
 motor rotation frequency and direction. The pulses are provided by a Xilinx Artix 7
@@ -114,7 +180,7 @@ figure \ref{fig:counter}. \\
 \end{figure}
 
 \clearpage
-\section{Case Study: Robot Sensor Platform}
+\section{Case Study: Robot Sensor Platform} \label{sec:robot}
 In order to evaluate G.E.R.T on a realistic workload, I put it on a robot that was
 donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
 motors with encoders and also Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
@@ -294,7 +360,7 @@ platform on top of GERT without worrying about issues like scheduling or shared 
 of that headache and goroutines also allow for the program to scale with the number of available cpus.
 
 
-\section{Case Study: Laser Projector}
+\section{Case Study: Laser Projector}\label{sec:laser}
 A scanning-mirror galvanometer laser projector is a device that deflects a laser beam off of several mirrors in
 order to draw an image on another surface. If the entire image can be scanned faster than 24Hz, then the light appears
 to blend and the human brain perceives it as a single image rather than many points. The maximum rate at which the
