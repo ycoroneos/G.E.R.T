@@ -6,10 +6,11 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Evaluation}
 
-G.E.R.T is a toolkit for embedded applications which is written in Go.
-The goal is for the programmer to be able to implement concurrent embedded programs
+G.E.R.T is a Go-based, bare metal toolkit for embedded applications.
+With G.E.R.T, the programmer should be able to implement concurrent embedded programs
 which are as performant as the equivalent C implementation, but without having to
-worry about concurency itself. In order to evaluate G.E.R.T, there are two questions that must be answered:
+worry about concurency abstractions. In order to evaluate G.E.R.T, there are two questions
+that must be answered:
 
 \begin{enumerate}
   \item Does G.E.R.T retain good performance despite the costly abstractions of Go?
@@ -23,7 +24,7 @@ measures the time it takes to respond to an external interrupt. Pulse counting
 (\ref{sec:pulse_count}) counts number of pulses at increasing frequencies.
 
 The second question is harder to answer because difficulty is a subjective
-measure. I attempt to show that G.E.R.T presents a nicer framework for
+measure. I attempt to show that G.E.R.T presents a better framework for
 concurrency through two case studies: a robot sensor platform (\ref{sec:robot})
 ,which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
 which traces images onto a surface by rotating mirrors at high speeds.
@@ -31,9 +32,11 @@ which traces images onto a surface by rotating mirrors at high speeds.
 In all tests, G.E.R.T is run on an i.MX6Quad SOC and all measurements are taken
 with a Rigol DS1054Z oscilloscope. When G.E.R.T is compared to Linux, the SOC
 runs Debian 8 "Jessie" with hardfloat support. G.E.R.T is also occasionally
-compared to a Teensy 3.2 running C. The Teensy 3.2 uses a Cortex M4, which is specifically
+compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 uses a Cortex M4, which is specifically
 intended for microcontroller applications, and has good real-time performance. Its event
-response times represent a good comparison point for G.E.R.T and Linux.
+response times represent a good comparison point for G.E.R.T and Linux. The Teensy platform
+has poor concurrency support though because the Cortex M4 is a single core processor
+and it only has 64 kilobytes of RAM.
 
 
 %%G.E.R.T is evaluated in conditions that are representative of embedded workloads.
@@ -49,10 +52,8 @@ response times represent a good comparison point for G.E.R.T and Linux.
 This test measures the speed at which G.E.R.T can toggle a simple GPIO pin on
 the iMX6 Quad SOC. In ARM assembly, this can be implemented in 4 lines, but compilers and 
 abstractions can increase the instruction count. Higher pin
-toggling frequency indicates less code in the critical path. In realistic workloads, GPIO pins
-would not be switched at more than a few kilohertz because there are usually dedicated
-peripherals for servicing complicated protocols, but the data is still an informative
-benchmark for abstraction cost. Results are shown in figure \ref{fig:toggle}.
+toggling frequency indicates less code in the critical path.
+Results are shown in figure \ref{fig:toggle}.
 
 
 \begin{figure} [h]
@@ -72,7 +73,7 @@ benchmark for abstraction cost. Results are shown in figure \ref{fig:toggle}.
 \end{figure}
 
 The results show that G.E.R.T does suffer a performance decrease because of
-Go's abstraction cost, but it is tolerable. Go's abstraction cost is already
+Go's abstraction cost, but it is correctable. Go's abstraction cost is already
 evident from the two Linux benchmarks,
 what is not clear is exactly why G.E.R.T underperforms user-space Linux C code.
 Without all of the syscalls a user-space program must endure, there should have
@@ -102,17 +103,17 @@ row in figure \ref{fig:toggle}.
 This test measures the time it takes G.E.R.T to respond to an external event
 with another external event. Specifically, it is the time it takes to produce
 a rising edge on a GPIO pin in response to a falling edge on a different GPIO pin.
-A Teensy 3.2 is included in this test to establish a baseline for good
-response time. G.E.R.T and the Teensy detect the event with interrupt routines
-but Linux polls because the userspace sysfs driver does not expose interrupt
-attachment points. Results are shown below in figure \ref{fig:RT}.
+G.E.R.T and the Teensy detect the event with hardware interrupts
+but Linux polls the input pin in a tight loop because the userspace sysfs
+driver does not expose interrupt attachment points.
+Results are shown below in figure \ref{fig:RT}.
 
-In more complicated programs, a polling loop is disasterous because the program
-can miss events. G.E.R.T allows the programmer to directly interface with the
-interrupt controller in order to write true interrupt service routines that miss
-events far less often. To get the same behavior in Linux,
-the programmer either has to write a kernel module or hope that a better driver
-will eventually trickle into the kernel.
+%%In more complicated programs, a polling loop is disasterous because the program
+%%can miss events. G.E.R.T allows the programmer to directly interface with the
+%%interrupt controller in order to write true interrupt service routines that miss
+%%events far less often. To get the same behavior in Linux,
+%%the programmer either has to write a kernel module or hope that a better driver
+%%will eventually trickle into the kernel.
 
 
 %%GERT's advantage is due to its exposed interrupt interface. Utilizing interrupts
@@ -124,10 +125,10 @@ will eventually trickle into the kernel.
 %%microcontroller that is has is specifically intended for embedded applications. \\
 
 
-The Teensy has the fastest interrupt response time but G.E.R.T isn't far behind.
-G.E.R.T is meant to run on a powerful multi-core ARMv7a with more than 1 GB of RAM but the
-Cortex M4 is only single core and has less than 1MB of RAM. It is also
-programmed in C.
+%%The Teensy has the fastest interrupt response time but G.E.R.T isn't far behind.
+%%G.E.R.T is meant to run on a powerful multi-core ARMv7a with more than 1 GB of RAM but the
+%%Cortex M4 is only single core and has less than 1MB of RAM. It is also
+%%programmed in C.
 
 \begin{figure} [h]
 \begin{center}
@@ -137,7 +138,7 @@ programmed in C.
     Teensy 3.2 & 1$\mu$s \\ \hline
     G.E.R.T & 6.3$\mu$s \\ \hline
     Linux C & 10$\mu$s \\ \hline
-    Linux Go & TBD \\
+    Linux Go & 30$\mu$s \\
     \hline
   \end{tabular}
 \end{center}
@@ -146,30 +147,32 @@ programmed in C.
 
 The event response times follow the increasing abstraction cost for each system.
 The Teensy is very fast because its interrupt controller is vectored and interrupts
-do not cause a stack switch. This means that Corex M4 can flip a pin within a few cycles
+do not cause a stack switch. This means that the Teensy can flip a pin within a few cycles
 of receiving the interrupt. G.E.R.T is slower because the iMX6 does not have a
 vectored interrupt controller, the interrupt stack must be switched, and the
 interrupt handler is written in Go. When G.E.R.T gets an interrupt, it must save its
-current state, decide which interrupt it received, and execute its handler. This is
-much more complicated than the Cortex M4, but G.E.R.T benefits from the very high
-clock rate of the iMX6 (792MHz vs 96MHz).
+current state, decide which interrupt it received, and execute its Go handler. Despite this
+complexity, the iMX6 can execute more instructions in less time because of its very
+high clock rate (792MHz vs 96MHz) so it can keep up with the Teensy.
 
 
 \section{Pulse Counting}\label{sec:pulse_count}
-This test measures G.E.R.T's ability to count incoming pulses. This is a very
-important metric because motor encoders operate by sending out pulses to indicate
-motor rotation frequency and direction. The pulses are provided by a Xilinx Artix 7
-FPGA and they are variable in frequency and count. The number of pulses missed at
-the limiting frequency is also recorded. In the robot sensor platform
-case study below, the pulses are provided by an encoder. Results are shown in
-figure \ref{fig:counter}. \\
+This test measures G.E.R.T's ability to count incoming pulses. Missed pulses
+indicate an excessively long interrupt handler that is still executing when the next
+pulse arrives. None of the platforms were configured for re-entrant interrupt handlers
+so they can all exhibit this issue.
+The pulses are provided by a Xilinx Artix 7 FPGA and they are variable in
+frequency and count. The Linux benchmarks are run with polling again because the
+userspace sysfs driver does not support interrupt attachment.
+Results are shown in figure \ref{fig:counter}.
+
 
 \begin{figure} [h]
 \begin{center}
   \begin{tabular}{ | l | l | l | l |}
     \hline
     Platform & Pulse Count & Max Pulse Rate & Missed Pulses \\ \hline
-    Teensy 3.2 & 10 & TBD & TBD \\ \hline
+    Teensy 3.2 & 10 & 2.50MHz & 2 \\ \hline
     G.E.R.T & 10 & 161KHz & 1 \\ \hline
     Linux C & 10 & 161KHz & 4 \\ \hline
     Linux Go & 10 & 50KHz & 1 \\
@@ -179,12 +182,25 @@ figure \ref{fig:counter}. \\
   \caption{Pulse Counts of Different Platforms}  \label{fig:counter}
 \end{figure}
 
-\clearpage
+G.E.R.T and userspace Linux C achieve the same performance in this test.
+It is important to re-iterate though that the userspace Linux programs
+are running a tight polling loop. If there were more events to poll or more
+systems to control, the performance of Linux would collapse. G.E.R.T, on the
+other hand, uses hardware interrupts to register events so its performance will not
+collapse.
+
+The Teensy registers more pulses than any other platform because of its
+compact and efficient architecture. A dissassembly of the Cortex M4 binary
+reveals that all instructions are encoded in 16bit ARM Thumb, as opposed to
+32bit ARM that armv7A SOCs use. Additionally, the Cortex M4 uses a vectored
+interrupt controller so that the entire length of its interrupt service routine
+is only 5 instructions and has no conditionals.
+
 \section{Case Study: Robot Sensor Platform} \label{sec:robot}
 In order to evaluate G.E.R.T on a realistic workload, I put it on a robot that was
 donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
-motors with encoders and also Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
-I wrote a program in Go using G.E.R.T to interface all of these event sources at the same time
+motors with encoders and also several Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
+I wrote a program in Go using G.E.R.T to process all of these event sources at the same time
 and operate the robot.
 
 \subsection{Overview}

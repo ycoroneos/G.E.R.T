@@ -6,3 +6,4 @@ Results
 GERT ~6.3 us
 Linux polling C ~10us
 Teensy ~1us
+Go Linux polling ~30us
