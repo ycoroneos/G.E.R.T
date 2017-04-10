@@ -29,30 +29,60 @@ var event_chan chan interface{}
 var laser_chan chan LaserCommand
 
 func user_init() {
-
-	//read the points for the laser off an sdcard
 	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
 	if !good {
 		fmt.Println("fat32 init failure")
 	}
 	fmt.Println(root.Getfilenames())
 	fmt.Println(root.Getsubdirnames())
-	good, bootdir := root.Direnter("LASER")
+	good, bootdir := root.Direnter("BOOT")
 	if !good {
 		panic("dir entry failed")
 	} else {
 		fmt.Println(bootdir.Getfilenames())
-		good, contents := bootdir.Fileread("POINTS.GOB")
+		good, contents := bootdir.Fileread("UENV.TXT")
 		if !good {
 			panic("file read failure")
 		}
-		r := bytes.NewBuffer(contents)
-		d := gob.NewDecoder(r)
-		err := d.Decode(&points)
-		if err != nil {
-			panic(err)
-		}
+		fmt.Println(string(contents))
 	}
+
+	//read the points for the laser off an sdcard
+	//good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
+	//if !good {
+	//	fmt.Println("fat32 init failure")
+	//}
+	//fmt.Println(root.Getfilenames())
+	//fmt.Println(root.Getsubdirnames())
+	good, contents := bootdir.Fileread("P.TXT")
+	if !good {
+		panic("file read failure")
+	}
+	r := bytes.NewBuffer(contents)
+	d := gob.NewDecoder(r)
+	err := d.Decode(&points)
+	if err != nil {
+		fmt.Printf("error de-GOBing:\n")
+		panic(err)
+	}
+	fmt.Printf("%v", points)
+	//	good, bootdir := root.Direnter("LASER")
+	//	if !good {
+	//		panic("dir entry failed")
+	//	} else {
+	//		fmt.Println(bootdir.Getfilenames())
+	//		//good, contents := bootdir.Fileread("POINTS.GOB")
+	//		good, contents := bootdir.Fileread("testfile.txt")
+	//		if !good {
+	//			panic("file read failure")
+	//		}
+	//		r := bytes.NewBuffer(contents)
+	//		d := gob.NewDecoder(r)
+	//		err := d.Decode(&points)
+	//		if err != nil {
+	//			panic(err)
+	//		}
+	//	}
 	laser_chan = make(chan LaserCommand, 10)
 	go lasermon(laser_chan)
 	//	adc = embedded.MakeMCP3008(embedded.WB_SPI1)
