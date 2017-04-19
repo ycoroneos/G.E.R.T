@@ -41,8 +41,8 @@ var gpios = [...]*gpio{
 	((*gpio)(unsafe.Pointer(uintptr(GPIO3_BASE)))),
 	((*gpio)(unsafe.Pointer(uintptr(GPIO4_BASE)))),
 	((*gpio)(unsafe.Pointer(uintptr(GPIO5_BASE)))),
-	((*gpio)(unsafe.Pointer(uintptr(GPIO7_BASE)))),
 	((*gpio)(unsafe.Pointer(uintptr(GPIO6_BASE)))),
+	((*gpio)(unsafe.Pointer(uintptr(GPIO7_BASE)))),
 }
 
 var int_table [6][32]func()
@@ -169,7 +169,7 @@ func (pin GPIO_pin) GetPinNum() uint32 {
 
 func (pin GPIO_pin) EnableIntr(mode uint8, intr_func func()) {
 	mode &= 0x3
-	int_table[pin.base-1][pin.offset] = intr_func
+	//int_table[pin.base-1][pin.offset] = intr_func
 	if pin.offset >= 16 {
 		icr := &pin.gpioregs.icr2
 		offset := pin.offset - 16

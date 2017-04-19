@@ -1,6 +1,6 @@
 package main
 
-import "./embedded"
+//import "./embedded"
 
 /*
 * This is the interrupt handler for all IRQs in GERT.
@@ -15,18 +15,6 @@ import "./embedded"
 //go:nowritebarrierec
 func irq(irqnum uint32) {
 	switch irqnum {
-	case 110:
-		c1 += 1
-		embedded.ClearIntr(7)
-	case 103:
-		c2 += 1
-		embedded.ClearIntr(3)
-	case 109:
-		c3 += 1
-		embedded.ClearIntr(6)
-	case 99:
-		c4 += 1
-		embedded.ClearIntr(1)
 	default:
 		//fmt.Printf("IRQ %d on cpu %d\n", irqnum, runtime.Cpunum())
 	}
