@@ -12,21 +12,21 @@
 %% file should be \input (not \include 'd) from cover.tex.
 \section{abstract}
 
-Embedded systems are becoming increasingly complicated due
-to the emergence of SOC's (system-on-a-chip) with multiple cores, dizzying amounts of peripherals, and
-complicated virtual memory systems. Despite this,
-performant embedded programs are still largely written from scratch in
-C, which leads to constant re-implementation of the same subsystems and difficult bugs.
-\\
+Embedded systems are becoming increasingly complicated due to the emergence of
+SOCs (system-on-a-chip) with multiple cores, dizzying amounts of peripherals, and
+complicated virtual memory systems. Unfortunately, performant embedded systems
+for these SOCs are still largely written from scratch in C because heavy
+operating systems, such as Linux, can introduce more bugs and degrade real-time
+performance.
 
-
-This thesis explores a new system called G.E.R.T, the Golang Embedded RunTime, for ARM processors.
+This thesis proposes a new system called G.E.R.T, the Golang Embedded RunTime,
+for multicore ARM processors.
 GERT is a modified version of the Go runtime for
-bare-metal operation on ARMv7a SOC's in order to evaluate
+bare-metal operation on multicore ARMv7a SOC's in order to evaluate
 the effectiveness of using a high-level, type-safe, and garbage collected
 language for embedded applications. G.E.R.T
 provides the multiprocessor support and basic memory abstractions of a
-typical embedded toolkit while also freeing the user to leverage the language features
+typical embedded toolkit while also enabling the user to leverage the language features
 of Go in order to develop
 concurrent embedded programs that are easier to reason about than similar ones
 written in C.

@@ -1,5 +1,95 @@
-\chapter{Why Write Low Level System Code in Go?}
-Stay tuned!
+\chapter{Introduction}
+
+Modern embedded systems are composed of multicore SOCs that require
+careful thought about race conditions and event serialization. C is the
+most commonly used language to program such low level systems, but it is
+a double-edged blade. Low level code written in C can more easily and
+directly interface with hardware, but it can also be plagued with
+difficult bugs, especially concurrency-related bugs. Concurrent
+user-space programs, on the other hand, are usually written in a
+high-level language, such as Rust or Go, which abstracts concurrency
+and provides memory safety.
+
+Embedded programmers are often drawn towards using Linux for their work
+because then they can write their embedded program in user space with a
+high level language. Popular platforms that use this paradigm include
+the Raspi and Beaglebone. However, embedded programs that run in user space suffer
+from significant event latency because external interrupts
+must shuffle their way through the kernel and the kernel's scheduler
+will also constantly preempt the program. Usually, an experienced programmer
+does not even want or need the kernel, but they pay the price just to run the
+high-level code.
+
+There are ongoing efforts to bring high-level languages to desktop
+operating system kernels and also single-core microcontrollers, but
+there is no known system which provides a high-level language environment for
+multicore SOCs. Singularity <cite> and Biscuit <cite> are desktop
+operating system kernels, written in Sing\# and Go, which focus on
+hosting user-space programs. Copper <cite> and MicroPython <cite>
+are small embedded toolkits, written in Rust and Python, which aim
+to provide a high-level programming environment for single-core
+microcontrollers. Multicore SOCs have, so far, been left out of the
+picture. This thesis presents a new embedded toolkit, G.E.R.T, which
+is specifically intended for concurrent, bare-metal embedded applications.
+
+G.E.R.T is a bare-metal, Go-based embedded toolkit for multicore ARMv7a processors.
+It was developed in order to make bare-metal programming
+easier for ARMv7a SOCs with the help of Go's channels and goroutines.
+G.E.R.T can run on a single-core processor but its effectiveness is substantially
+reduced because any blocking operation can lock the whole system. On the other hand,
+G.E.R.T will automatically scale to utilize all available cpus in multicore systems
+because the Go runtime automatically scales to all available cpus. It is unlikely
+that a low-level system implemented with G.E.R.T will outperform the same system written in
+good C, but results show that G.E.R.T does outperform userspace
+C code in Linux.
+
+One particular concern about using a garbage-collected language
+for low-level code is GC pause times. This is not an issue in G.E.R.T because interrupt
+handlers can execute even when the world is stopped as long as the interrupt code
+does not call the Go scheduler. This is an acceptable constraint for embedded
+environments because any interrupt code that calls the Go scheduler is performing
+an operation that could potentially block, and blocking operations should not
+be happening during interrupt time in the first place.
+
+
+\section{Why Write Low Level System Code in Go?}
+
+At first glance, Go code looks a lot like C. There are no
+classes and every object has a type which is known at compile time.
+This already makes Go a good systems language, but Go's
+greatest feature is its built-in support for concurrency through
+goroutines and channels. Goroutines are lightweight threads that
+the Go runtime can schedule without help from the operating system.
+Channels are typed FIFO queues which can help to serialize
+asynchronous events, perhaps coming from several goroutines.
+With these features, Go is like an updated version
+of C for multicore systems, but without buffer overflows and
+null pointer dereferences.
+
+Go's implementation mirrors that of a small
+real-time OS. Go's threads are lightweight and
+cooperatively scheduled so that execution only transfers during
+blocking operations. The runtime also manages its own pool of memory
+and exports its own atomic primitives through the standard "sync"
+package. In fact, Go provides most of the common OS primitives natively
+in its standard libraries <https://golang.org/pkg/\#stdlib>. This means
+that G.E.R.T can also provide most of the convenience of a full-blown kernel
+without latency degredation.
+
+Embedded systems are increasingly relying on dedicated peripherals to
+provide service, instead of very fast cpus. SOCs contain dedicated
+silicon peripherals to help with everything from serial communication to
+interrupt priority filtering. These peripherals free the cpus from bit-banging
+high-frequency signals so they can spend more time directing program
+flow instead. Go fits in well with such a system because its goroutines can be
+used to concurrently monitor state and channels can be used to relay that information
+back to a central coordinator. When an output must be switched, G.E.R.T simply
+issues a driver call that changes the behavior of a peripheral.
+
+\section{Outline}
+Outline the rest of the thesis
+
+%Stay tuned!
 %Modern embedded systems are composed of multicore SOCs that require
 %careful thought about race conditions and event serialization. Like
 %operating system kernels, most of these embedded systems are still implemented

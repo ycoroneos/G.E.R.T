@@ -19,7 +19,7 @@ func irq(irqnum uint32) {
 		embedded.Addtime(1)
 		embedded.ClearGPTIntr()
 	case 99:
-		//		inc()
+		inc()
 		embedded.ClearIntr(1)
 	case 103:
 		embedded.ClearIntr(3)

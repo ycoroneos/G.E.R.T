@@ -1,5 +1,7 @@
 \chapter{Booting the Go Runtime}
 
+<insert figure from proposal that shows boot process>
+
 Even though Go code is compiled, it relies on a runtime to coordinate certain actions with the OS.
 Timers, locks, and file descriptors are just a few of the OS abstractions that the runtime hinges on
 in order to function at all. This means that getting compiled Go code to run bare metal on an SOC requires
@@ -8,7 +10,7 @@ This poses a bootstrapping problem because any modifications made to the Go runt
 process must not inadvertently cause it to use an abstraction that does not yet exist. For example,
 creating a new object with $make()$ would be disasterous if the GC has not yet been initialized.
 In observation of these constraints, G.E.R.T boots via a 3-stage process. The first stage is u-boot, which
-configures the clocks and copies the second stage off of an sdcard into memory before jumping into it. The second
+configures the clocks and copies the second stage off an sdcard into memory before jumping into it. The second
 stage bootloader is a small C program which contains the entire G.E.R.T kernel ELF in its data section. This stage sets
 up the inital Go stack and loads the G.E.R.T ELF into memory before jumping to its entry point. The third stage
 of the bootloader lives inside G.E.R.T and is mostly written in Go, along with some Plan 9 assembly. It finishes the
@@ -34,8 +36,10 @@ running the Go runtime bare-metal on this SOC.
 \section{Stage 1 Bring Up}
 The u-boot loader is used to initialize device clocks and load the G.E.R.T bootloader into RAM.
 When the SOC is powered on, the program counter starts executing from ROM. The code in the ROM reads
-u-boot into RAM and jumps into it. U-boot programs the myriad of frequency dividers which are required
-to run the i.MX6 at a frequency of 792MHz per core. After this, u-boot is instructed to load the G.E.R.T
+u-boot into RAM and jumps into it. Unlike desktop PCs and laptops which use a BIOS to configure the
+frequency dividers and RAM timings, the iMX6 has no such thing so u-boot does it instead.
+U-boot programs the myriad of frequency dividers which are required
+to run the i.MX6 at a frequency of 792MHz per core. After this, u-boot loads the G.E.R.T
 kernel off the sdcard and into RAM at address 0x50000000. This address is specifically chosen because it
 does not overlap with any ELF program headers of the G.E.R.T kernel which are loaded in stage 2. After
 the stage 2 bootloader is in RAM, uboot jumps into it.
@@ -51,19 +55,19 @@ or reserved for peripherals. One solution around this is to simply turn on the M
 in the stage 2 bootloader but this creates a headache with preserving page tables
 across the transition to Go. An alternative, and much simpler, solution is to
 just change the link address of the Go ELF. This is the preferred approach so
-the link address was changed to 0x10000000, which is the start of RAM.
-After loading the Go binary into RAM, the stage 2 bootloader reserves
+G.E.R.T's build system uses a link address of 0x10000000, which is the start of
+RAM on the iMX6. After loading the Go binary into RAM, the stage 2 bootloader reserves
 4kb of initial stack and jumps into G.E.R.T.
 
 \section{Stage 3 Go Runtime}
 The thread scheduler and virtual memory system are statically initialized
 in order to prevent Go runtime subsystems from running before the environment
-is ready. At the beginning of execution, G.E.R.T is in a really constrained
-spot: Linux is not there but the Go runtime thinks it is. Specifically, there
+is ready. At the beginning of execution, G.E.R.T is in a constrained
+situation: Linux is not there but the Go runtime thinks it is. Specifically, there
 is no scheduler, no virtual memory, no syscalls. Nothing but a 4kb stack
 and the program counter. This is clearly inadequate for the Go runtime
 to do anything but crash, so G.E.R.T creates all of these missing subsystems
-(in Go) before the runtime actually uses them.
+,in Go, before the runtime actually uses them.
 
 
 \subsection{Virtual Memory Setup}
