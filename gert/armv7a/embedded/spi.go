@@ -80,12 +80,9 @@ func (spi *SPI_periph) Begin(mode, freq, datalength, channel uint32) {
 	spi.regs.control |= 1 << 3
 
 	spi.regs.config = 0
-	//spi.regs.config |= 0xF << 20
-	spi.regs.config |= 0xF << 16
 	if mode == 0 {
 	} else if mode == 3 {
-		spi.regs.config |= 0xF << 4
-		spi.regs.config |= 0xF
+		spi.regs.config |= 0xFF
 	} else {
 		fmt.Printf("unsupported mode %d. abort\n", mode)
 	}
@@ -107,8 +104,8 @@ func (spi *SPI_periph) Begin(mode, freq, datalength, channel uint32) {
 
 //assumes datalength < 32bits
 func (spi *SPI_periph) Send(data uint32) {
-	mask := uint32(1<<spi.datalength) - uint32(1)
-	data = data & mask
+	//mask := uint32(1<<spi.datalength) - uint32(1)
+	//data = data & mask
 
 	//wait for tx fifo to have space
 	//for spi.regs.status&0x2 != 0 {
