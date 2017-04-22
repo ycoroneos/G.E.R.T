@@ -6,49 +6,49 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Evaluation}
 
-With G.E.R.T, the programmer should be able to implement concurrent embedded programs
+With GERT, the programmer should be able to implement concurrent embedded programs
 which are as performant as the equivalent C implementation, but without having to
-worry about concurency abstractions. In order to evaluate G.E.R.T, there are two questions
-that must be answered:
+worry about concurency abstractions and memory safety bugs. In order to evaluate GERT,
+there are two questions that must be answered:
 
 \begin{enumerate}
-  \item Does G.E.R.T retain good performance despite the costs of using a High Level Language?
+  \item Does GERT retain good performance despite the costs of using a High Level Language?
   \item Do the concurrency patterns of Go simplify the task of the programmer?
 \end{enumerate}
 
-The first question is addressed by benchmarks below which measure G.E.R.T's
+The first question is addressed by benchmarks below which measure GERT's
 speed in creating and responding to external events. Pin toggle (\ref{sec:pin_toggle})
 measures the maximum pin toggle frequency. Interrupt response time (\ref{sec:int_time})
 measures the time it takes to respond to an external interrupt. Pulse counting
 (\ref{sec:pulse_count}) counts number of pulses at increasing frequencies.
 
 The second question is harder to answer because difficulty is a subjective
-measure. This thesis attemps to show that G.E.R.T presents a better framework for
+measure. This thesis attemps to show that GERT presents a better framework for
 concurrency through two case studies: a robot sensor platform (\ref{sec:robot})
 ,which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
 which traces images onto a surface by rotating mirrors at high speeds.
 
 \section{Experimental Setup} \label{sec:setup}
-In all tests, G.E.R.T is run on an i.MX6Quad SOC and all measurements are taken
-with a Rigol DS1054Z oscilloscope. When G.E.R.T is compared to Linux, the SOC
-runs Debian 8 "Jessie" with hardfloat support. G.E.R.T is also occasionally
+In all tests, GERT is run on an i.MX6Quad SOC and all measurements are taken
+with a Rigol DS1054Z oscilloscope. When GERT is compared to Linux, the SOC
+runs Debian 8 "Jessie" with hardfloat support. GERT is also occasionally
 compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 uses a Cortex M4, which is specifically
 intended for microcontroller applications, and has good real-time performance. Its event
-response times represent a good comparison point for G.E.R.T and Linux. The Teensy platform
+response times represent a good comparison point for GERT and Linux. The Teensy platform
 has poor concurrency support though because the Cortex M4 is a single core processor
 and it only has 64 kilobytes of RAM.
 
 
-All of the tests make use of the G.E.R.T "embedded" package, which is an example
-driver library that was developed for the i.MX6Quad. The embedded package is not intrinsic to G.E.R.T's
+All of the tests make use of the GERT "embedded" package, which is an example
+driver library that was developed for the i.MX6Quad. The embedded package is not intrinsic to GERT's
 functionality, nor was it optimized for performance in any way. The embedded package
 just aims to provide a template for how drivers can be written in the Go language.
 It currently includes drivers for the UART, SPI, PWM, GIC, USDHC, GPIO, and GPT peripherals.
 The embedded package also includes an implementation of the FAT32 file system, which is used
 for the lasrer projector (\ref{sec:laser}).
 
-%%G.E.R.T is evaluated in conditions that are representative of embedded workloads.
-%%The first few tests are benchmarks which measure G.E.R.T's maximum interrupt
+%%GERT is evaluated in conditions that are representative of embedded workloads.
+%%The first few tests are benchmarks which measure GERT's maximum interrupt
 %%frequency and pin toggle rate. The last two tests are each case studies: a robot
 %%sensor platform and a scanning-mirror galvanometer laser projector. The test SOC
 %%is the Freescale i.MX6Quad. Depending on the test, it is either running assembly,
@@ -57,11 +57,11 @@ for the lasrer projector (\ref{sec:laser}).
 %%measurements are taken using a Rigol DS1054Z oscilloscope.
 
 \section{Pin Toggle Frequency}\label{sec:pin_toggle}
-This test measures the speed at which G.E.R.T can toggle a simple GPIO pin on
+This test measures the speed at which GERT can toggle a simple GPIO pin on
 the iMX6 Quad SOC. In ARM assembly, this can be implemented in 4 lines, but compilers and 
 abstractions can increase the instruction count. Higher pin
 toggling frequency indicates less code in the critical path.
-G.E.R.T toggles the GPIO pin by directly interfacing with the GPIO
+GERT toggles the GPIO pin by directly interfacing with the GPIO
 peripheral on the iMX6, but userspace Linux code must use the
 sysfs driver.
 Results are shown in figure \ref{fig:toggle}.
@@ -73,9 +73,9 @@ Results are shown in figure \ref{fig:toggle}.
     \hline
     Platform & Avg GPIO Toggle Rate \\ \hline
     ASM & 1.65MHz \\ \hline
-    G.E.R.T Static & 568KHz \\ \hline
+    GERT Static & 568KHz \\ \hline
     Linux C & 263KHz \\ \hline
-    G.E.R.T & 154KHz \\ \hline
+    GERT & 154KHz \\ \hline
     Linux Go & 127KHz \\
     \hline
   \end{tabular}
@@ -83,8 +83,8 @@ Results are shown in figure \ref{fig:toggle}.
   \caption{GPIO Toggle Rates of Different Platforms}  \label{fig:toggle}
 \end{figure}
 
-The results show that G.E.R.T does suffer a performance decrease because of
-Go's abstraction cost but it is not clear why G.E.R.T underperforms user-space
+The results show that GERT does suffer a performance decrease because of
+Go's abstraction cost but it is not clear why GERT underperforms user-space
 Linux C code.
 Without all of the syscalls a user-space program must endure, there should have
 been a speed increase.
@@ -94,22 +94,22 @@ in the embedded package uses interfaces to abstract all of the different pins.
 In order to toggle a single pin with these interfaces requires 47 instructions:
 2 function calls, 19 loads, and 11 stores. A more performant driver model would
 use static device IDs so that the compiler can infer the toggled pin directly.
-The performance of a static implementation is shown above in the G.E.R.T static row
-of figure \ref{fig:toggle}. Even with a static driver model, G.E.R.T retains all of
+The performance of a static implementation is shown above in the GERT static row
+of figure \ref{fig:toggle}. Even with a static driver model, GERT retains all of
 the benefits of a HLL. It is the programmer's decision which kind driver model to use.
 
-The pin toggle frequencies show that G.E.R.T is capable of more efficient
+The pin toggle frequencies show that GERT is capable of more efficient
 execution than a userspace C program in Linux. Pin toggle inside of a Linux
-kernel module would likely attain the same performance as G.E.R.T, but would lack
+kernel module would likely attain the same performance as GERT, but would lack
 the safety a HLL provides.
 
 \section{Interrupt Response Time}\label{sec:int_time}
-This test measures the time it takes G.E.R.T to respond to an external event
+This test measures the time it takes GERT to respond to an external event
 with another external event. Specifically, it is the time it takes to produce
 a rising edge on a GPIO pin in response to a falling edge on a different GPIO pin.
 Faster response times are important for real time control systems, such as ABS brakes
 in a car.
-G.E.R.T and the Teensy detect the event with hardware interrupts
+GERT and the Teensy detect the event with hardware interrupts
 but Linux polls the input pin in a tight loop because the userspace sysfs
 driver does not expose interrupt attachment points.
 Results are shown below in figure \ref{fig:RT}.
@@ -120,7 +120,7 @@ Results are shown below in figure \ref{fig:RT}.
     \hline
     Platform & Event Reponse Time \\ \hline
     Teensy 3.2 & 1$\mu$s \\ \hline
-    G.E.R.T & 6.3$\mu$s \\ \hline
+    GERT & 6.3$\mu$s \\ \hline
     Linux C & 10$\mu$s \\ \hline
     Linux Go & 30$\mu$s \\
     \hline
@@ -132,9 +132,9 @@ Results are shown below in figure \ref{fig:RT}.
 The event response times follow the increasing abstraction cost for each system.
 The Teensy is very fast because its interrupt controller is vectored and interrupts
 do not cause a stack switch. This means that the Teensy can flip a pin within a few cycles
-of receiving the interrupt. G.E.R.T is slower because the iMX6 does not have a
+of receiving the interrupt. GERT is slower because the iMX6 does not have a
 vectored interrupt controller, the interrupt stack must be switched, and the
-interrupt handler is written in Go. When G.E.R.T gets an interrupt, it must save its
+interrupt handler is written in Go. When GERT gets an interrupt, it must save its
 current state, decide which interrupt it received, and execute its Go handler. Despite this
 complexity, the iMX6 can execute more instructions in less time because of its very
 high clock rate (792MHz vs 96MHz) so it can keep up with the Teensy.
@@ -145,12 +145,12 @@ IO is performed by reading/writing from the appropriate file. In response to an 
 the Linux kernel sets a flag on the file descriptor which means that there is data to read. The userspace
 program does not actually see the data until it is scheduled again.
 
-As before, a Linux kernel module would likely attain the same performance as G.E.R.T
+As before, a Linux kernel module would likely attain the same performance as GERT
 (or even more), but would lose the benefits of a HLL.
 
 
 \section{Pulse Counting}\label{sec:pulse_count}
-This test measures G.E.R.T's ability to count incoming pulses. Missed pulses
+This test measures GERT's ability to count incoming pulses. Missed pulses
 indicate an excessively long interrupt handler that is still executing when the next
 pulse arrives. None of the platforms were configured for re-entrant interrupt handlers
 so they can all potentially miss pulses.
@@ -166,7 +166,7 @@ Results are shown in figure \ref{fig:counter}.
     \hline
     Platform & Pulse Count & Max Pulse Rate & Missed Pulses \\ \hline
     Teensy 3.2 & 10 & 2.50MHz & 2 \\ \hline
-    G.E.R.T & 10 & 161KHz & 1 \\ \hline
+    GERT & 10 & 161KHz & 1 \\ \hline
     Linux C & 10 & 161KHz & 4 \\ \hline
     Linux Go & 10 & 50KHz & 1 \\
     \hline
@@ -175,7 +175,7 @@ Results are shown in figure \ref{fig:counter}.
   \caption{Pulse Counts of Different Platforms}  \label{fig:counter}
 \end{figure}
 
-G.E.R.T and userspace Linux C achieve similar performance on this test.
+GERT and userspace Linux C achieve similar performance on this test.
 Linux just missed a few pulses.
 
 The Teensy registers more pulses than any other platform because of its
@@ -187,14 +187,24 @@ is only 5 instructions and has no conditionals.
 
 \section{Benchmark Conclusions}
 
-G.E.R.T shows that it can usually outperform userspace Linux C code and it
-can keep up with the Teensy in event response time. G.E.R.T also has a true interrupt
-handler whereas Linux must poll due to the sysfs driver. Unfortunately, G.E.R.T
+GERT shows that it can usually outperform userspace Linux C code and it
+can keep up with the Teensy in event response time. GERT also has a true interrupt
+handler whereas Linux must poll due to the sysfs driver. Unfortunately, GERT
 has a complicated interrupt pipeline with many conditionals so it can miss
-more interrupts than the Teensy; G.E.R.T is not suitable for meeting hard deadlines.
+more interrupts than the Teensy; GERT is not suitable for meeting hard deadlines.
 
-The Go garbage collector was never an issue during any of the tests because embedded
-programs are usually static.
+GERT and Linux have similar concurrent capabilities. When the frequency of external
+events exceeds the response time of a single core, the events can be split among
+multiple cores. In GERT, though, this threshold frequency is about 4$\mu$s faster
+so the programmer can avoid dedicating additional cores in some cases.
+
+
+The Go garbage collector was never an issue during any of the tests because the
+benchmark programs were all static. Without memory to reclaim, the GC never
+had to run. However, if the GC did run, the only test that would have been affected is
+the pin toggle test because the GC is allowed to stop the world. In GERT, interrupts
+can trigger even when the world is stopped so the GC will not affect the response time
+and pulse counting benchmarks even though it would affect them in the Linux Go benchmarks.
 
 \section{Case Study: Robot Sensor Platform} \label{sec:robot}
 
@@ -204,10 +214,10 @@ programs are usually static.
   \caption{Code Breakdown of Robot Sensor Platform} \label{fig:robot_code}
 \end{figure}
 
-In order to evaluate G.E.R.T on a realistic workload, I put it on a robot that was
+In order to evaluate GERT on a realistic workload, I put it on a robot that was
 donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
 motors with encoders and also several Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
-I wrote a program in Go using G.E.R.T to process all of these event sources at the same time
+I wrote a program in Go using GERT to process all of these event sources at the same time
 and operate the robot.
 
 \subsection{Overview}
@@ -309,7 +319,7 @@ func inc() {
 
 With these powerful set of abstractions, adding events or sensors into the event loop
 is simple because only a Pollfunc() must be implemented. As an added bonus, this
-G.E.R.T program is automatically concurrent because the Go and G.E.R.T schedulers will
+GERT program is automatically concurrent because the Go and GERT schedulers will
 move idle cpus to any available goroutine. The rest of this case study explains how the sensors
 are interfaced with GERT.
 
@@ -330,12 +340,13 @@ It is this percentage which the motor controller translates into a speed for the
 
 
 The iMX6Q includes an on-board PWM peripheral which can output several channels of PWM
-at a variety of periods and duty cycles. G.E.R.T contains a driver for this PWM peripheral in its embedded
+at a variety of periods and duty cycles. GERT contains a driver for this PWM peripheral in its embedded
 package. The PWM peripheral requires no maintenance once it is configured so the cost of outputting
 a PWM signal is essentially a few loads and stores every time the user changes the period or duty cycle.
 
 The driver is organized in a typical C fashion where the memory map of the peripheral is represented in a structure:
 \begin{figure}[h]
+  \begin{subfigure}[t!]{0.5\textwidth}
   \begin{lstlisting}
   type PWM_regs struct {
 	CR  uint32
@@ -346,12 +357,29 @@ The driver is organized in a typical C fashion where the memory map of the perip
 	CNR uint32
 }
   \end{lstlisting}
+  \end{subfigure}
+  \begin{subfigure}[t!]{0.5\textwidth}
+ \includegraphics[scale=0.4]{pwmregs}
+  \end{subfigure}
+  \caption{PWM Register Representation} \label{fig:pwm_struct}
+\end{figure}
+
+The driver also exposes methods for stopping. starting, and setting the
+frequency and duty cycle of the PWM generator:
+\begin{figure}[h]
+  \begin{lstlisting}
+func (pwm *PWM_periph) Begin(freq khz)
+func (pwm *PWM_periph) Stop()
+func (pwm *PWM_periph) SetFreq(freq khz)
+func (pwm *PWM_periph) SetDuty(dutycycle float32)
+  \end{lstlisting}
+  \caption{PWM Driver API} \label{fig:pwm_api}
 \end{figure}
 
 \subsection{Distance Sensor Reading}
 The Sharp distance sensor outputs an analog voltage proportional to its distance from the nearest object (fig. \ref{fig:curve}).
 A Microchip MCP3008 8-channel ADC is used to convert this voltage into a digital signal. The MCP3008 communicates in clocked
-serial (SPI) with 24bit data frames so the robot program uses G.E.R.T's SPI driver. Much like the
+serial (SPI) with 24bit data frames so the robot program uses GERT's SPI driver. Much like the
 PWM peripheral, the SPI peripheral has multiple channels that can each concurrently send and receive data. The SPI
 driver also requires no input from the user except for the data to transmit and receive.
 
@@ -366,7 +394,7 @@ driver also requires no input from the user except for the data to transmit and 
 \subsection{Encoder Reading}
 Encoders emit a pulse every time the motor rotates a known amount. This amount is variable depending on the
 encoder resolution. The encoders on the test motors emit pulses at a max rate of 4KHz, corresponding to
-maximum motor speed. G.E.R.T had no difficulty picking up these pulses because this frequency is far less than
+maximum motor speed. GERT had no difficulty picking up these pulses because this frequency is far less than
 the max pulse frequency in fig. \ref{fig:counter}. A speed monitor was written in fig. \ref{fig:speedmon}
 to measure the motor rotation (in Hz) and it corresponded very closely to the oscilliscope readings.
 
@@ -400,7 +428,7 @@ robot cannot move when the motors are connected to an external power supply.
 GERT is a plausible embedded toolkit to use for robots that incorporate many sensor systems.
 By utilizing Go's language features, an embedded firmware engineer can implement a complicated sensor integration
 platform on top of GERT without worrying about issues like scheduling or shared memory. The robot sensor platform
-never experienced a use-after-free, index out of range, or memory safety bug because it is implemented in a HLL.
+never experienced a single use-after-free, index out of range, or memory safety bug because it is implemented in a HLL.
 As an added bonus, the robot sensor platform also does not contain a single lock despite the fact that every sensor
 runs in its own thread, deadlock will never occur.
 
@@ -411,7 +439,7 @@ A scanning-mirror galvanometer laser projector is a device that deflects a laser
 order to draw an image on another surface, as shown in fig. \ref{fig:galvos}. If the entire image can be scanned faster than 24Hz, then the light appears
 to blend and the human brain perceives it as a single image rather than many points. The maximum rate at which the
 projector can trace points is bounded below by the speed of the galvos and bounded above by the speed of the software.
-In this case study, G.E.R.T is used to implement a laser projector with a red laser.
+In this case study, GERT is used to implement a laser projector with a red laser.
 
 \begin{figure}[h]
 \begin{center}
@@ -422,11 +450,11 @@ In this case study, G.E.R.T is used to implement a laser projector with a red la
 
 \subsection{Overview}
 Points are generated from a vector graphics file on a desktop computer and stored
-on an sdcard before G.E.R.T loads them and traces the image. The laser projector,
+on an sdcard before GERT loads them and traces the image. The laser projector,
 unlike the robot sensor platform, does not have to process any external events or
 manage concurrency.
 Instead, the laser program must just be fast enough to trace points smoothly.
-To do this, G.E.R.T runs a dedicated goroutine, $lasermon$ which loops over all of the points
+To do this, GERT runs a dedicated goroutine, $lasermon$ which loops over all of the points
 in a circular buffer and sends them in order to a Microchip MCP4922 DAC. The
 DAC converts the digital position signal into an analog voltage and then
 sends that voltage signal into an analog servo circuit, which sets the position
@@ -456,8 +484,8 @@ type CompactPoint struct {
 In order to store points, a seperate encoding program running
 on a desktop computer encodes an array of $CompactPoint$ structs into
 a Gob object and writes them to a file. Next, the encoding program stores
-the file onto the FAT32-formatted sdcard that contains the G.E.R.T
-program. Then, G.E.R.T reads the same file and de-serializes the Gob object
+the file onto the FAT32-formatted sdcard that contains the GERT
+program. Then, GERT reads the same file and de-serializes the Gob object
 into an array of $CompactPoint$, like in fig. \ref{fig:loadpoints}.
 
 \begin{figure}[!h]
