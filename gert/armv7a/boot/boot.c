@@ -167,11 +167,12 @@ int main()
   cprintf("---------------------------------------------\r\n");
   cprintf("Welcome to Biscuit-ARM Bootloader, 16 is %x hex!\r\n",16);
   ////boot_memset((void*)(0x10000000), 0xffffffff, 0x60000000);
-  boot_memset((void*)(0x7FD00000), 0xffffffff, 0x100000);
+  //boot_memset((void*)(0x7FD00000), 0xffffffff, 0x100000);
+  boot_memset((void*)(0x7FD00000), 0xff, 0x100000);
 
-  float a=1.25;
-  float b =a*3;
-  cprintf("float multiplication %x\r\n", b);
+  //float a=1.25;
+  //float b =a*3;
+  //cprintf("float multiplication %x\r\n", b);
   //load our kernel
   load_go();
   uint32_t kernel_start = gobin_start;

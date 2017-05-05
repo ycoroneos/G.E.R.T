@@ -23,7 +23,9 @@ BOOT_TARGET := $(BUILDIR)/bootloader
 #QEMU := ~/Documents/qemu/arm-softmmu/qemu-system-arm
 QEMU := ~/qemu/arm-softmmu/qemu-system-arm
 
-CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
+#CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
+#          -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/
+CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=soft \
           -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/
 
 LFLAGS := $(CFLAGS) -Tboot/link.ld
