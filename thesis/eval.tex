@@ -235,20 +235,14 @@ and achieve higher performance.
 
 Unlike Linux, GERT utilizes a true interrupt handler for delivering events.
 In reality this doesn't seem to matter a lot because the latency difference
-is still just a few microseconds.
-
-
-GERT shows that it can usually outperform userspace Linux C code and it
-can keep up with the Teensy in event response time. GERT also has a true interrupt
-handler whereas Linux must poll due to the sysfs driver. Unfortunately, GERT
-has a complicated interrupt pipeline with many conditionals so it can miss
-more interrupts than the Teensy; GERT is not suitable for meeting hard deadlines.
+is still just a few microseconds. Unfortunately, GERT's interrupt handling
+process requires a context switch so it is still too slow for meeting hard
+deadlines.
 
 GERT and Linux have similar concurrent capabilities. When the frequency of external
 events exceeds the response time of a single core, the events can be split among
 multiple cores. In GERT, though, this threshold frequency is about 4$\mu$s faster
 so the programmer can avoid dedicating additional cores in some cases.
-
 
 The Go garbage collector was never an issue during any of the tests because the
 benchmark programs were all static. Without memory to reclaim, the GC never
@@ -260,8 +254,18 @@ and pulse counting benchmarks even though it would affect them in the Linux Go b
 \section{Case Study: Robot Sensor Platform} \label{sec:robot}
 
 \begin{figure}[h]
-  \begin{center}
- \end{center}
+\begin{center}
+  \begin{tabular}{ | l | l |}
+    \hline
+    Type & Line Count \\ \hline
+    Initialization & 23 \\ \hline
+    Event Loop & 19 \\ \hline
+    ADC Driver & 25 \\ \hline
+    Motor Driver & 45 \\ \hline
+    Abstractions & 20 \\
+    \hline
+  \end{tabular}
+\end{center}
   \caption{Code Breakdown of Robot Sensor Platform} \label{fig:robot_code}
 \end{figure}
 
@@ -269,14 +273,17 @@ In order to evaluate GERT on a realistic workload, I put it on a robot that was
 donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
 motors with encoders and also several Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
 I wrote a program in Go using GERT to process all of these event sources at the same time
-and operate the robot.
+and operate the robot. The working robot can move and poll the distance sensors in response to user input.
+It can also measure the rotation rate of its drive motors.
+
+The code breakdown of the robot is included in fig. \ref{fig:robot_code}. The line counts include the code that must be
+included in addition to the base GERT system in order to produce the functional robot program. It is all written
+in Go.
 
 \subsection{Overview}
 The main body of the robot program is an event loop which waits for events coming out of an event channel (fig. \ref{fig:event_loop}).
 Independent goroutines monitor each sensor and send events into the event channel. There is a
-single goroutine that monitors the event channel and manipulates state in a non-blocking manner. The code for the
-event loop is shown below in fig. \ref{fig:event_loop}.
-
+single goroutine that monitors the event channel and manipulates state in a non-blocking manner.
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}
@@ -305,7 +312,7 @@ select {
 \end{figure}
 
 The robot program uses Go's higher order functions and closures in order to create a sensor polling helper function
-as shown below in fig. \ref{fig:poll_func}. In this paradigm, every sensor gets its own goroutine which sends
+(fig. \ref{fig:poll_func}). In this paradigm, every sensor gets its own goroutine which sends
 data back into a central event loop.
 
 %%\clearpage
