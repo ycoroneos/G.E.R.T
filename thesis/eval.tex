@@ -202,7 +202,8 @@ GPIO pins. The sum total of registered edges should be $10\times4=40$.
 
 Because polling is a blocking operation, a multithreaded C program that concurrently
 polls 4 pins is used for this test. The multithreaded C program is also compared
-to a single-threaded program.
+to a single-threaded C program. A multithreaded Go program which uses goroutines
+to monitor pin states is also included.
 Results are shown in figure \ref{fig:ccounter}.
 
 \begin{figure} [h]
@@ -213,6 +214,7 @@ Results are shown in figure \ref{fig:ccounter}.
     GERT & 10 & 100KHz & 36 & 42 \\ \hline
     Linux C Multithread & 10 & 100KHz & 32 & 33 \\ \hline
     Linux C & 10 & 100KHz & 9 & 13 \\ \hline
+    Linux Go & 10 & 100KHz & TBD & TBD \\
     \hline
   \end{tabular}
 \end{center}
@@ -220,9 +222,21 @@ Results are shown in figure \ref{fig:ccounter}.
 \end{figure}
 
 
-
+<talk talk talk>
 
 \section{Benchmark Conclusions}
+
+Despite being written in a HLL, GERT can usually outperform userspace
+Linux C code in the benchmarks that were conducted. GERT's performance trailed
+Linux in the GPIO toggle test but, after changing the driver to a static model,
+it also beat Linux in that test too. This is a promising result because it shows
+that a HLL that provides the same isolations as a userspace can run on bare metal
+and achieve higher performance.
+
+Unlike Linux, GERT utilizes a true interrupt handler for delivering events.
+In reality this doesn't seem to matter a lot because the latency difference
+is still just a few microseconds.
+
 
 GERT shows that it can usually outperform userspace Linux C code and it
 can keep up with the Teensy in event response time. GERT also has a true interrupt
