@@ -57,17 +57,19 @@
 %\def\all{all}
 %\ifx\files\all \typeout{Including all files.} \else \typeout{Including only \files.} \includeonly{\files} \fi
 
-\lstset{ % add your own preferences
+\lstdefinestyle{Golang}{ % add your own preferences
     frame=single,
-    basicstyle=\footnotesize,
+    basicstyle=\tiny,
     keywordstyle=\color{blue},
     numbers=left,
-    numbersep=5pt,
+    %numbersep=5pt,
     showstringspaces=false, 
     stringstyle=\color{blue},
     tabsize=4,
     language=Golang % this is it !
 }
+
+\lstset{basicstyle=\tiny, style=Golang}
 
 \begin{document}
 

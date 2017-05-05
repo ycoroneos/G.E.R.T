@@ -260,8 +260,9 @@ and pulse counting benchmarks even though it would affect them in the Linux Go b
     Type & Line Count \\ \hline
     Initialization & 23 \\ \hline
     Event Loop & 19 \\ \hline
-    ADC Driver & 25 \\ \hline
-    Motor Driver & 45 \\ \hline
+    ADC Driver & 106 \\ \hline
+    Motor Driver & 98 \\ \hline
+    UART & 41 \\ \hline
     Abstractions & 20 \\
     \hline
   \end{tabular}
@@ -284,7 +285,14 @@ in Go.
 The main body of the robot program is an event loop which waits for events coming out of an event channel (fig. \ref{fig:event_loop}).
 Independent goroutines monitor each sensor and send events into the event channel. There is a
 single goroutine that monitors the event channel and manipulates state in a non-blocking manner.
-\begin{figure}[h]
+
+The robot program uses Go's higher order functions and closures in order to create a sensor polling helper function
+(fig. \ref{fig:poll_func}). In this paradigm, every sensor gets its own goroutine which sends
+data back into a central event loop.
+
+The robot program also configured the GPIO library to use interrupts in order to count pulses on the encoder (fig. \ref{fig:encoder}).
+
+\begin{figure}[!h]
   \begin{center}
 \begin{lstlisting}
 select {
@@ -311,11 +319,6 @@ select {
   \caption{Robot Event Loop} \label{fig:event_loop}
 \end{figure}
 
-The robot program uses Go's higher order functions and closures in order to create a sensor polling helper function
-(fig. \ref{fig:poll_func}). In this paradigm, every sensor gets its own goroutine which sends
-data back into a central event loop.
-
-%%\clearpage
 
 \begin{figure}[!h]
 \begin{center}
@@ -345,7 +348,6 @@ sink chan interface{}) chan bool {
   \caption{Higher Order Polling Function} \label{fig:poll_func}
 \end{figure}
 
-The robot program also configured the GPIO library to use interrupts in order to count pulses on the encoder (fig. \ref{fig:encoder}).
 
 \begin{figure}[!h]
 \begin{center}
@@ -401,8 +403,15 @@ The iMX6Q includes an on-board PWM peripheral which can output several channels 
 at a variety of periods and duty cycles. GERT contains a driver for this PWM peripheral in its embedded
 package. The PWM peripheral requires no maintenance once it is configured so the cost of outputting
 a PWM signal is essentially a few loads and stores every time the user changes the period or duty cycle.
+The API is shown in fig. \ref{fig:pwm_api}.
 
-The driver is organized in a typical C fashion where the memory map of the peripheral is represented in a structure:
+The driver is organized in a typical C fashion where the memory map of the peripheral is represented in a structure (fig. \ref{fig:pwm_struct}).
+Go provided little benefit for writing the driver. Even though Go is a systems language, it has poor
+support for reading/writing arbitrary memory. In Go, the programmer cannot align or pad structs
+and they must use the unsafe package in order to modify memory addresses with unsafe casts. This makes for a generally
+unsatisfying experience when writing drivers.
+
+
 \begin{figure}[h]
   \begin{subfigure}[t!]{0.5\textwidth}
   \begin{lstlisting}
@@ -422,8 +431,6 @@ The driver is organized in a typical C fashion where the memory map of the perip
   \caption{PWM Register Representation} \label{fig:pwm_struct}
 \end{figure}
 
-The driver also exposes methods for stopping. starting, and setting the
-frequency and duty cycle of the PWM generator:
 \begin{figure}[h]
   \begin{lstlisting}
 func (pwm *PWM_periph) Begin(freq khz)
@@ -435,26 +442,31 @@ func (pwm *PWM_periph) SetDuty(dutycycle float32)
 \end{figure}
 
 \subsection{Distance Sensor Reading}
-The Sharp distance sensor outputs an analog voltage proportional to its distance from the nearest object (fig. \ref{fig:curve}).
+The Sharp distance sensor outputs an analog voltage proportional to its distance from the nearest object.
 A Microchip MCP3008 8-channel ADC is used to convert this voltage into a digital signal. The MCP3008 communicates in clocked
-serial (SPI) with 24bit data frames so the robot program uses GERT's SPI driver. Much like the
+serial (SPI) with 24bit data frames so the robot program uses GERT's SPI driver (fig. \ref{fig:spi_api}). Much like the
 PWM peripheral, the SPI peripheral has multiple channels that can each concurrently send and receive data. The SPI
 driver also requires no input from the user except for the data to transmit and receive.
 
 \begin{figure}[h]
-\begin{center}
-  \includegraphics[scale=0.5]{IRSensor-3}
-\end{center}
-  \caption{Sharp Sensor Distance Curve} \label{fig:curve}
+  \begin{lstlisting}
+  func (spi *SPI_periph) Begin(mode, freq, datalength, channel uint32)
+  func (spi *SPI_periph) Send(data uint32)
+  func (spi *SPI_periph) Exchange(data uint32) uint32
+  \end{lstlisting}
+  \caption{SPI Driver API} \label{fig:spi_api}
 \end{figure}
 
-\clearpage
+
 \subsection{Encoder Reading}
+The robot program also includes a motor speed monitor which uses the encoders.
 Encoders emit a pulse every time the motor rotates a known amount. This amount is variable depending on the
-encoder resolution. The encoders on the test motors emit pulses at a max rate of 4KHz, corresponding to
+encoder resolution. The encoders on the robot motors emit pulses at a max rate of 4KHz, corresponding to
 maximum motor speed. GERT had no difficulty picking up these pulses because this frequency is far less than
-the max pulse frequency in fig. \ref{fig:counter}. A speed monitor was written in fig. \ref{fig:speedmon}
-to measure the motor rotation (in Hz) and it corresponded very closely to the oscilliscope readings.
+the max pulse frequency in fig. \ref{fig:counter}.
+
+The robot program asynchronously reads encoders with a special goroutine which computes the pulse difference
+every second (fig. \ref{fig:speedmon}). The result is sent into the event channel.
 
 \begin{figure}[h]
 \begin{center}
@@ -479,26 +491,29 @@ Systems do not work perfectly, and this robot is no exception. The switching mot
 on this robot emits a lot of noise. The 5v noise spikes measured on the oscilloscope wreaked havoc
 on the 3.3v single-ended signals that the iMX6 operates with, causing serial communication failures
 and spurious interrupts. To deal with this, the robot's motors are connected to an external power supply before
-taking measurements. This helps remove noise from the digital circuits. Consequently, the physical
+taking encoder measurements in order to remove noise from the digital circuits. Consequently, the physical
 robot cannot move when the motors are connected to an external power supply.
 
 \subsection{Result}
 GERT is a plausible embedded toolkit to use for robots that incorporate many sensor systems.
 By utilizing Go's language features, an embedded firmware engineer can implement a complicated sensor integration
-platform on top of GERT without worrying about issues like scheduling or shared memory. The robot sensor platform
-never experienced a single use-after-free, index out of range, or memory safety bug because it is implemented in a HLL.
+platform on top of GERT without worrying about issues like scheduling or shared memory. Because it is written in Go,
+the robot sensor platform
+never experienced a single use-after-free, index out of range, or memory safety bug.
 As an added bonus, the robot sensor platform also does not contain a single lock despite the fact that every sensor
 runs in its own thread, deadlock will never occur.
+
+The most painful part about using GERT is writing drivers. Interacting with MMIO
+peripherals inherently requires unsafe writes and reads to arbitrary memory, but Go
+tries very hard to stop the programmer from doing this. Successful drivers for MMIO
+peripherals must defeat the type system. In the end, a GERT driver
+looks like the equivalent C driver but with many more explicit casts.
+If a future version of Go deprecates the unsafe package, it will be catastrophic for
+GERT's current implementation.
 
 
 
 \section{Case Study: Laser Projector}\label{sec:laser}
-A scanning-mirror galvanometer laser projector is a device that deflects a laser beam off of several mirrors in
-order to draw an image on another surface, as shown in fig. \ref{fig:galvos}. If the entire image can be scanned faster than 24Hz, then the light appears
-to blend and the human brain perceives it as a single image rather than many points. The maximum rate at which the
-projector can trace points is bounded below by the speed of the galvos and bounded above by the speed of the software.
-In this case study, GERT is used to implement a laser projector with a red laser.
-
 \begin{figure}[h]
 \begin{center}
   \includegraphics[scale=0.5]{galvanometer}
@@ -506,13 +521,22 @@ In this case study, GERT is used to implement a laser projector with a red laser
   \caption{Mirror Galvanometers} \label{fig:galvos}
 \end{figure}
 
+A scanning-mirror galvanometer laser projector is a device that deflects a laser beam off of several mirrors in
+order to draw an image on another surface, as shown in fig. \ref{fig:galvos}. If the entire image can be scanned faster than 24Hz, then the light appears
+to blend and the human brain perceives it as a single image rather than many points. The maximum rate at which the
+projector can trace points is bounded below by the speed of the galvos and bounded above by the speed of the software.
+In this case study, GERT is used to implement a laser projector with a red laser.
+
 \subsection{Overview}
-Points are generated from a vector graphics file on a desktop computer and stored
+I selected a laser scanner for this case study because I have a lot of experience programming
+them in C. It is interesting to observe how GERT can alter the experience.
+Points for the scanner are generated from a vector graphics file on a desktop computer and stored
 on an sdcard before GERT loads them and traces the image. The laser projector,
 unlike the robot sensor platform, does not have to process any external events or
-manage concurrency.
-Instead, the laser program must just be fast enough to trace points smoothly.
-To do this, GERT runs a dedicated goroutine, $lasermon$ which loops over all of the points
+manage concurrency so it is a relatively simple program.
+
+The only challenge for the laser program is to trace points fast enough so that the image appears smooth.
+To do this, the laser program runs a dedicated goroutine, $lasermon$ which loops over all of the points
 in a circular buffer and sends them in order to a Microchip MCP4922 DAC. The
 DAC converts the digital position signal into an analog voltage and then
 sends that voltage signal into an analog servo circuit, which sets the position
@@ -541,31 +565,21 @@ type CompactPoint struct {
 
 In order to store points, a seperate encoding program running
 on a desktop computer encodes an array of $CompactPoint$ structs into
-a Gob object and writes them to a file. Next, the encoding program stores
-the file onto the FAT32-formatted sdcard that contains the GERT
-program. Then, GERT reads the same file and de-serializes the Gob object
-into an array of $CompactPoint$, like in fig. \ref{fig:loadpoints}.
+a Gob object and writes them to a file. Next, a utility called
+\textit{go-bindata} is used to embed the gob file into the laserscanner
+program. Then the laserscanner reads the gob'ed data during initialization \ref{fig:loadpoints}.
 
-\begin{figure}[!h]
+\begin{figure}[!b]
 \begin{center}
 \begin{lstlisting}
-	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard,
-  embedded.Read_som_sdcard)
-	if !good {
-		fmt.Println("fat32 init failure")
-	}
-	good, bootdir := root.Direnter("BOOT")
-	if !good {
-		panic("dir entry failed")
-	}
-  /* P.TXT contains the Gob'ed points */
-	good, contents := bootdir.Fileread("P.TXT")
-	if !good {
-		panic("file read failure")
+var points []CompactPoint
+	contents, err := Asset("bindata.gob")
+	if err != nil {
+		panic("bindata not found")
 	}
 	r := bytes.NewBuffer(contents)
 	d := gob.NewDecoder(r)
-	err := d.Decode(&points)
+	err = d.Decode(&points)
 	if err != nil {
 		fmt.Printf("error de-GOBing:\n")
 		panic(err)
@@ -574,5 +588,26 @@ into an array of $CompactPoint$, like in fig. \ref{fig:loadpoints}.
 \end{center}
   \caption{Laser Point Structure} \label{fig:loadpoints}
 \end{figure}
+
+\subsection{Path Tracing}
+\textit{Lasermon} draws points by looping through a circular buffer and transmitting each point to
+the DAC. If lasermon sends points too fast, then the scanner cannot keep up and it displays junk. If
+lasermon sends points too slow, then the scanner does not trace the image fast enough and it does not
+look static.
+
+\textit{Lasermon} attempts to mitigate these issues by heuristically adjusting how long it should wait between
+sending successive points to the scanner. If the norm-2 distance of the current point is far from the last
+point, \textit{lasermon} waits longer in a busy loop before transmitting the next point. With tuning, this approach can
+work for a specific image, but it does not
+work very well in general because the laser scanners are not an LTI system. A better solution to the scanner problem
+is a state-space feedback controller which includes \textit{lasermon} in the loop. That work is out of scope for
+this thesis though.
+
+\subsection{Result}
+The most useful feature of Go, for the laser scanner, is its Gob library for point serialization.
+The laser scanner took no user input or external event input. It is not a very complicated program
+
+Gob made it so
+that the most difficult part of the laser projector
 
 
