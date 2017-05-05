@@ -21,12 +21,15 @@ speed in creating and responding to external events. Pin toggle (\ref{sec:pin_to
 measures the maximum pin toggle frequency. Interrupt response time (\ref{sec:int_time})
 measures the time it takes to respond to an external interrupt. Pulse counting
 (\ref{sec:pulse_count}) counts number of pulses at increasing frequencies.
+Concurrent response (\ref{sec:concurrent}) measures how many external events
+GERT can concurrently respond to.
 
 The second question is harder to answer because difficulty is a subjective
 measure. This thesis attemps to show that GERT presents a better framework for
 concurrency through two case studies: a robot sensor platform (\ref{sec:robot})
 ,which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
-which traces images onto a surface by rotating mirrors at high speeds.
+which traces images onto a surface by rotating mirrors at high speeds. The case studies
+present a real-world experience for using GERT.
 
 \section{Experimental Setup} \label{sec:setup}
 In all tests, GERT is run on an i.MX6Quad SOC and all measurements are taken
@@ -35,8 +38,8 @@ runs Debian 8 "Jessie" with hardfloat support. GERT is also occasionally
 compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 uses a Cortex M4, which is specifically
 intended for microcontroller applications, and has good real-time performance. Its event
 response times represent a good comparison point for GERT and Linux. The Teensy platform
-has poor concurrency support though because the Cortex M4 is a single core processor
-and it only has 64 kilobytes of RAM.
+has poor concurrency support though because its Cortex M4 is a single core processor.
+%%and it only has 64 kilobytes of RAM.
 
 
 All of the tests make use of the GERT "embedded" package, which is an example
@@ -44,8 +47,10 @@ driver library that was developed for the i.MX6Quad. The embedded package is not
 functionality, nor was it optimized for performance in any way. The embedded package
 just aims to provide a template for how drivers can be written in the Go language.
 It currently includes drivers for the UART, SPI, PWM, GIC, USDHC, GPIO, and GPT peripherals.
-The embedded package also includes an implementation of the FAT32 file system, which is used
-for the lasrer projector (\ref{sec:laser}).
+The embedded package also includes an implementation of the FAT32 file system, which is 
+currently unused.
+%%used
+%%for the laser projector (\ref{sec:laser}).
 
 %%GERT is evaluated in conditions that are representative of embedded workloads.
 %%The first few tests are benchmarks which measure GERT's maximum interrupt
@@ -83,25 +88,31 @@ Results are shown in figure \ref{fig:toggle}.
   \caption{GPIO Toggle Rates of Different Platforms}  \label{fig:toggle}
 \end{figure}
 
-The results show that GERT does suffer a performance decrease because of
-Go's abstraction cost but it is not clear why GERT underperforms user-space
-Linux C code.
-Without all of the syscalls a user-space program must endure, there should have
-been a speed increase.
+%%The results show that GERT does suffer a performance decrease because of
+%%Go's abstraction cost but it is not clear why GERT underperforms user-space
+%%Linux C code.
+%%Without all of the syscalls a user-space program must endure, there should have
+%%been a speed increase.
 
-The slowdown is caused by Go's interfaces in the embedded package. The GPIO driver
-in the embedded package uses interfaces to abstract all of the different pins.
-In order to toggle a single pin with these interfaces requires 47 instructions:
-2 function calls, 19 loads, and 11 stores. A more performant driver model would
-use static device IDs so that the compiler can infer the toggled pin directly.
-The performance of a static implementation is shown above in the GERT static row
-of figure \ref{fig:toggle}. Even with a static driver model, GERT retains all of
-the benefits of a HLL. It is the programmer's decision which kind driver model to use.
+The results of the pin toggle initially show that GERT underperforms compared to
+user-space Linux C. The reason became clear after tracing GERT's execution in QEMU:
+the slowdown is caused by Go's interfaces in the embedded package. The GPIO driver
+in the embedded package uses Go interfaces to abstract all of the different pins.
+In order to toggle a single pin with an interface requires 47 instructions:
+2 function calls, 19 loads, and 11 stores. In order to increase the toggle speed,
+a new static GPIO driver was developed for GERT. The new driver is just a thin layer
+over the memory-mapped registers. With static device ID's, the toggled pin
+can be inferred at compile time instead of run time.
+The performance of the static driver is also shown in the GERT static row
+of figure \ref{fig:toggle}. With a static driver, GERT is able to toggle a
+pin faster than user-space C code, but it is still very slow compared to
+assembly.
 
-The pin toggle frequencies show that GERT is capable of more efficient
-execution than a userspace C program in Linux. Pin toggle inside of a Linux
-kernel module would likely attain the same performance as GERT, but would lack
-the safety a HLL provides.
+But what if a Linux kernel module toggled the pin instead of userland code?
+Pin toggle from inside a kernel module would certainly be faster than userland
+C and it would also likely be faster than GERT. Operating from within
+kernel space is very dangerous though because it lacks the protections that
+GERT and userspace have.
 
 \section{Interrupt Response Time}\label{sec:int_time}
 This test measures the time it takes GERT to respond to an external event
@@ -179,11 +190,37 @@ GERT and userspace Linux C achieve similar performance on this test.
 Linux just missed a few pulses.
 
 The Teensy registers more pulses than any other platform because of its
-compact and efficient architecture. A dissassembly of the Cortex M4 binary
-reveals that all instructions are encoded in 16bit ARM Thumb, as opposed to
-32bit ARM that armv7A SOCs use. Additionally, the Cortex M4 uses a vectored
-interrupt controller so that the entire length of its interrupt service routine
-is only 5 instructions and has no conditionals.
+compact and efficient architecture. A dissassembly of the Cortex M4 pulse count binary
+reveals a fully vectorized interrupt whose routine only contains 5
+instructions and zero conditional statements.
+
+\section{Concurrent Events}\label{sec:concurrency}
+Since the iMX6 has 4 cores, GERT should be able to concurrently
+register 4 interrupts. The Teensy is configured to produce 10 rising edges
+at 100KHz on a single pin and GERT must concurrently register them on 4 different
+GPIO pins. The sum total of registered edges should be $10\times4=40$.
+
+Because polling is a blocking operation, a multithreaded C program that concurrently
+polls 4 pins is used for this test. The multithreaded C program is also compared
+to a single-threaded program.
+Results are shown in figure \ref{fig:ccounter}.
+
+\begin{figure} [h]
+\begin{center}
+  \begin{tabular}{ | l | l | l | l | l |}
+    \hline
+    Platform & Pulse Count & Pulse Rate & Min Registered & Max Registered \\ \hline
+    GERT & 10 & 100KHz & 36 & 42 \\ \hline
+    Linux C Multithread & 10 & 100KHz & 32 & 33 \\ \hline
+    Linux C & 10 & 100KHz & 9 & 13 \\ \hline
+    \hline
+  \end{tabular}
+\end{center}
+  \caption{Concurrent Pulse Counts of Different Platforms}  \label{fig:ccounter}
+\end{figure}
+
+
+
 
 \section{Benchmark Conclusions}
 
