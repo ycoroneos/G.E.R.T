@@ -567,9 +567,10 @@ In order to store points, a seperate encoding program running
 on a desktop computer encodes an array of $CompactPoint$ structs into
 a Gob object and writes them to a file. Next, a utility called
 \textit{go-bindata} is used to embed the gob file into the laserscanner
-program. Then the laserscanner reads the gob'ed data during initialization \ref{fig:loadpoints}.
+program. Then the laserscanner reads the gob'ed data during initialization.
+Code is shown in \ref{fig:loadpoints}.
 
-\begin{figure}[!b]
+\begin{figure}[h]
 \begin{center}
 \begin{lstlisting}
 var points []CompactPoint
@@ -604,10 +605,23 @@ is a state-space feedback controller which includes \textit{lasermon} in the loo
 this thesis though.
 
 \subsection{Result}
-The most useful feature of Go, for the laser scanner, is its Gob library for point serialization.
-The laser scanner took no user input or external event input. It is not a very complicated program
+\begin{figure}[h]
+  \begin{subfigure}[t!]{0.5\textwidth}
+ \includegraphics[scale=0.4]{csail}
+  \end{subfigure}
+  \begin{subfigure}[t!]{0.5\textwidth}
+ \includegraphics[scale=0.4]{csail}
+  \end{subfigure}
+  \caption{CSAIL Logo Generated vs Traced} \label{fig:trace_v_reality}
+\end{figure}
+The laser scanner programmed with GERT is able to successfully trace an SVG of the CSAIL logo
+at 24Hz (fig \ref{fig:trace_v_reality}). The scan rate is not a limitation of GERT, but the mirror galvos themselves. GERT is
+capable of transmitting points at several megaherts - the rate of its SPI peripheral - but the galvos
+cannot keep up with it.
 
-Gob made it so
-that the most difficult part of the laser projector
+The laser scanner takes no user input or external event input so it is not a very complicated program.
+The most useful feature of Go, for the laser scanner, is the Gob library for point serialization.
+Based on my experience programming other laser scanners in C and 8051 assembly, this one was much easier to implement because
+Go caught every out-of-bounds index error and also prevented memory use errors from ever occuring.
 
 

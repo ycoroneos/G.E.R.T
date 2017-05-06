@@ -1,24 +1,37 @@
 \chapter{Introduction}
 
 Modern embedded systems are composed of multicore SOCs that require
-careful thought about race conditions and event serialization. C is the
-most commonly used language to program such low level systems, but it is
+careful thought about concurrency. C is the
+most commonly used language to program such low level systems because
+it is simple and expressive, but it is
 a double-edged blade. Low level code written in C can more easily and
 directly interface with hardware, but it can also be plagued with
-difficult bugs, especially concurrency-related bugs. Concurrent
-user-space programs, on the other hand, are usually written in a
+difficult bugs, especially concurrency-related bugs and memory bugs like
+use after free.
+
+Concurrent, high-level user space programs that do not directly interface with
+hardware, on the other hand, are usually written in a
 high-level language, such as Rust or Go, which abstracts concurrency
-and provides memory safety.
+and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
+will usually ensure that there is never an out of bounds error, use
+after free error, or unsafe cast. HLL's can also provide native concurrency
+support through primitives like channels. The downsides of HLLs is that those
+nice featues come at a cost of garbage collection and many runtime checks.
+Despite the shortcomings, HLLs are gaining widespread use because computers,
+in general, are getting faster. Now that embedded devices are also very fast,
+the possibility of using an HLL on a performant embedded system is undeniable.
 
 Embedded programmers are often drawn towards using Linux for their work
 because then they can write their embedded program in user space with a
-high level language. Popular platforms that use this paradigm include
+high level language in order to avoid the difficulty and poor concurrency
+support of C. Popular platforms that use this paradigm include
 the Raspi and Beaglebone. However, embedded programs that run in user space suffer
 from significant event latency because external interrupts
-must shuffle their way through the kernel and the kernel's scheduler
-will also constantly preempt the program. Usually, an experienced programmer
-does not even want or need the kernel, but they pay the price just to run the
-high-level code.
+must shuffle their way through the kernel. Additionally, the kernel's scheduler
+will also constantly preempt the program. This performance loss is compounded by the
+performance penalties that HLL's also impose on programs.
+Usually, an experienced programmer does not even want or need the
+kernel, but they pay the price just to run the high-level embedded code.
 
 There are ongoing efforts to bring high-level languages to desktop
 operating system kernels and also single-core microcontrollers, but
@@ -29,28 +42,26 @@ hosting user-space programs. Copper <cite> and MicroPython <cite>
 are small embedded toolkits, written in Rust and Python, which aim
 to provide a high-level programming environment for single-core
 microcontrollers. Multicore SOCs have, so far, been left out of the
-picture. This thesis presents a new embedded toolkit, G.E.R.T, which
+picture. This thesis presents a new embedded toolkit, GERT, which
 is specifically intended for concurrent, bare-metal embedded applications.
 
-G.E.R.T is a bare-metal, Go-based embedded toolkit for multicore ARMv7a processors.
+GERT is a bare-metal, Go-based embedded toolkit for multicore ARMv7a processors.
 It was developed in order to make bare-metal programming
-easier for ARMv7a SOCs with the help of Go's channels and goroutines.
+easier for ARMv7a SOCs with the help of Go's channels, goroutines, and isolation.
 G.E.R.T can run on a single-core processor but its effectiveness is substantially
 reduced because any blocking operation can lock the whole system. On the other hand,
 G.E.R.T will automatically scale to utilize all available cpus in multicore systems
-because the Go runtime automatically scales to all available cpus. It is unlikely
-that a low-level system implemented with G.E.R.T will outperform the same system written in
-good C, but results show that G.E.R.T does outperform userspace
-C code in Linux.
+because the Go runtime automatically scales to all available cpus. GERT is not intended
+to outperform bare-metal C, but rather to provide isolation and native concurrency
+support in a bare-metal environment.
 
-One particular concern about using a garbage-collected language
-for low-level code is GC pause times. This is not an issue in G.E.R.T because interrupt
-handlers can execute even when the world is stopped as long as the interrupt code
-does not call the Go scheduler. This is an acceptable constraint for embedded
-environments because any interrupt code that calls the Go scheduler is performing
-an operation that could potentially block, and blocking operations should not
-be happening during interrupt time in the first place.
-
+One particular concern about using a garbage-collected language, such as Go,
+for low-level code is GC pause times. In Linux, a GC pause prevents the program from
+responding to any input and producing any output; the program is literally paused.
+GERT gets around this issue by allowing interrupt handlers to execute even when the
+world is stopped due to a garbage collection. The only caveat is that interrupt handlers
+cannot contain blocking operations because then execution could funnel into the Go scheduler
+and lead to a catastrophe.
 
 \section{Why Write Low Level System Code in Go?}
 
