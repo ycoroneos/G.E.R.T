@@ -1,69 +1,94 @@
-\chapter{Introduction}
+%%\chapter{Introduction}
+%%
+%%Modern embedded systems are composed of multicore SOCs that require
+%%careful thought about concurrency. C is the
+%%most commonly used language to program such low level systems because
+%%it is simple and expressive, but it is
+%%a double-edged blade. Low level code written in C can more easily and
+%%directly interface with hardware, but it can also be plagued with
+%%difficult bugs, especially concurrency-related bugs and memory bugs like
+%%use after free.
+%%
+%%Concurrent, high-level user space programs that do not directly interface with
+%%hardware, on the other hand, are usually written in a
+%%high-level language, such as Rust or Go, which abstracts concurrency
+%%and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
+%%will usually ensure that there is never an out of bounds error, use
+%%after free error, or unsafe cast. HLL's can also provide native concurrency
+%%support through primitives like channels. The downsides of HLLs is that those
+%%nice featues come at a cost of garbage collection and many runtime checks.
+%%Despite the shortcomings, HLLs are still preferred to C programs because fast,
+%%modern computers negate the performance cost. Now that embedded devices are also very fast,
+%%the possibility of using a HLL on a performant embedded system is undeniable.
+%%
+%%Embedded programmers are often drawn towards using Linux for their work
+%%because then they can write their embedded program in user space with a
+%%high level language in order to avoid the difficulty and poor concurrency
+%%support of C. Popular platforms that use this paradigm include
+%%the Raspi and Beaglebone. However, embedded programs that run in user space suffer
+%%from significant event latency because external interrupts
+%%must shuffle their way through the kernel. Additionally, the kernel's scheduler
+%%will also constantly preempt the program. This performance loss is compounded by the
+%%performance penalties that HLL's also impose on programs.
+%%Usually, an experienced programmer does not even want or need the
+%%kernel, but they pay the price just to run the high-level embedded code.
+%%
+%%Traditional operating systems impose expensive and redundant checks on
+%%high-level programs. For example,
+%%Go already ensures that different threads cannot access each other's memory and that null pointers
+%%will not be dereferenced. The OS is intended to work with buggy C programs though, so it must still switch
+%%page tables when switching processes and be prepared for page faults when bad accesses occur. This machinery
+%%is expensive and redundant for programs written in a HLL. Since embedded applications only run a single
+%%program, it is possible to completely do away with the OS underneath a high-level program and regain the
+%%lost performance without any degredation in safety.
+%%
+%%There are ongoing efforts to bring high-level languages to desktop
+%%operating system kernels and also single-core microcontrollers, but
+%%there is no known system which provides a high-level language environment for
+%%multicore SOCs. Singularity <cite> and Biscuit <cite> are desktop
+%%operating system kernels, written in Sing\# and Go, which focus on
+%%hosting user-space programs. Copper <cite> and MicroPython <cite>
+%%are small embedded toolkits, written in Rust and Python, which aim
+%%to provide a high-level programming environment for single-core
+%%microcontrollers. Multicore SOCs have, so far, been left out of the
+%%picture. This thesis presents a new embedded toolkit, the Golang Embedded
+%%RunTime (GERT), which is specifically intended for concurrent, bare-metal embedded applications.
 
-Modern embedded systems are composed of multicore SOCs that require
-careful thought about concurrency. C is the
-most commonly used language to program such low level systems because
-it is simple and expressive, but it is
-a double-edged blade. Low level code written in C can more easily and
-directly interface with hardware, but it can also be plagued with
-difficult bugs, especially concurrency-related bugs and memory bugs like
-use after free.
+%%GERT is a modified version of the Go runtime that can run faster on bare hardware without an OS.
+%%One of the reasons that programs written in a HLL are slower than the equivalent C
+%%program is because of the redundant isolation mechanisms that the OS provides. For example,
+%%Go already ensures that different threads cannot access each other's memory and that null pointers
+%%will not be dereferenced. The OS is intended to work with buggy C programs though, so it must still switch
+%%page tables when switching processes and be prepared for page faults when bad accesses occur. This machinery
+%%is expensive and redundant for programs written in a HLL.
+%%
+%%Because of this,
+%%it should be OK to run Go threads in the same address space and the OS should not have to maintain
+%%different page tables for each process in a Go program.
+%%
+%%Even though programs written in a HLL are slower than the equivalent C program in userspace,
+%%
+%%HLLs already provide isolation as a language feature so the 
 
-Concurrent, high-level user space programs that do not directly interface with
-hardware, on the other hand, are usually written in a
-high-level language, such as Rust or Go, which abstracts concurrency
-and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
-will usually ensure that there is never an out of bounds error, use
-after free error, or unsafe cast. HLL's can also provide native concurrency
-support through primitives like channels. The downsides of HLLs is that those
-nice featues come at a cost of garbage collection and many runtime checks.
-Despite the shortcomings, HLLs are gaining widespread use because computers,
-in general, are getting faster. Now that embedded devices are also very fast,
-the possibility of using an HLL on a performant embedded system is undeniable.
+%%GERT is a bare-metal, Go-based embedded toolkit for multicore ARMv7a processors.
+%%It was developed in order to make bare-metal programming
+%%easier for ARMv7a SOCs with the help of Go's channels, goroutines, and isolation.
+%%G.E.R.T can run on a single-core processor but its effectiveness is substantially
+%%reduced because any blocking operation can lock the whole system. On the other hand,
+%%G.E.R.T will automatically scale to utilize all available cpus in multicore systems
+%%because the Go runtime automatically scales to all available cpus. GERT is not intended
+%%to outperform bare-metal C, but rather to provide isolation and native concurrency
+%%support in a bare-metal environment.
+%%
+%%One particular concern about using a garbage-collected language, such as Go,
+%%for low-level code is GC pause times. In Linux, a GC pause prevents the program from
+%%responding to any input and producing any output; the program is literally paused.
+%%GERT gets around this issue by allowing interrupt handlers to execute even when the
+%%world is stopped due to a garbage collection. The only caveat is that interrupt handlers
+%%cannot contain blocking operations because then execution could funnel into the Go scheduler
+%%and lead to a catastrophe.
 
-Embedded programmers are often drawn towards using Linux for their work
-because then they can write their embedded program in user space with a
-high level language in order to avoid the difficulty and poor concurrency
-support of C. Popular platforms that use this paradigm include
-the Raspi and Beaglebone. However, embedded programs that run in user space suffer
-from significant event latency because external interrupts
-must shuffle their way through the kernel. Additionally, the kernel's scheduler
-will also constantly preempt the program. This performance loss is compounded by the
-performance penalties that HLL's also impose on programs.
-Usually, an experienced programmer does not even want or need the
-kernel, but they pay the price just to run the high-level embedded code.
-
-There are ongoing efforts to bring high-level languages to desktop
-operating system kernels and also single-core microcontrollers, but
-there is no known system which provides a high-level language environment for
-multicore SOCs. Singularity <cite> and Biscuit <cite> are desktop
-operating system kernels, written in Sing\# and Go, which focus on
-hosting user-space programs. Copper <cite> and MicroPython <cite>
-are small embedded toolkits, written in Rust and Python, which aim
-to provide a high-level programming environment for single-core
-microcontrollers. Multicore SOCs have, so far, been left out of the
-picture. This thesis presents a new embedded toolkit, GERT, which
-is specifically intended for concurrent, bare-metal embedded applications.
-
-GERT is a bare-metal, Go-based embedded toolkit for multicore ARMv7a processors.
-It was developed in order to make bare-metal programming
-easier for ARMv7a SOCs with the help of Go's channels, goroutines, and isolation.
-G.E.R.T can run on a single-core processor but its effectiveness is substantially
-reduced because any blocking operation can lock the whole system. On the other hand,
-G.E.R.T will automatically scale to utilize all available cpus in multicore systems
-because the Go runtime automatically scales to all available cpus. GERT is not intended
-to outperform bare-metal C, but rather to provide isolation and native concurrency
-support in a bare-metal environment.
-
-One particular concern about using a garbage-collected language, such as Go,
-for low-level code is GC pause times. In Linux, a GC pause prevents the program from
-responding to any input and producing any output; the program is literally paused.
-GERT gets around this issue by allowing interrupt handlers to execute even when the
-world is stopped due to a garbage collection. The only caveat is that interrupt handlers
-cannot contain blocking operations because then execution could funnel into the Go scheduler
-and lead to a catastrophe.
-
-\section{Why Write Low Level System Code in Go?}
+\chapter{Why Write System Code in Go?}
 
 At first glance, Go code looks a lot like C. There are no
 classes and every object has a type which is known at compile time.
@@ -73,32 +98,44 @@ goroutines and channels. Goroutines are lightweight threads that
 the Go runtime can schedule without help from the operating system.
 Channels are typed FIFO queues which can help to serialize
 asynchronous events, perhaps coming from several goroutines.
-With these features, Go is like an updated version
-of C for multicore systems, but without buffer overflows and
-null pointer dereferences.
+With these features, writing programs in Go comes naturally to C
+programmers, but with the added bonus that a Go program is also
+memory safe because of runtime checks and a garbage collection system.
+%%With these features, Go feels like an updated version
+%%of C for multicore systems, but without buffer overflows and
+%%null pointer dereferences.
 
-Go's implementation mirrors that of a small
-real-time OS. Go's threads are lightweight and
-cooperatively scheduled so that execution only transfers during
+
+\section{Go Runtime Organization}
+Go's implementation is reminiscent of a small OS. There are three basic
+abstractions in the runtime: G's, M's, and P's. A G, or goroutine, is an
+executable fragment of Go code, like a function or group of functions. Concurrent fragments of Go code each get their
+own G. M's are just OS threads; they can be executing Go code, blocked in a system call,
+or idle. Finally, a P represents a processor, or the resources necessary to
+allow execution. M's cannot execute code unless they are associated with a P.
+It is the Go scheduler's job to associate G's, M's, and P's with each other so
+that code can run. Go's threads are lightweight and
+cooperatively scheduled\footnote{Go code is not totally cooperative because goroutines can be pre-empted during a function call. Users can write critical sections to avoid this though}
+so that execution only transfers during
 blocking operations. The runtime also manages its own pool of memory
 and exports its own atomic primitives through the standard "sync"
 package. In fact, Go provides most of the common OS primitives natively
-in its standard libraries <https://golang.org/pkg/\#stdlib>. This means
-that G.E.R.T can also provide most of the convenience of a full-blown kernel
-without latency degredation.
+in its standard libraries <https://golang.org/pkg/\#stdlib>.
 
-Embedded systems are increasingly relying on dedicated peripherals to
-provide service, instead of very fast cpus. SOCs contain dedicated
-silicon peripherals to help with everything from serial communication to
-interrupt priority filtering. These peripherals free the cpus from bit-banging
-high-frequency signals so they can spend more time directing program
-flow instead. Go fits in well with such a system because its goroutines can be
-used to concurrently monitor state and channels can be used to relay that information
-back to a central coordinator. When an output must be switched, G.E.R.T simply
-issues a driver call that changes the behavior of a peripheral.
+Go relies on the OS for priveleged operations. Since it runs in userspace,
+the Go runtime cannot interface with physical hardware. It relies on the OS
+to provide time, memory, and signals.
 
-\section{Outline}
-Outline the rest of the thesis
+%%Embedded systems are increasingly relying on dedicated peripherals to
+%%provide service, instead of very fast cpus. SOCs contain dedicated
+%%silicon peripherals to help with everything from serial communication to
+%%interrupt priority filtering. These peripherals free the cpus from bit-banging
+%%high-frequency signals so they can spend more time directing program
+%%flow instead. Go fits in well with such a system because its goroutines can be
+%%used to concurrently monitor state and channels can be used to relay that information
+%%back to a central coordinator. When an output must be switched, G.E.R.T simply
+%%issues a driver call that changes the behavior of a peripheral.
+
 
 %Stay tuned!
 %Modern embedded systems are composed of multicore SOCs that require

@@ -1,0 +1,66 @@
+
+\chapter{Introduction}
+
+Modern embedded systems are composed of multicore SOCs that require
+careful thought about concurrency. C is the
+most commonly used language to program such low level systems because
+it is simple and expressive, but it is
+a double-edged blade. Low level code written in C can more easily and
+directly interface with hardware, but it can also be plagued with
+difficult bugs, especially concurrency-related bugs and memory bugs like
+use after free.
+
+Concurrent, high-level user space programs that do not directly interface with
+hardware, on the other hand, are usually written in a
+high-level language, such as Rust or Go, which abstracts concurrency
+and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
+will usually ensure that there is never an out of bounds error, use
+after free error, or unsafe cast. HLL's can also provide native concurrency
+support through primitives like channels. The downsides of HLLs is that those
+nice featues come at a cost of garbage collection and many runtime checks.
+Despite the shortcomings, HLLs are still preferred to C programs because fast,
+modern computers negate the performance cost. Now that embedded devices are also very fast,
+the possibility of using a HLL on a performant embedded system is undeniable.
+
+Embedded programmers are often drawn towards using Linux for their work
+because then they can write their embedded program in user space with a
+high level language in order to avoid the difficulty and poor concurrency
+support of C. Popular platforms that use this paradigm include
+the Raspi and Beaglebone. However, embedded programs that run in user space suffer
+from significant event latency because external interrupts
+must shuffle their way through the kernel. Additionally, the kernel's scheduler
+will also constantly preempt the program. This performance loss is compounded by the
+performance penalties that HLL's also impose on programs.
+Usually, an experienced programmer does not even want or need the
+kernel, but they pay the price just to run the high-level embedded code.
+
+Traditional operating systems impose expensive and redundant checks on
+high-level programs. For example,
+Go already ensures that different threads cannot access each other's memory and that null pointers
+will not be dereferenced. The OS is intended to work with buggy C programs though, so it must still switch
+page tables when switching processes and be prepared for page faults when bad accesses occur. This machinery
+is expensive and redundant for programs written in a HLL. Since embedded applications only run a single
+program, it is possible to completely do away with the OS underneath a high-level program and regain the
+lost performance without any degredation in safety.
+
+There are ongoing efforts to bring high-level languages to desktop
+operating system kernels and also single-core microcontrollers, but
+there is no known system which provides a high-level language environment for
+multicore SOCs. Singularity <cite> and Biscuit <cite> are desktop
+operating system kernels, written in Sing\# and Go, which focus on
+hosting user-space programs. Copper <cite> and MicroPython <cite>
+are small embedded toolkits, written in Rust and Python, which aim
+to provide a high-level programming environment for single-core
+microcontrollers. Multicore SOCs have, so far, been left out of the
+picture. This thesis presents a new embedded toolkit, the Golang Embedded
+RunTime (GERT), which is specifically intended for concurrent, bare-metal embedded applications.
+
+\section{Outline}
+Below is an outline of this thesis.
+\begin{itemize}
+  \item Chapter 2 explains why Go was chosen for GERT and also the basic intuition behind the Go runtime implementation
+  \item Chapter 3 presents the core work of this thesis, or how the runtime was modified to work on bare metal
+  \item Chapter 4 shows how to use GERT, an essential aspect of any toolkit
+  \item Chapter 5 evaluates GERT on embedded benchmarks and also two embedded case studies
+  \item Chapter 6 concludes this thesis with a crystalization of the results and their implication
+\end{itemize}
