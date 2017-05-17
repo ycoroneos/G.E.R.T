@@ -138,12 +138,93 @@ Notice how the GERT loader is recycled, freeing the space it previously used.
   \caption{Handling Go Runtime Syscalls} \label{fig:syscall}
 \end{figure}
 
-GERT maintains data structures that track the state of Go threads outside the runtime's
-knowledge. Whenever the Go runtime makes a syscall
+GERT models the entire Go runtime as a black box whose only entry and exit points
+are through the syscalls it makes. This model is shown in \ref{fig:syscall}. To be clear, there is no such thing as a syscall in GERT.
+Whenever the Go runtime makes a syscall, the processor mode is not changed and a new page table
+is not installed. Instead, every instance of the syscall instruction in the Go runtime has been
+replaced with a function call to $trap$. While execution is in $trap$, the Go runtime believes
+that the OS is servicing its syscall, but in actuality the M is still running Go code inside
+the GERT kernel. GERT maintains data structures that track the state of Go threads
+outside the runtime's knowledge. It is important that all state inside the GERT kernel is
+allocated outside the Go runtime's knowledge either with global variables or the kernel's
+static memory allocator. If this constraint is not observed, then it is possible for the garbage collector
+to potentially recycle memory from the kernel.
+
+Each thread in GERT has an id, status, and trapframe associated with it (\ref{fig:threadtrap}).
+The trap frame records the state of all the registers and the location of the stack at
+the time that the Go runtime made a syscall.
+
+\begin{figure}[h]
+  \begin{lstlisting}
+type thread_t struct {
+	tf       trapframe
+	state    uint32
+	futaddr  uintptr
+	sleeptil timespec
+	id       uint32
+}
+type trapframe struct {
+	lr  uintptr
+	sp  uintptr
+	fp  uintptr
+	r0  uint32
+	r1  uint32
+	r2  uint32
+	r3  uint32
+	r10 uint32
+}
+\end{lstlisting}
+
+  \caption{Thread state and Trapframes} \label{fig:threadtrap}
+\end{figure}
+
+The thread structure also contains a futex address, which is used by the runtime to wake
+sleeping threads, and the time in the future to wake up if the thread is sleeping.
+
+%%\begin{figure}[h]
+%%  \begin{subfigure}[t!]{0.25\textwidth}
+%%  \begin{lstlisting}
+%%type thread_t struct {
+%%	tf       trapframe
+%%	state    uint32
+%%	futaddr  uintptr
+%%	sleeptil timespec
+%%	id       uint32
+%%	lock     Spinlock_t
+%%}
+%%\end{lstlisting}
+%%  \end{subfigure}
+%%  \begin{subfigure}[t!]{0.25\textwidth}
+%%
+%%  \begin{lstlisting}
+%%type trapframe struct {
+%%	lr  uintptr
+%%	sp  uintptr
+%%	fp  uintptr
+%%	r0  uint32
+%%	r1  uint32
+%%	r2  uint32
+%%	r3  uint32
+%%	r10 uint32
+%%}
+%%\end{lstlisting}
+%%
+%%\end{subfigure}
+%%  \caption{Thread state and Trapframes} \label{fig:threadtrap}
+%%\end{figure}
 
 
 
 \subsection{Interrupts}
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[scale=0.25]{interrupt}
+\end{center}
+  \caption{Handling Interrupts in GERT} \label{fig:interrupt}
+\end{figure}
+
+
+
 \subsection{Keeping Time}
 \subsection{Booting Secondary CPUs}
 

@@ -70,6 +70,18 @@ const (
 	INTR_FALLING = 3
 )
 
+//static functions for the toggle benchmark
+//expand these if you want a static GPIO driver
+//go:nosplit
+func Setjp4() {
+	Set(unsafe.Pointer(uintptr(0x209C000)), uint32(0xFFFFFFFF))
+}
+
+//go:nosplit
+func Clearjp4() {
+	Set(unsafe.Pointer(uintptr(0x209C000)), uint32(0x0))
+}
+
 //go:nosplit
 func ClearIntr(gpiobank uint8) {
 	gpio := gpios[gpiobank-1]

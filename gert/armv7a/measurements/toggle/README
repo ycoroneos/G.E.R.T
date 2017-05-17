@@ -8,6 +8,10 @@ linux golang ~127Khz
 linux C ~263KHz
 GERT plan 9 assembly 568KHz
 
+why:
+Since gpio is MMIO, this is actually measuring the time
+it takes to read/write memory
+
 Questions:
 1. Explain why Go is slower than C. Maybe a JTAG trace could help...
 2. Explain the variance in Biscuit. A JTAG trace could help again...
