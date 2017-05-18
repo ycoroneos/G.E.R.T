@@ -31,6 +31,7 @@ func main() {
 	//init the GIC and turn on interrupts
 	fmt.Printf("pre-init ...")
 	pre_init()
+	runtime.Booted = 1
 	fmt.Printf("done!\n")
 
 	//user-provided init code

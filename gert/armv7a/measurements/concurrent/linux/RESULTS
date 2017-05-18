@@ -1,6 +1,12 @@
 Linux C Multithreaded Polling
-32,33,33,34,34, 33,33,33,34,34
+109KHz
 
 Linux C Singlethreaded Polling
 11,9,10,9,9, 10,11,11,10,12
+
+GERT
+126KHz
+
+Go Linux
+75.7KHz
 

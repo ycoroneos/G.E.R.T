@@ -14,10 +14,42 @@ void setup() {
     digitalWrite(i, LOW);
   }
 
+
+volatile int j=0;
   for (int i=0; i<10; ++i) {
-    digitalWrite(12, HIGH);
-    digitalWrite(12, LOW);
+    PORTB= 1<<PB4;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+        //for (j=0; j<1; ++j) {};
+    PORTB=0;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+    j+=1;
+
+            //for (j=0; j<1; ++j) {};
+
+   // digitalWrite(12, HIGH);
+    //for (j=0; j<10; ++j) {};
+    //digitalWrite(12, LOW);
+     //   for (j=0; j<10; ++j) {};
   }
+
+/*
+for (int i=0; i<10; i++) {
+      digitalWrite(12, HIGH);
+    digitalWrite(12, LOW);
+
+}
+*/
+
+
 
   //for (int i=0; i<upto; ++i) {
   //  digitalWrite((i%4)+9, HIGH);
@@ -27,7 +59,7 @@ void setup() {
 
 void loop() {
   digitalWrite(led, HIGH);
-  delay(1000);
-  digitalWrite(led, LOW);
-  delay(1000);
+  //delay(1000);
+  //digitalWrite(led, LOW);
+  //delay(1000);
 }

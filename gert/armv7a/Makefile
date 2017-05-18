@@ -97,7 +97,7 @@ bytecode: test.s
 	$(GCCPREFIX)gcc $(CFLAGS) -c test.s -o test.o
 	$(GCCPREFIX)objdump -d -S test.o
 sdcard:
-	#sudo umount $(SDCARD)1
+	sudo umount $(SDCARD)1
 	sudo mkdosfs $(SDCARD)1 -F 32
 	sudo dd if=./u-boot/SPL of=$(SDCARD) seek=1 bs=1k
 	sudo dd if=./u-boot/u-boot.img of=$(SDCARD) seek=69 bs=1k

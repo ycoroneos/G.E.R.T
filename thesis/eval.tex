@@ -182,8 +182,10 @@ This test measures GERT's ability to count incoming pulses. Missed pulses
 indicate an excessively long interrupt handler that is still executing when the next
 pulse arrives. None of the platforms were configured for re-entrant interrupt handlers
 so they can all potentially miss pulses.
-The pulses are provided by a Xilinx Artix 7 FPGA and they are variable in
-frequency and count. The Linux benchmarks are run with polling again because the
+
+A Xilinx Artix 7 FPGA provides ten pulses to each platform at increasing frequencies
+until each platform misses a single pulse. The Linux benchmarks are run with polling
+again because the
 userspace sysfs driver does not support interrupt attachment.
 Results are shown in figure \ref{fig:counter}.
 
@@ -192,11 +194,11 @@ Results are shown in figure \ref{fig:counter}.
 \begin{center}
   \begin{tabular}{ | l | l | l | l |}
     \hline
-    Platform & Pulse Count & Max Pulse Rate & Missed Pulses \\ \hline
-    Teensy 3.2 & 10 & 2.50MHz & 2 \\ \hline
-    GERT & 10 & 161KHz & 1 \\ \hline
-    Linux C & 10 & 161KHz & 4 \\ \hline
-    Linux Go & 10 & 50KHz & 1 \\
+    Platform & Max Pulse Rate \\ \hline
+    Teensy 3.2 & 2.50MHz\\ \hline
+    GERT & 161KHz\\ \hline
+    Linux C & 149KHz\\ \hline
+    Linux Go & 84KHz\\
     \hline
   \end{tabular}
 \end{center}
@@ -213,33 +215,55 @@ instructions and zero conditional statements.
 
 \section{Concurrent Events}\label{sec:concurrency}
 Since the iMX6 has 4 cores, GERT should be able to concurrently
-register 4 interrupts. The Teensy is configured to produce 10 rising edges
-at 100KHz on a single pin and GERT must concurrently register them on 4 different
-GPIO pins. The sum total of registered edges should be $10\times4=40$.
+register 4 interrupts. In this test, the Teensy is configured to produce
+ten rising edges at increasing frequencies. Each must platform must
+register a total of 40 pulses concurrently. The maximum concurrent
+pulse frequency for each platform before it starts missing pulses is shown in \ref{fig:counter}.
 
-Because polling is a blocking operation, a multithreaded C program that concurrently
-polls 4 pins is used for this test. The multithreaded C program is also compared
-to a single-threaded C program. A multithreaded Go program which uses goroutines
-to monitor pin states is also included.
-Results are shown in figure \ref{fig:ccounter}.
+%%In this test, the Teensy is configured to produce 10 rising edges
+%%at 100KHz on a single pin and GERT must concurrently register them on 4 different
+%%GPIO pins. The sum total of registered edges should be $10\times4=40$.
+
+%%Because polling is a blocking operation, a multithreaded Linux C program that concurrently
+%%polls 4 pins is used for this test. The multithreaded C program is also compared
+%%to a single-threaded C program. A multithreaded Go program which uses goroutines
+%%to monitor pin states is also included.
+%%Results are shown in figure \ref{fig:ccounter}.
+
+%%\begin{figure} [h]
+%%\begin{center}
+%%  \begin{tabular}{ | l | l | l | l | l |}
+%%    \hline
+%%    Platform & Pulse Count & Pulse Rate & Min Registered & Max Registered \\ \hline
+%%    GERT & 10 & 100KHz & 36 & 42 \\ \hline
+%%    Linux C Multithread & 10 & 100KHz & 32 & 33 \\ \hline
+%%    Linux C & 10 & 100KHz & 9 & 13 \\ \hline
+%%    Linux Go & 10 & 100KHz & TBD & TBD \\
+%%    \hline
+%%  \end{tabular}
+%%\end{center}
+%%  \caption{Concurrent Pulse Counts of Different Platforms}  \label{fig:ccounter}
+%%\end{figure}
 
 \begin{figure} [h]
 \begin{center}
-  \begin{tabular}{ | l | l | l | l | l |}
+  \begin{tabular}{ | l | l |}
     \hline
-    Platform & Pulse Count & Pulse Rate & Min Registered & Max Registered \\ \hline
-    GERT & 10 & 100KHz & 36 & 42 \\ \hline
-    Linux C Multithread & 10 & 100KHz & 32 & 33 \\ \hline
-    Linux C & 10 & 100KHz & 9 & 13 \\ \hline
-    Linux Go & 10 & 100KHz & TBD & TBD \\
+    Platform & Pulse Rate \\ \hline
+    GERT & 126KHz \\ \hline
+    Linux C Multithread & 109KHz \\ \hline
+    Linux Go & 75.7KHz \\
     \hline
   \end{tabular}
 \end{center}
   \caption{Concurrent Pulse Counts of Different Platforms}  \label{fig:ccounter}
 \end{figure}
 
+GERT can register concurrent external events at a slightly faster frequency than a multithreaded C program.
+Also keep in mind that all of the Linux benchmark programs must poll in a tight loop. Polling is unlikely in a
+real-world scenario because the cpu has other work to perform. GERT uses a true interrupt handler so that cpus
+running GERT can be pulled away from any work they're doing in order to service the interrupt.
 
-<talk talk talk>
 
 \section{Benchmark Conclusions}
 
@@ -247,7 +271,7 @@ Despite being written in a HLL, GERT can usually outperform userspace
 Linux C code in the benchmarks that were conducted. GERT's performance trailed
 Linux in the GPIO toggle test but, after changing the driver to a static model,
 it also beat Linux in that test too. This is a promising result because it shows
-that a HLL that provides the same isolations as a userspace can run on bare metal
+that a HLL that provides the same isolations as an OS kernel can run on bare metal
 and achieve higher performance.
 
 Unlike Linux, GERT utilizes a true interrupt handler for delivering events.
