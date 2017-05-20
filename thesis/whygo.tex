@@ -139,7 +139,7 @@ and the lack of a $free()$ function.
 Instead of letting the programmer free memory, Go
 has a garbage collector which automatically frees memory with no incoming pointers.
 The garbage collector is a costly abstraction though because it must scan through all
-the pointers in the program. In the worst case scenario, the program must be checkpointed and
+the pointers in the program. In the worst case scenario, the program must be
 stopped while the GC runs, but recent improvements to Go have enabled concurrent garbage collection.
 GC pauses are still noticeable though.
 

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"./embedded"
+	//	"./embedded"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -12,24 +13,24 @@ var count1, count2, count3, count4 uint32
 
 func user_init() {
 
-	//play with the SD card a bit
-	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
-	if !good {
-		fmt.Println("fat32 init failure")
-	}
-	fmt.Println(root.Getfilenames())
-	fmt.Println(root.Getsubdirnames())
-	good, bootdir := root.Direnter("BOOT")
-	if !good {
-		panic("dir entry failed")
-	} else {
-		fmt.Println(bootdir.Getfilenames())
-		good, contents := bootdir.Fileread("UENV.TXT")
-		if !good {
-			panic("file read failure")
-		}
-		fmt.Println(string(contents))
-	}
+	//	//play with the SD card a bit
+	//	good, root := embedded.Fat32_som_start(embedded.Init_som_sdcard, embedded.Read_som_sdcard)
+	//	if !good {
+	//		fmt.Println("fat32 init failure")
+	//	}
+	//	fmt.Println(root.Getfilenames())
+	//	fmt.Println(root.Getsubdirnames())
+	//	good, bootdir := root.Direnter("BOOT")
+	//	if !good {
+	//		panic("dir entry failed")
+	//	} else {
+	//		fmt.Println(bootdir.Getfilenames())
+	//		good, contents := bootdir.Fileread("UENV.TXT")
+	//		if !good {
+	//			panic("file read failure")
+	//		}
+	//		fmt.Println(string(contents))
+	//	}
 	//embedded.WB_JP4_4.SetOutput()
 	//embedded.WB_JP4_6.SetOutput()
 	count1 = 0
@@ -62,30 +63,16 @@ func user_init() {
 
 	//start a little watch
 	//go embedded.Gopherwatch()
+	fmt.Println("pi is about ", pi(100))
 	fmt.Println("about to loop")
 }
 
 var oldcount uint32
 
 func user_loop() {
-	//	embedded.WB_JP4_6.SetLO()
-	//	embedded.WB_JP4_6.SetHI()
-	//	if ping {
-	//		fmt.Printf("count is %d\n", count)
-	//		ping = false
-	//	}
 	total := count1 + count2 + count3 + count4
-	//total := count[0] + count[1] + count[2] + count[3]
 	diff := total - oldcount
 	fmt.Printf("count is %d\n", diff)
 	oldcount = total
 	time.Sleep(1 * time.Second)
-}
-
-//go:nosplit
-func inc() {
-	//	count += 1
-	//	//	if count%5 == 0 {
-	//	//		ping = true
-	//	//	}
 }

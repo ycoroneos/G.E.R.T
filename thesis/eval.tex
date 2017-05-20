@@ -21,7 +21,7 @@ speed in creating and responding to external events. Pin toggle (\ref{sec:pin_to
 measures the maximum pin toggle frequency. Interrupt response time (\ref{sec:int_time})
 measures the time it takes to respond to an external interrupt. Pulse counting
 (\ref{sec:pulse_count}) counts number of pulses at increasing frequencies.
-Concurrent response (\ref{sec:concurrent}) measures how many external events
+Concurrent response (\ref{sec:concurrency}) measures how many external events
 GERT can concurrently respond to.
 
 The second question is harder to answer because difficulty is a subjective
@@ -36,8 +36,10 @@ In all tests, GERT is run on an i.MX6Quad SOC and all measurements are taken
 with a Rigol DS1054Z oscilloscope. When GERT is compared to Linux, the SOC
 runs Debian 8 "Jessie" with hardfloat support. GERT is also occasionally
 compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 uses a Cortex M4, which is specifically
-intended for microcontroller applications, and has good real-time performance. Its event
-response times represent a good comparison point for GERT and Linux. The Teensy platform
+intended for microcontroller applications, and has good real-time performance. Even though
+the Cortex M4 has a vastly different architecture and purpose than the iMX6, its event
+response times represent a good target for GERT and Linux.
+The Teensy platform
 has poor concurrency support though because its Cortex M4 is a single core processor.
 %%and it only has 64 kilobytes of RAM.
 
@@ -47,7 +49,7 @@ driver library that was developed for the i.MX6Quad. The embedded package is not
 functionality, nor was it optimized for performance in any way. The embedded package
 just aims to provide a template for how drivers can be written in the Go language.
 It currently includes drivers for the UART, SPI, PWM, GIC, USDHC, GPIO, and GPT peripherals.
-The embedded package also includes an implementation of the FAT32 file system, which is 
+The embedded package also includes an implementation of the FAT32 file system, which is
 currently unused.
 %%used
 %%for the laser projector (\ref{sec:laser}).
@@ -122,14 +124,14 @@ over the memory-mapped registers. With static device ID's, the toggled pin
 can be inferred at compile time instead of run time.
 The performance of the static driver is also shown in the GERT static row
 of figure \ref{fig:toggle}. With a static driver, GERT is able to toggle a
-pin faster than user-space C code, but it is still very slow compared to
+pin faster than user-space C code, but it is still slow compared to
 assembly.
 
-But what if a Linux kernel module toggled the pin instead of userland code?
-Pin toggle from inside a kernel module would certainly be faster than userland
-C and it would also likely be faster than GERT. Operating from within
-kernel space is very dangerous though because it lacks the protections that
-GERT and userspace have.
+%%But what if a Linux kernel module toggled the pin instead of userland code?
+%%Pin toggle from inside a kernel module would certainly be faster than userland
+%%C and it would also likely be faster than GERT. Operating from within
+%%kernel space is very dangerous though because it lacks the protections that
+%%GERT and userspace have.
 
 \section{Interrupt Response Time}\label{sec:int_time}
 This test measures the time it takes GERT to respond to an external event
@@ -173,8 +175,8 @@ IO is performed by reading/writing from the appropriate file. In response to an 
 the Linux kernel sets a flag on the file descriptor which means that there is data to read. The userspace
 program does not actually see the data until it is scheduled again.
 
-As before, a Linux kernel module would likely attain the same performance as GERT
-(or even more), but would lose the benefits of a HLL.
+%%As before, a Linux kernel module would likely attain the same performance as GERT
+%%(or even more), but would lose the benefits of a HLL.
 
 
 \section{Pulse Counting}\label{sec:pulse_count}
