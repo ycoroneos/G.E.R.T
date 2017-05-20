@@ -259,6 +259,21 @@ pulse frequency for each platform before it starts missing pulses is shown in \r
   \caption{Concurrent Pulse Counts of Different Platforms}  \label{fig:ccounter}
 \end{figure}
 
+A peculiar observation is that each platform cannot register concurrent events as fast as a single
+event. This due to the serial architecture of the ARM Generic Interrupt Controller (GIC for short).
+The GIC is composed of two main subsystems: the interrupt distributer and multiple CPU interfaces.
+The task of the distributor is to aggregate all pending interrupts and distribute them to each cpu
+in a priority order. The distributor waits for the cpu interface to acknowledge the highest priority
+interrupt before distributing the next interrupt.
+Unfortunately, the distributor cannot concurrently distribute interrupts even if
+each one must go to a different cpu interface. This behavior of the ARM GIC is quite disheartening
+for ARM SOCs because, even though it allows for concurrent \textit{detection}, it does not allow for
+concurrent processing of interrupts. The GIC's sequential nature means that interrupt handling latency
+is linear in the number of concurrent external events and length of the interrupt handler. A quick way
+to reduce the apparent length of the interrupt handler is to immediately acknowledge a pending interrupt
+before it is serviced. This allows for the distributor to signal the next interrupt more quickly but it does
+not remove the linear time constraint.
+
 GERT can register concurrent external events at a slightly faster frequency than a multithreaded C program.
 Also keep in mind that all of the Linux benchmark programs must poll in a tight loop. Polling is unlikely in a
 real-world scenario because the cpu has other work to perform. GERT uses a true interrupt handler so that cpus

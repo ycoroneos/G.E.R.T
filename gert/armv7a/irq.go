@@ -22,6 +22,7 @@ func irq(irqnum uint32) {
 	//		irqchan <- runtime.Cpunum()
 	//	}
 
+	//cpunum := runtime.Cpunum()
 	if irqnum == 103 {
 		count1++
 		embedded.ClearIntr(3)

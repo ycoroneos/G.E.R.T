@@ -8,6 +8,8 @@ import (
 
 var count1, count2, count3, count4 uint32
 
+//var count [4]uint32
+
 func user_init() {
 
 	//play with the SD card a bit
@@ -43,10 +45,14 @@ func user_init() {
 	embedded.WB_JP4_10.EnableIntr(embedded.INTR_RISING, inc)
 	embedded.WB_JP4_12.SetInput()
 	embedded.WB_JP4_12.EnableIntr(embedded.INTR_RISING, inc)
-	embedded.Enable_interrupt(103, 0) //send GPIO3 interrupt to CPU0
-	embedded.Enable_interrupt(109, 1) //send GPIO6 interrupt to CPU1
-	embedded.Enable_interrupt(99, 2)  //send GPIO1 interrupt to CPU2
-	embedded.Enable_interrupt(110, 3) //send GPIO7 interrupt to CPU3
+	//embedded.Enable_interrupt_mask(103, embedded.GICcpumask([]uint8{0, 1, 2, 3}), 0) //send GPIO3 interrupt to CPU0
+	embedded.Enable_interrupt_mask(103, embedded.GICcpumask([]uint8{0}), 0) //send GPIO3 interrupt to CPU0
+	embedded.Enable_interrupt_mask(109, embedded.GICcpumask([]uint8{1}), 1) //send GPIO3 interrupt to CPU0
+	embedded.Enable_interrupt_mask(99, embedded.GICcpumask([]uint8{2}), 2)  //send GPIO3 interrupt to CPU0
+	embedded.Enable_interrupt_mask(110, embedded.GICcpumask([]uint8{3}), 3) //send GPIO3 interrupt to CPU0
+	//	embedded.Enable_interrupt(109, 1, 1) //send GPIO6 interrupt to CPU1
+	//	embedded.Enable_interrupt(99, 2, 2)  //send GPIO1 interrupt to CPU2
+	//	embedded.Enable_interrupt(110, 3, 3) //send GPIO7 interrupt to CPU3
 
 	//send the GPT interrupt to CPU1
 	//embedded.Enable_interrupt(87, 1)
@@ -59,6 +65,8 @@ func user_init() {
 	fmt.Println("about to loop")
 }
 
+var oldcount uint32
+
 func user_loop() {
 	//	embedded.WB_JP4_6.SetLO()
 	//	embedded.WB_JP4_6.SetHI()
@@ -66,8 +74,12 @@ func user_loop() {
 	//		fmt.Printf("count is %d\n", count)
 	//		ping = false
 	//	}
-	fmt.Printf("count is %d\n", count1+count2+count3+count4)
-	time.Sleep(2 * time.Second)
+	total := count1 + count2 + count3 + count4
+	//total := count[0] + count[1] + count[2] + count[3]
+	diff := total - oldcount
+	fmt.Printf("count is %d\n", diff)
+	oldcount = total
+	time.Sleep(1 * time.Second)
 }
 
 //go:nosplit

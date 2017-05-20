@@ -23,7 +23,7 @@ volatile int j=0;
     j+=1;
     j+=1;
     j+=1;
-    j+=1;
+    //j+=1;
         //for (j=0; j<1; ++j) {};
     PORTB=0;
     j+=1;
@@ -31,7 +31,7 @@ volatile int j=0;
     j+=1;
     j+=1;
     j+=1;
-    j+=1;
+    //j+=1;
 
             //for (j=0; j<1; ++j) {};
 

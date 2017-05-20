@@ -127,12 +127,28 @@ func GIC_init(checks bool) {
 
 }
 
-func Enable_interrupt(num uint32, cpunum uint32) {
-	gic_distributor.interrupt_priority_registers[num] = 0                        // highest priority
+func GICcpumask(cpus []uint8) uint8 {
+	out := uint8(0)
+	for _, c := range cpus {
+		out |= 1 << c
+	}
+	return out
+}
+
+func Enable_interrupt(num uint32, cpunum uint32, priority uint8) {
+	gic_distributor.interrupt_priority_registers[num] = priority                 // highest priority
 	gic_distributor.interrupt_security_registers[num/32] &= ^(1 << (num & 0x1F)) // disable security
 	//gic_distributor.interrupt_processor_targets_registers[num] |= uint8(cpunum & 0xFF) // send to CPU 0
 	gic_distributor.interrupt_processor_targets_registers[num] = uint8((0x1 << cpunum) & 0xFF) // send to CPU 0
 	gic_distributor.interrupt_set_enable_registers[num/32] = 1 << (num & 0x1F)                 // enable the interrupt
+}
+
+func Enable_interrupt_mask(num uint32, cpumask uint8, priority uint8) {
+	gic_distributor.interrupt_priority_registers[num] = priority                 // highest priority
+	gic_distributor.interrupt_security_registers[num/32] &= ^(1 << (num & 0x1F)) // disable security
+	//gic_distributor.interrupt_processor_targets_registers[num] |= uint8(cpunum & 0xFF) // send to CPU 0
+	gic_distributor.interrupt_processor_targets_registers[num] = cpumask       // send to CPUs
+	gic_distributor.interrupt_set_enable_registers[num/32] = 1 << (num & 0x1F) // enable the interrupt
 }
 
 func Sgi(num uint32, cpus uint32) {
