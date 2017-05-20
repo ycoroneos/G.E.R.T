@@ -1,9 +1,8 @@
 package main
 
 import (
-	//	"./embedded"
+	"./embedded"
 	"fmt"
-	"math"
 	"time"
 )
 
@@ -39,13 +38,13 @@ func user_init() {
 	count4 = 0
 	//	ping = false
 	embedded.WB_JP4_6.SetInput()
-	embedded.WB_JP4_6.EnableIntr(embedded.INTR_RISING, inc)
+	embedded.WB_JP4_6.EnableIntr(embedded.INTR_RISING)
 	embedded.WB_JP4_8.SetInput()
-	embedded.WB_JP4_8.EnableIntr(embedded.INTR_RISING, inc)
+	embedded.WB_JP4_8.EnableIntr(embedded.INTR_RISING)
 	embedded.WB_JP4_10.SetInput()
-	embedded.WB_JP4_10.EnableIntr(embedded.INTR_RISING, inc)
+	embedded.WB_JP4_10.EnableIntr(embedded.INTR_RISING)
 	embedded.WB_JP4_12.SetInput()
-	embedded.WB_JP4_12.EnableIntr(embedded.INTR_RISING, inc)
+	embedded.WB_JP4_12.EnableIntr(embedded.INTR_RISING)
 	//embedded.Enable_interrupt_mask(103, embedded.GICcpumask([]uint8{0, 1, 2, 3}), 0) //send GPIO3 interrupt to CPU0
 	embedded.Enable_interrupt_mask(103, embedded.GICcpumask([]uint8{0}), 0) //send GPIO3 interrupt to CPU0
 	embedded.Enable_interrupt_mask(109, embedded.GICcpumask([]uint8{1}), 1) //send GPIO3 interrupt to CPU0
@@ -63,8 +62,6 @@ func user_init() {
 
 	//start a little watch
 	//go embedded.Gopherwatch()
-	fmt.Println("pi is about ", pi(100))
-	fmt.Println("about to loop")
 }
 
 var oldcount uint32

@@ -179,7 +179,7 @@ func (pin GPIO_pin) GetPinNum() uint32 {
 	return GetPinNum(pin.base, pin.offset)
 }
 
-func (pin GPIO_pin) EnableIntr(mode uint8, intr_func func()) {
+func (pin GPIO_pin) EnableIntr(mode uint8) {
 	mode &= 0x3
 	//int_table[pin.base-1][pin.offset] = intr_func
 	if pin.offset >= 16 {

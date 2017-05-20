@@ -1,0 +1,11 @@
+This is an interrupt throughput test. FPGA generates a single clock and simulataneously
+delivers it to input pins. #simulataneous inputs goes with #of cores dedicated. The purpose
+is to see how many events/sec a single core can handle and how it scales with more events+cores.
+
+RESULTS:
+           1 core/event    2 core/event      3 core/event      4 core/event
+GERT           131KHz           262KHz           375KHz             504KHz
+Linux C        96KHz            186KHz           276KHz             355KHz
+Linux Go       47KHz            93KHz            138KHz             174KHz
+
+
