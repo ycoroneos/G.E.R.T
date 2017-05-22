@@ -72,7 +72,6 @@ void poll(int pinfd)
     oldc=c;
     lseek(pinfd, 0, SEEK_SET);
   }
-//  count-=1;
   printf("count is %d\n", count);
 }
 

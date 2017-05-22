@@ -5,12 +5,14 @@ neglect to show how to use it.
 
 \section{API Inspiration}
 GERT's API is based on Arduino's because of its remarkable simplicity. In order to
-get started with GERT, the programmer must only implement three functions: \textit{user\_init},
+get started with GERT on a Freescale iMX6 SOC, the programmer must only implement three functions: \textit{user\_init},
 \textit{user\_loop} and \textit{irq}. \textit{user\_init} should contain code that is run only once
 on startup, \textit{user\_loop} should contain the main event loop of the embedded program, and
 \textit{irq} is the IRQ handler. The programmer must make sure that \textit{irq} never executes
-a blocking Go function since interrupts are allowed to be serviced while the world is stopped for
-a garbage collection.
+a blocking Go function or allocates memory on the Go heap with \textit{make()}
+since interrupts are allowed to be serviced while the world is stopped for
+a garbage collection. This effectively limits interrupt service routines to toggling
+global boolean flags and deterministic memory reads/writes.
 
 \section{Building a GERT Program}
 
@@ -26,9 +28,9 @@ and entry point to start on bare metal. The directory structure of a GERT
 program is shown in fig. \ref{fig:dtree}. The boot directory contains the GERT
 bootloader as well as linker script for it. Userprog.go and irq.go contain
 the user-implemented functions as well as the user-implemented irq handler.
-Kernel.go does two mundane things: it defines a new entry point for the Go runtime
-which just sets a flag so the runtime knows it is booting on bare metal, and
-it also finishes booting additional CPUs and configures the ARM GIC. The makefile
+Kernel.go does three mundane things: it defines a new entry point for the Go runtime
+(which just sets a flag so the runtime knows it is booting on bare metal),
+it also finishes booting additional CPU's, and it configures the ARM Generic Interrupt Controller for normal operation. The makefile
 is responsible for stitching the bootloader and GERT program together into an
 sdcard image for u-boot. It uses \textit{go build} to build the GERT program
 with the modified Go runtime and then it inserts the GERT program as a binary blob
@@ -38,7 +40,7 @@ u-boot and the final GERT binary to an sdcard.
 \section{Design Considerations}
 Every SOC has a different memory map and peripherals, so GERT must be adjusted
 accordingly. In order to change the link address of GERT, pass "-T <link address>"
-as a link flag into \textit{go build}. The link addess of the bootloader also needs
+as a link flag into \textit{go build}. The link address of the bootloader also needs
 to be changed too inside link.ld. It is good practice to link the bootloader in an
 area of RAM that can be reclaimed once GERT enables paging.
 

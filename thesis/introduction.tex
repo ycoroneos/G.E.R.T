@@ -1,7 +1,14 @@
 
 \chapter{Introduction}
 
-Modern embedded systems are composed of multicore SOCs that require
+This thesis investigates the feasibility of using a type-safe,
+high-level, garbage-collected language for bare-metal programs
+on a multi-core SOC. They key hypothesis is that the operating system
+provides redundant and costly isolation to the HLL running in user space.
+
+\section{Motivation}
+
+Modern embedded systems are composed of multi-core SOCs that require
 careful thought about concurrency. C is the
 most commonly used language to program such low level systems because
 it is simple and expressive, but it is
@@ -16,9 +23,9 @@ high-level language, such as Rust or Go, which abstracts concurrency
 and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
 will usually ensure that there is never an out of bounds error, use
 after free error, or unsafe cast. HLL's can also provide native concurrency
-support through primitives like channels. The downsides of HLLs is that those
-nice featues come at a cost of garbage collection and many runtime checks.
-Despite the shortcomings, HLLs are still preferred to C programs because fast,
+support through primitives like channels. The downsides of HLL's is that those
+nice features come at a cost of garbage collection and many runtime checks.
+Despite the shortcomings, HLL's are still preferred to C programs because fast,
 modern computers negate the performance cost. Now that embedded devices are also very fast,
 the possibility of using a HLL on a performant embedded system is attractive.
 
@@ -27,33 +34,31 @@ because then they can write their embedded program in user space with a
 high level language in order to avoid the difficulty and poor concurrency
 support of C. Popular platforms that use this paradigm include
 the Raspi and Beaglebone. However, embedded programs that run in user space suffer
-from significant event latency because external interrupts
-must shuffle their way through the kernel. Additionally, the kernel's scheduler
-will also constantly preempt the program. This performance loss is compounded by the
-performance penalties that HLL's also impose on programs.
-Usually, an experienced programmer does not even want or need the
-kernel, but they pay the price just to run the high-level embedded code.
-
-Traditional operating systems impose expensive and redundant checks on
-high-level programs. For example,
-Go already ensures that different threads cannot access each other's memory and that null pointers
-will not be dereferenced. The OS is intended to work with buggy C programs though, so it must still switch
-page tables when switching processes and be prepared for page faults when bad accesses occur. This machinery
-is expensive and redundant for programs written in a HLL. Since embedded applications only run a single
-program, it is possible to completely do away with the OS underneath a high-level program and regain the
-lost performance without any degredation in safety.
+from significant event latency because of OS isolation mechanisms that exist primarily
+for buggy C programs. Memory safe programs written in a HLL do not need to run
+in different address spaces and they already ensure that invalid pointers will not
+be dereferenced, so the OS does not need to waste more CPU time redundantly ensuring
+these properties. Unfortunately, the OS has no way to disable its isolation mechanisms
+for a single program, so embedded programmers who want to use a HLL must accept the unnecessary
+performance penalty.
 
 There are ongoing efforts to bring high-level languages to desktop
 operating system kernels and also single-core microcontrollers, but
 there is no known system which provides a high-level language environment for
-multicore SOCs. Singularity <cite> and Biscuit <cite> are desktop
+multi-core SOCs. Singularity <cite> and Biscuit <cite> are desktop
 operating system kernels, written in Sing\# and Go, which focus on
 hosting user-space programs. Copper <cite> and MicroPython <cite>
-are small embedded toolkits, written in Rust and Python, which aim
+are small embedded tool kits, written in Rust and Python, which aim
 to provide a high-level programming environment for single-core
-microcontrollers. Multicore SOCs have, so far, been left out of the
-picture. This thesis presents a new embedded toolkit, the Golang Embedded
+microcontrollers. Multi-core SOCs have, so far, been left out of the
+picture.
+
+\section{GERT}
+
+This thesis presents a new embedded toolkit, the Golang Embedded
 RunTime (GERT), which is specifically intended for concurrent, bare-metal embedded applications.
+With GERT, programmers can write embedded programs in Go and run them on multi-core bare-metal hardware.
+The Go language, instead of the operating system, provides safety and concurrency abstraction.
 
 \section{Outline}
 Below is an outline of this thesis.
@@ -62,5 +67,5 @@ Below is an outline of this thesis.
   \item Chapter 3 presents the core work of this thesis, or how the runtime was modified to work on bare metal
   \item Chapter 4 shows how to use GERT, an essential aspect of any toolkit
   \item Chapter 5 evaluates GERT on embedded benchmarks and also two embedded case studies
-  \item Chapter 6 concludes this thesis with a crystalization of the results and their implication
+  \item Chapter 6 concludes this thesis with a crystallization of the results and their implication
 \end{itemize}

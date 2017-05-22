@@ -13,7 +13,7 @@ in order to function at all. This means that getting compiled Go code to run bar
 more than just a boot loader, the Go runtime itself must be modified to work without any OS abstractions.
 This poses a bootstrapping problem because any modifications made to the Go runtime's initialization
 process must not inadvertently cause it to use an abstraction that does not yet exist. For example,
-creating a new object with $make()$ during the boot process would be disasterous if the GC has not yet been initialized.
+creating a new object with $make()$ during the boot process would be disastrous if the GC has not yet been initialized.
 Modifying the Go runtime to boot on bare metal is tricky process because all additions should be made
 in a non-destructive way that still preserves all of Go's useful primitives, including the standard library.
 
@@ -71,11 +71,11 @@ bootloader.
 The GERT loader is a C program which sets up the initial Go stack and decompresses the Go kernel
 ELF into RAM. GERT is compiled as a Linux Go program, so the Go runtime expects to find arguments
 and environment variables in its initial stack. This is a convenient channel for passing
-information, so the GERT loader gives the size of the GERT kernel as an input argument. GERT later uses this
-size to determine its location in memory and initialize virtual memory.
+information; for example, the GERT loader uses this to pass the size of the GERT kernel.
+GERT later uses this size to determine its location in memory and initialize virtual memory.
 
 The link address of the GERT binary must be also adjusted on a per-SOC basis in order for the Go
-runtime to avoid using inaccessable memory. By default, Go links and loads at 0x0. This is a disaster
+runtime to avoid using inaccessible memory. By default, Go links and loads at 0x0. This is incorrect
 for most SOCs because they have reserved regions near that address. Fortunately, the Go compiler can
 emit code at a different link addresses so this is not a significant problem.
 
@@ -131,7 +131,7 @@ Even though the
 runtime is linked at a high address, Go still requests memory inside the reserved regions of physical
 memory so a virtual address must be mapped there. GERT also uses paging to create a virtually contiguous
 address space which is easier to manage than a physically discontiguous address space. For example,
-the Go runtime sometimes requests large chunks of continuous memory. It is possble that there is not
+the Go runtime sometimes requests large chunks of continuous memory. It is possible that there is not
 a large enough chunk of physical memory to return due to fragmentation of MMIO peripherals, but there
 will be a big enough chunk in virtual memory. GERT also recycles the bootloader using virtual
 memory by simply marking its occupied area as usable pages.
@@ -139,7 +139,7 @@ memory by simply marking its occupied area as usable pages.
 GERT uses 1MB page tables and it rarely has to reload them. GERT has no userspace or programs
 that must be isolated from each other and the Go runtime only allocates memory infrequently
 and in large chunks. This is the only time that GERT has to reload the page tables.
-This static nature of GERT's memory space means that 4kb pages are unecessary
+This static nature of GERT's memory space means that 4kb pages are unnecessary
 and even costly because they incur a 2-level page translation, unlike 1MB pages which just require
 a 1-level walk. By the time user code starts running in GERT, the runtime has nearly completed
 all of its memory manipulation.
@@ -155,20 +155,44 @@ all of its memory manipulation.
 GERT models the entire Go runtime as a black box whose only entry and exit points
 are through the syscalls it makes. This model is shown in \ref{fig:syscall} along with the
 control flow of \textit{sys\_yield}, which invokes the GERT scheduler. To be clear, there is no such thing as a syscall in GERT;
-it is a single-address space applcation that runs in priveleged mode.
+it is a single-address space application that runs in privileged mode.
 Whenever the Go runtime makes a syscall, the processor mode is not changed and a new page table
 is not installed. Instead, every instance of the syscall instruction in the Go runtime has been
-replaced with a function call to a function called $trap$, the entry point into the GERT kernel.
+replaced with a function call to $trap$, the entry point into the GERT kernel.
 While execution is in $trap$, the Go runtime believes
 that the OS is servicing its syscall, but in actuality the blocked M is still running Go code inside
-the GERT kernel. GERT maintains data structures that track the state of Go threads
+the GERT kernel. The list of Linux syscalls that has to be re-implemented is shown in fig. \ref{fig:syscalls}.
+All syscalls with an * are expensive because they cause a stack switch to the scheduler's stack.
+
+
+\begin{figure} [h]
+\begin{center}
+  \begin{tabular}{ | l | l |}
+    \hline
+    Syscall & Used For \\ \hline
+    exit & crash \\ \hline
+    read & read from a file descriptor. All reads go to UART\\ \hline
+    write & write to a file descriptor. All writes go to UART\\ \hline
+    clone & spawn a new M\\ \hline
+    *select & blocking read operation\\ \hline
+    *yield & yield to scheduler\\ \hline
+    mmap & allocate large chunks of memory\\ \hline
+    *futex & wait for a condition to become true\\ \hline
+    clock\_gettime & goroutine scheduling and time package\\ \hline
+    getpid & runtime cares about its pid\\
+  \end{tabular}
+\end{center}
+  \caption{Linux Syscalls That Are Re-implemented in GERT}  \label{fig:syscalls}
+\end{figure}
+
+GERT also maintains data structures that track the state of Go threads
 outside the runtime's knowledge. It is important that all state inside the GERT kernel is
 allocated outside the Go runtime's knowledge either with global variables or the kernel's
 static memory allocator. If this constraint is not observed, then it is possible for the garbage collector
 to potentially recycle memory from the kernel.
 
-Each thread in GERT has an id, status, and trapframe associated with it (\ref{fig:threadtrap}).
-The trap frame records the state of all the registers and the location of the stack at
+Each thread in GERT has an id, status, futex address, and trapframe associated with it (\ref{fig:threadtrap}).
+The trapframe records the state of all the registers and the location of the stack at
 the time that the Go runtime made a syscall.
 
 \begin{figure}[h]
@@ -195,8 +219,14 @@ type trapframe struct {
   \caption{Thread state and Trapframes} \label{fig:threadtrap}
 \end{figure}
 
-The thread structure also contains a futex address, which is used extensively
-by the Go runtime to wake sleeping threads.
+When threads go to sleep, the CPU stores their execution context in a trapframe.
+When a thread is scheduled, the CPU restores the contents of the thread's last trap
+frame and continues running the thread.
+
+The futex, which stands for \textit{fast user space mutex}, is a useful building block
+that the Linux kernel (and now GERT) provides to help with locking. Linux user space programs can use
+it to wait until a certain condition becomes true, and the Go runtime uses it extensively
+to monitor elapsed time and wake sleeping threads.
 
 %%\begin{figure}[h]
 %%  \begin{subfigure}[t!]{0.25\textwidth}
@@ -235,7 +265,7 @@ by the Go runtime to wake sleeping threads.
 \subsection{Interrupts}
 \begin{figure}[h]
 \begin{center}
-  \includegraphics[scale=0.25]{interrupt}
+  \includegraphics[scale=0.1]{interrupt}
 \end{center}
   \caption{Handling Interrupts in GERT} \label{fig:interrupt}
 \end{figure}
@@ -247,26 +277,49 @@ prevent any Go code from executing. On a desktop OS it might be OK to disable
 interrupts during a GC cycle because it is infrequent, but on an embedded system
 critical interrupts could occur at any time, even while the world is
 stopped. GERT allows interrupts to trigger at all times by assuming that the
-interrupt handler does not perform any blocking operations.
+interrupt handler does not perform any blocking operations. A block diagram
+of the GERT interrupt process is shown in fig. \ref{fig:interrupt}.
 
+GERT's interrupt handlers are written in Go and they execute with the processor
+in IRQ mode. When GERT receives an interrupt, the target processor
+automatically switches its stack to the IRQ stack and then the GERT interrupt handler saves its old context on the IRQ stack.
+Before proceeding any further, the interrupt handler checks a boolean flag to see if GERT has fully booted yet. This is important
+for preventing unintentional Go code from executing while the memory map is still undefined.
+While secretly executing on the interrupt stack, the processor can run any Go code
+as long as it does not invoke the Go scheduler. This is because the Go runtime is unaware
+of any interrupt code that can possibly run so it does not maintain any G's or M's to
+run it. Thus, from the view of the Go runtime, the interrupt handler is running on an unknown secret stack which attaches itself
+to whichever M was interrupted.
 
+Interrupt handlers in GERT should not execute blocking operations or allocate memory from the Go heap.
+The garbage collector is unaware of the hidden interrupt stacks so any heap-allocated objects on the stacks
+will become memory leaks because the GC will never scan it. Fortunately, allocating heap objects in the interrupt
+handler will cause a panic because \textit{make()}, and many other blocking operations, need to acquire
+a lock from the runtime. This is dangerous because the runtime keeps track of which Ms are holding locks
+and interrupt code can violate its beliefs.
 
-GERT's interrupt handlers written in Go and they execute with the processor
-in a different mode. When GERT receives an interrupt, the target processor
-automatically switches its stack to the IRQ stack saves its context on the IRQ stack.
-Before proceeding any further, the interrupt handler 
-While executing on the interrupt stack, the processor can run any Go code
-as long as it does not invoke the Go scheduler. 
+In the context of an interrupt handler, these constraints are totally acceptable. Interrupt
+routines should be short and execute quickly in order to avoid missing sequential
+interrupts. This limits acceptable operations in an interrupt handler to toggling global boolean
+flags and deterministically reading/writing to memory. GERT supports these operations in its interrupt
+handlers.
 
 \subsection{Keeping Time}
 
 Go needs a timer to schedule goroutines properly. GERT uses the 64bit ARM global timer which
-is part of the ARMv7a architecture. In the timer, each tick is about 2$ns$ so this means it will
-not roll over for 1169 years. It would be quite a treat if an SOC running GERT could provide
-continuous use for over a millenium!
+is part of the general ARMv7a architecture. In the timer, each tick is about 2$ns$ so this means it will
+not roll over for 1169 years. This means that GERT does not need a special timer interrupt to know when the
+counter rolls over. The current value of the timer is returned whenever the Go runtime calls
+clock\_gettime by reading from its MMIO address.
 
 \subsection{Booting Secondary CPUs}
 
-
+GERT boots auxiliary CPU's in two stages. After power on, the primary CPU starts executing at address 0x0 but the
+secondary CPU's are held in a \textit{wait for interrupt} state. GERT creates an initial 4kb stack for each additional CPU,
+which also doubles as its interrupt stack, before instructing them into a holding pen. The secondary CPU's
+stay in the holding pen while GERT and the Go runtime finish booting because the virtual memory map is
+in a state of flux. After GERT has booted, the secondary CPU's are instructed to reload their page tables
+and exit the holding pen into the GERT scheduler by the user in the \textit{main} package. After this, the secondary CPU's
+can each run Go threads normally.
 
 

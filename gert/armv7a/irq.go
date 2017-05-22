@@ -11,6 +11,9 @@ import "./embedded"
 * To amend this code, just modify the switch statement to look out for your IRQ
  */
 
+var heapchan chan int
+var didit bool
+
 //go:nosplit
 //go:nowritebarrierec
 func irq(irqnum uint32) {
@@ -23,8 +26,14 @@ func irq(irqnum uint32) {
 	//	}
 
 	//cpunum := runtime.Cpunum()
+	if !didit {
+		//heapchan = make(chan int, 10)
+		didit = true
+	}
+	localvar := make([]int, 1)
+	localvar[0] = 10
 	if irqnum == 103 {
-		count1++
+		count1 = count1 + 1 + uint32(localvar[0])
 		embedded.ClearIntr(3)
 	} else if irqnum == 109 {
 		count2++
