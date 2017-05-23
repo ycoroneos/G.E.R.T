@@ -1,0 +1,26 @@
+\chapter{Conclusion and Future Work}
+
+This thesis has presented GERT as part of an effort to investigate the efficacy of using
+a type-safe, garbage-collected, high-level language on a multi-core embedded system. The premise
+of this idea is that OS kernels provide redundant and costly isolation to programs which
+do not require it because they are written in a HLL. GERT demonstrates, through micro benchmarks,
+that removing the OS
+from an embedded platform and running the high-level code directly on bare metal, can be
+more performant than even a user space C program in Linux. Writing embedded programs with GERT
+is also relatively painless because of Go's concurrency patterns and its portable standard library.
+The goal of this thesis is not to convince everyone to use GERT, but rather to show that performant
+embedded programs do not have to be written in C anymore. HLLs can provide memory safety and concurrency abstractions
+even while running on bare metal.
+
+The GERT project still leaves a few questions unanswered. First of all, GERT was
+never bench marked against bare metal C running on the iMX6. This is because there was not enough time to develop an
+RTOS that could provide similar semantics to Go. Instead, a Teensy with a cortex M4 processor was used
+to establish an ideal latency baseline for an embedded system. GERT is not likely to outperform a well-written
+RTOS, but GERT programs will still be more portable. It is also possible that GERT can exist as
+a kernel module inside of Linux, instead of a stand-alone bootable binary. Since GERT is already
+memory-safe, it should be able to run in kernel mode without crashing the whole system. This is
+an especially desirable avenue to approach because it means that an embedded programmer can have
+the convenience of developing a GERT program in user space before installing it as a kernel
+module where it can run less fettered in kernel mode. Re-spinning GERT as a kernel module may also
+allow it to hook into existing Linux drivers for the network card and the file system, greatly reducing
+the number of drivers that have to be written for each platform.
