@@ -16,7 +16,9 @@ The GERT project still leaves a few questions unanswered. First of all, GERT was
 never bench marked against bare metal C running on the iMX6. This is because there was not enough time to develop an
 RTOS that could provide similar semantics to Go. Instead, a Teensy with a cortex M4 processor was used
 to establish an ideal latency baseline for an embedded system. GERT is not likely to outperform a well-written
-RTOS, but GERT programs will still be more portable. It is also possible that GERT can exist as
+RTOS, but GERT programs will still be more portable.
+
+It is also possible that GERT can exist as
 a kernel module inside of Linux, instead of a stand-alone bootable binary. Since GERT is already
 memory-safe, it should be able to run in kernel mode without crashing the whole system. This is
 an especially desirable avenue to approach because it means that an embedded programmer can have
