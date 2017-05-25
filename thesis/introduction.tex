@@ -3,7 +3,7 @@
 
 This thesis investigates the feasibility of using a type-safe,
 high-level, garbage-collected language for bare-metal programs
-on a multi-core SOC. They key hypothesis is that the operating system
+on a multi-core SOC. We hypothesize that the operating system
 provides redundant and costly isolation to a HLL program running in userspace.
 This can reduce execution speed and increase latency to the point where
 an embedded programmer is forced to use C and lose the benefits of a HLL.
@@ -17,21 +17,21 @@ Modern embedded systems are composed of multi-core SOCs that require
 careful thought about concurrency. C is the
 most commonly used language to program such low level systems because
 it is simple and expressive, but it is
-a double-edged blade. Low level code written in C can more easily and
+a double-edged sword. Low-level code written in C can more easily and
 directly interface with hardware, but it can also be plagued with
 difficult bugs, especially concurrency-related bugs and memory bugs like
-use after free.
+use-after-free.
 
 Concurrent, high-level user space programs that do not directly interface with
 hardware, on the other hand, are usually written in a
 high-level language, such as Rust or Go, which abstracts concurrency
 and provides memory safety. Rust, Go, and other High Level Languages (HLL's)
-will usually ensure that there is never an out of bounds error, use
-after free error, or unsafe cast. HLL's can also provide native concurrency
-support through primitives like channels. The downsides of HLL's is that those
+will usually ensure that there is never an out of bounds error,
+use-after-free error, or unsafe cast. HLL's can also provide native concurrency
+support through primitives like channels. The downsides of HLL's are that those
 nice features come at a cost of garbage collection and many runtime checks.
 Despite the shortcomings, HLL's are still preferred to C programs because fast,
-modern computers can negate the performance cost. Now that embedded devices are also very fast,
+modern computers can neutralize the performance cost. Now that embedded devices are also very fast,
 the possibility of using a HLL on a performant embedded system is attractive.
 
 Embedded programmers are often drawn towards using Linux for their work
@@ -74,5 +74,5 @@ Below is an outline of this thesis.
   \item Chapter 3 presents the core work of this thesis, or how the runtime was modified to work on bare metal
   \item Chapter 4 shows how to use GERT, an essential aspect of any toolkit
   \item Chapter 5 evaluates GERT on embedded benchmarks and also two embedded case studies
-  \item Chapter 6 concludes this thesis with a review of the results and their implication
+  \item Chapter 6 concludes this thesis with a review of the results and their implications
 \end{itemize}

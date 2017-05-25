@@ -15,9 +15,8 @@
 Embedded systems are becoming increasingly complicated due to the emergence of
 SOCs (system-on-a-chip) with multiple cores, dizzying amounts of peripherals, and
 complicated virtual memory systems. Unfortunately, performant embedded systems
-for these SOCs are still largely written from scratch in C because heavy
-operating systems, such as Linux, can introduce more bugs and degrade real-time
-performance.
+for SOCs are still largely written in either bare-metal C or userspace C because
+high-level languages running in userspace can have too much latency.
 
 This thesis proposes a new system called G.E.R.T, the Golang Embedded RunTime,
 for multi-core ARM processors.
