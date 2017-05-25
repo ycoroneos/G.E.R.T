@@ -7,7 +7,7 @@
 \chapter{Evaluation}
 
 With GERT, the programmer should be able to implement concurrent embedded programs
-which are as performant as the equivalent C implementation, but without having to
+which are as performant as the equivalent C implementation without having to
 worry about concurrency abstractions and memory safety bugs. In order to evaluate GERT,
 there are two questions that must be answered:
 
@@ -16,12 +16,12 @@ there are two questions that must be answered:
   \item Do the concurrency patterns of Go simplify the task of the programmer?
 \end{enumerate}
 
-The first question is addressed by micro benchmarks which measure GERT's
+The first question is addressed by microbenchmarks which measure GERT's
 speed in creating and responding to external events. Pin toggle (\ref{sec:pin_toggle})
 measures the maximum pin toggle frequency. Response latency (\ref{sec:int_time})
 measures the minimum time it takes to respond to an external interrupt. Event
 throughput (\ref{sec:thruput}) measures the maximum number of total events that each platform
-can reliably detect, as well as how this amount scales with additional CPU's monitoring
+can reliably detect, as well as how this number scales with additional CPU's monitoring
 more simultaneous events.
 
 %%Pulse counting
@@ -31,8 +31,8 @@ more simultaneous events.
 
 The second question is harder to answer because difficulty is a subjective
 measure. This thesis attempts to show that GERT presents a better framework for
-concurrency through two case studies: a robot sensor platform (\ref{sec:robot})
-,which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
+concurrency through two case studies: a robot sensor platform (\ref{sec:robot}),
+which runs motors and reads sensors, and a galvo laser projector (\ref{sec:laser})
 which traces images onto a surface by rotating mirrors at high speeds. The case studies
 present a real-world experience for using GERT.
 
@@ -44,7 +44,7 @@ runs Debian 8 "Jessie" with hardfloat support. GERT is also occasionally
 compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 \cite{teensy} uses a Cortex M4, which is specifically
 intended for microcontroller applications, and has good real-time performance. Even though
 the Cortex M4 has a vastly different architecture and purpose than the iMX6, its event
-response times represent a good comparison point for GERT and Linux.
+response times provide a good comparison point for GERT and Linux.
 The Teensy platform
 has poor concurrency support though because its Cortex M4 is a single core processor.
 %%and it only has 64 kilobytes of RAM.
@@ -61,7 +61,7 @@ has poor concurrency support though because its Cortex M4 is a single core proce
 %%on a few of the latency tests because of its Cortex M4 processor. All timing
 %%measurements are taken using a Rigol DS1054Z oscilloscope.
 
-\section{Micro benchmarks}
+\section{Microbenchmarks}
 
 \subsection{Pin Toggle Frequency}\label{sec:pin_toggle}
 This test measures the speed at which GERT can toggle a simple GPIO pin on
@@ -319,7 +319,7 @@ power and space requirements.
 %%running GERT can be pulled away from any work they're doing in order to service the interrupt.
 
 
-\section{Micro benchmark Conclusions}
+\section{Microbenchmark Conclusions}
 
 Despite being written in a HLL, GERT can usually outperform userspace
 Linux C code in the benchmarks that were conducted. GERT's performance trailed

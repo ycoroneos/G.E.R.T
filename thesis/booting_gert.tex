@@ -13,13 +13,13 @@ in order to function at all. This means that getting compiled Go code to run bar
 more than just a boot loader, the Go runtime itself must be modified to work without any OS abstractions.
 This poses a bootstrapping problem because any modifications made to the Go runtime's initialization
 process must not inadvertently cause it to use an abstraction that does not yet exist. For example,
-creating a new object with $make()$ during the boot process would be disastrous if the GC has not yet been initialized.
+creating a new object with $make()$ \footnote{In Go, new objects are created with \textit{make}} during the boot process would be disastrous if the GC has not yet been initialized.
 Modifying the Go runtime to boot on bare metal is tricky process because all additions should be made
 in a non-destructive way that still preserves all of Go's useful primitives, including the standard library.
 
 
 In observation of these constraints, GERT boots via a 3-step process as shown in  figure \ref{fig:boot}.
-In step 1, u-boot is used to set up device clocks and load step 2 off of an SD card. Step 2 prepares the
+In step 1, u-boot is used to set up device clocks and load the code for step 2 off of an SD card. Step 2 prepares the
 Go stack with arguments and environment variables before jumping into GERT. Step 3 runs inside of GERT and it
 finishes the boot process by initializing virtual memory, threading, and interrupt handlers.
 
@@ -52,11 +52,11 @@ finishes the boot process by initializing virtual memory, threading, and interru
 %%<memory map of GERT here>
 
 \section{Step 1 Bring Up}
-The u-boot loader is used to initialize device clocks and chain load the GERT bootloader.
-Unlike desktop PCs, SOCs have no BIOS so it is entirely the programmer's job to initialize device clocks
-and power on essential peripherals, such as the memory controller. U-boot is a simple bootloader which abstracts
+Unlike desktop PCs, SOCs have no BIOS, so it is entirely the programmer's job to initialize device clocks
+and power on essential peripherals like the memory controller. U-boot is a simple bootloader which abstracts
 this laborious process for all of the SOCs which it supports. GERT uses it to chain load its own, more specialized,
-bootloader.
+bootloader. The u-boot loader is used to initialize device clocks and execute the GERT bootloader.
+
 
 %%When the SOC is powered on, the program counter starts executing from ROM. The code in the ROM reads
 %%u-boot into RAM and jumps into it. Unlike desktop PCs and laptops which use a BIOS to configure the
@@ -75,9 +75,9 @@ information; for example, the GERT loader uses this to pass the size of the GERT
 GERT later uses this size to determine its location in memory and initialize virtual memory.
 
 The link address of the GERT binary must be also adjusted on a per-SOC basis in order for the Go
-runtime to avoid using inaccessible memory. By default, Go links and loads at 0x0. This is incorrect
+runtime to avoid using inaccessible memory. By default, Go compiler links and loads at 0x0. This is incorrect
 for most SOCs because they have reserved regions near that address. Fortunately, the Go compiler can
-emit code at a different link addresses so this is not a significant problem.
+generate code at a different link addresses by passing in a link-time flag, so this is not a significant problem.
 
 %%Much like Linux, the kernel of GERT is wrapped in a custom
 %%bootloader. This is necessary because GERT is compiled as a user space
@@ -100,7 +100,7 @@ emit code at a different link addresses so this is not a significant problem.
 The Go runtime forms the basis of GERT's functionality but it is not equipped to
 run on bare metal. The final steps of the boot process are accomplished in Go. GERT
 initializes the minimum set of OS abstractions
-which the Go runtime utilizes, before the runtime actually uses them. These abstractions are
+to be used by the Go runtime, before the runtime actually uses them. These abstractions are
 virtual memory, thread scheduling, interrupt handling, timers, and booting secondary cores.
 
 %%The thread scheduler and virtual memory system are statically initialized
@@ -124,7 +124,7 @@ virtual memory, thread scheduling, interrupt handling, timers, and booting secon
   \caption{Memory Map Before and After Boot} \label{fig:gertmap}
 \end{figure}
 
-GERT needs to have virtual memory enabled for the Go runtime to function properly and so
+GERT needs to have virtual memory enabled so the Go runtime can function properly and so
 GERT can manage available memory. Fig. \ref{fig:gertmap} shows the physical memory map
 of an i.MX6 SOC before GERT is booted and after GERT has booted.
 Even though the
@@ -140,7 +140,7 @@ GERT uses 1MB page tables and it rarely has to reload them. GERT has no userspac
 that must be isolated from each other and the Go runtime only allocates memory infrequently
 and in large chunks. This is the only time that GERT has to reload the page tables.
 This static nature of GERT's memory space means that 4kb pages are unnecessary
-and even costly because they incur a 2-level page translation, unlike 1MB pages which just require
+and even costly because they incur a 2-level page translation \footnote{4kb paging in ARMv7a requires $2^11=4096$ entries in the L1 table and $2^8=256$ entries in each L2 table} , unlike 1MB pages which just require
 a 1-level walk. By the time user code starts running in GERT, the runtime has nearly completed
 all of its memory manipulation.
 
@@ -160,7 +160,7 @@ Whenever the Go runtime makes a syscall, the processor mode is not changed and a
 is not installed. Instead, every instance of the syscall instruction in the Go runtime has been
 replaced with a function call to $trap$, the entry point into the GERT kernel.
 While execution is in $trap$, the Go runtime believes
-that the OS is servicing its syscall, but in actuality the blocked M is still running Go code inside
+that the OS is servicing its syscall, but in actuality the blocked thread is still running Go code inside
 the GERT kernel. The list of Linux syscalls that has to be re-implemented is shown in fig. \ref{fig:syscalls}.
 All syscalls with an * are expensive because they cause a stack switch to the scheduler's stack.
 
@@ -245,14 +245,14 @@ in an interrupt handler, as described below.
 When a GC cycle runs, it can potentially stop the world and
 prevent any Go code from executing. On a desktop OS it might be OK to disable
 interrupts during a GC cycle because it is infrequent, but on an embedded system
-critical interrupts could occur at any time, even while the world is
+interrupts could occur at any time, even while the world is
 stopped. GERT allows interrupts to trigger at all times by assuming that the
 interrupt handler does not perform any blocking operations. A block diagram
 of the GERT interrupt process is shown in fig. \ref{fig:interrupt}.
 
-GERT's interrupt handlers are written in Go and they execute with the processor
-in IRQ mode. When GERT receives an interrupt, the target processor
-automatically switches its stack to the IRQ stack and then the GERT interrupt handler saves its old context on the IRQ stack.
+GERT's interrupt handlers are written in Go and they execute on dedicated interrupt stacks.
+When GERT receives an interrupt, the target processor
+automatically switches its stack to the interrupt stack and then the GERT interrupt handler saves its old execution context onto the new stack.
 Before proceeding any further, the interrupt handler checks a boolean flag to see if GERT has fully booted yet. This is important
 for preventing unintentional Go code from executing while the memory map is still undefined.
 While secretly executing on the interrupt stack, the processor can run any Go code
@@ -261,7 +261,7 @@ of any interrupt code that can possibly run so it does not maintain any G's or M
 run it. Thus, from the view of the Go runtime, the interrupt handler is running on an unknown secret stack which attaches itself
 to whichever M was interrupted.
 
-Interrupt handlers in GERT should not execute blocking operations or allocate memory from the Go heap.
+Interrupt handlers in GERT should not execute blocking operations or allocate memory from the Go heap \footnote{Go maintains a pool of free memory from which it allocates new objects. Most computer programs have a heap, not just Go programs.}.
 The garbage collector is unaware of the hidden interrupt stacks so any heap-allocated objects on the stacks
 will become memory leaks because the GC will never scan it. Fortunately, allocating heap objects in the interrupt
 handler will cause a panic because \textit{make()}, and many other blocking operations, need to acquire
@@ -272,15 +272,15 @@ Interrupt
 routines should be short and execute quickly in order to avoid missing sequential
 interrupts. This limits acceptable operations in an interrupt handler to toggling global boolean
 flags and non-blocking reads/writes to memory. A typical GERT program is unaffected by these constraints
-because it can use a goroutine to continuously monitor a flag which is only toggled in the interrupt handler.
+because it can use a goroutine to monitor a flag which is only toggled in the interrupt handler.
 
 \subsection{Keeping Time}
 
 Go needs a timer to schedule goroutines properly. GERT uses the 64bit ARM global timer which
 is part of the general ARMv7a architecture \cite{ddi0406}. In the timer, each tick is about 2$ns$ so this means it will
-not roll over for 1169 years. This means that GERT does not need a special timer interrupt to know when the
+not overflow for 1169 years. This means that GERT does not need a special timer interrupt to know when the
 counter rolls over. The current value of the timer is returned whenever the Go runtime calls
-clock\_gettime by reading from its MMIO address.
+the \textit{clock\_gettime()} syscall by reading from its MMIO address.
 
 \subsection{Booting Secondary CPUs}
 
@@ -288,8 +288,8 @@ GERT boots auxiliary CPU's in two stages. After power on, the primary CPU starts
 secondary CPU's are held in a \textit{wait for interrupt} state. GERT creates an initial 4kb stack for each additional CPU,
 which also doubles as its interrupt stack, before instructing them into a holding pen. The secondary CPU's
 stay in the holding pen while GERT and the Go runtime finish booting because the virtual memory map is
-in a state of flux. After GERT has booted, the secondary CPU's are instructed to reload their page tables
-and exit the holding pen into the GERT scheduler by the user in the \textit{main} package. After this, the secondary CPU's
+in a state of flux. After GERT has booted, the user must call \textit{Release()} which causes the secondary CPU's
+to reload their page tables and exit the holding pen into the GERT scheduler. Now the secondary CPU's
 can each run Go threads normally.
 
 
