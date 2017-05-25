@@ -121,7 +121,7 @@ so that execution only transfers during
 blocking operations. The runtime also manages its own pool of memory
 and exports its own atomic primitives through the standard "sync"
 package. In fact, Go provides most of the common OS primitives natively
-in its standard libraries <https://golang.org/pkg/\#stdlib>.
+in its standard libraries \cite{gostd}.
 
 Go relies on the OS for priveleged operations. Since it runs in userspace,
 the Go runtime cannot interface with physical hardware so it uses the OS
@@ -140,12 +140,13 @@ Instead of letting the programmer free memory, Go
 has a garbage collector which automatically frees memory with no incoming pointers.
 The garbage collector is a costly abstraction though because it must scan through all
 the pointers in the program. In the worst case scenario, the program must be
-stopped while the GC runs, but recent improvements to Go have enabled concurrent garbage collection.
+stopped while the GC runs, but recent improvements to Go have enabled concurrent garbage collection \cite{gogc}.
 GC pauses are still noticeable though.
 
 Compared to C, the properties of Go might seem like training wheels, but this is exactly
 the point. The majority of bugs in a C program can be traced to an out of bounds access
-(buffer overruns), use-after-free, or null pointer dereference. These issues are so commonplace that OS kernels
+(buffer overruns), use-after-free, or null pointer dereference \cite{cbugs}. These issues are so commonplace in userspace
+programs, that OS kernels
 attempt to preempt the problem by inserting guard pages all over the user program's
 address space. In a bare-metal embedded system, though, there is no kernel which can help
 mitigate the effects of a memory safety bug. The outcome of triggering a memory safty bug in an
@@ -190,9 +191,7 @@ way and an unintentional way. In an embedded system, the danger of a
 GC collection lies in missing external events. The way GERT intentionally mitigates
 the effects of the garbage collector is by allowing interrupts to be serviced
 even while the world is stopped. This is possible as long as the interrupt
-handler does not execute a blocking operation. Most embedded systems have bounded
-inputs and outputs so this allows for the same memory to be reused.
-
+handler does not execute a blocking operation.
 %%It relies on the OS
 %%to provide time, memory, and signals.
 

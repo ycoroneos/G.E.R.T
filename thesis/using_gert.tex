@@ -8,11 +8,19 @@ GERT's API is based on Arduino's because of its remarkable simplicity. In order 
 get started with GERT on a Freescale iMX6 SOC, the programmer must only implement three functions: \textit{user\_init},
 \textit{user\_loop} and \textit{irq}. \textit{user\_init} should contain code that is run only once
 on startup, \textit{user\_loop} should contain the main event loop of the embedded program, and
-\textit{irq} is the IRQ handler. The programmer must make sure that \textit{irq} never executes
-a blocking Go function or allocates memory on the Go heap with \textit{make()}
-since interrupts are allowed to be serviced while the world is stopped for
-a garbage collection. This effectively limits interrupt service routines to toggling
-global boolean flags and deterministic memory reads/writes.
+\textit{irq} is the IRQ handler.
+
+\section{Writing Interrupt Handlers}
+
+Since interrupts can happen even while the world is stopepd, the programmer must make sure that \textit{irq} never executes
+a blocking Go function or allocates memory on the Go heap with \textit{make()}. These constraints are
+easily manageable by breaking the program interrupt logic into two pieces: a monitoring
+goroutine which watches a boolean flag, and the interrupt service routine which sets the flag.
+For example, a NIC driver may use interrupts to determine when a new frame should be retrieved
+from the NIC. Rather than reading the new frame in the interrupt routine, the NIC driver
+can set a flag in the interrupt routine so that a seperate thread inside the NIC driver can retrieve
+the new frame. This seperate thread is just an ordinairy goroutine with no constraints on the type
+of code it can execute.
 
 \section{Building a GERT Program}
 
@@ -23,7 +31,7 @@ global boolean flags and deterministic memory reads/writes.
   \caption{GERT Program Directory Layout} \label{fig:dtree}
 \end{figure}
 
-GERT is a modified version of the Go runtime but it needs a bootloader
+GERT needs a bootloader
 and entry point to start on bare metal. The directory structure of a GERT
 program is shown in fig. \ref{fig:dtree}. The boot directory contains the GERT
 bootloader as well as linker script for it. Userprog.go and irq.go contain

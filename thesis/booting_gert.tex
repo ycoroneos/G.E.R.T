@@ -179,7 +179,7 @@ All syscalls with an * are expensive because they cause a stack switch to the sc
     mmap & allocate large chunks of memory\\ \hline
     *futex & wait for a condition to become true\\ \hline
     clock\_gettime & goroutine scheduling and time package\\ \hline
-    getpid & runtime cares about its pid\\
+    getpid & runtime asks its pid\\ \hline
   \end{tabular}
 \end{center}
   \caption{Linux Syscalls That Are Re-implemented in GERT}  \label{fig:syscalls}
@@ -228,39 +228,6 @@ that the Linux kernel (and now GERT) provides to help with locking. Linux user s
 it to wait until a certain condition becomes true, and the Go runtime uses it extensively
 to monitor elapsed time and wake sleeping threads.
 
-%%\begin{figure}[h]
-%%  \begin{subfigure}[t!]{0.25\textwidth}
-%%  \begin{lstlisting}
-%%type thread_t struct {
-%%	tf       trapframe
-%%	state    uint32
-%%	futaddr  uintptr
-%%	sleeptil timespec
-%%	id       uint32
-%%	lock     Spinlock_t
-%%}
-%%\end{lstlisting}
-%%  \end{subfigure}
-%%  \begin{subfigure}[t!]{0.25\textwidth}
-%%
-%%  \begin{lstlisting}
-%%type trapframe struct {
-%%	lr  uintptr
-%%	sp  uintptr
-%%	fp  uintptr
-%%	r0  uint32
-%%	r1  uint32
-%%	r2  uint32
-%%	r3  uint32
-%%	r10 uint32
-%%}
-%%\end{lstlisting}
-%%
-%%\end{subfigure}
-%%  \caption{Thread state and Trapframes} \label{fig:threadtrap}
-%%\end{figure}
-
-
 
 \subsection{Interrupts}
 \begin{figure}[h]
@@ -272,7 +239,10 @@ to monitor elapsed time and wake sleeping threads.
 
 The interrupt handling process in GERT is explicitly designed so
 that interrupts can always be serviced, even when Go's garbage collector
-is running. When a GC cycle runs, it can potentially stop the world and
+is running. To achieve this design, GERT puts some restrictions on the Go code
+in an interrupt handler, as described below.
+
+When a GC cycle runs, it can potentially stop the world and
 prevent any Go code from executing. On a desktop OS it might be OK to disable
 interrupts during a GC cycle because it is infrequent, but on an embedded system
 critical interrupts could occur at any time, even while the world is
@@ -296,18 +266,18 @@ The garbage collector is unaware of the hidden interrupt stacks so any heap-allo
 will become memory leaks because the GC will never scan it. Fortunately, allocating heap objects in the interrupt
 handler will cause a panic because \textit{make()}, and many other blocking operations, need to acquire
 a lock from the runtime. This is dangerous because the runtime keeps track of which Ms are holding locks
-and interrupt code can violate its beliefs.
+and interrupt code can violate its beliefs and cause an unrecoverable panic.
 
-In the context of an interrupt handler, these constraints are totally acceptable. Interrupt
+Interrupt
 routines should be short and execute quickly in order to avoid missing sequential
 interrupts. This limits acceptable operations in an interrupt handler to toggling global boolean
-flags and deterministically reading/writing to memory. GERT supports these operations in its interrupt
-handlers.
+flags and non-blocking reads/writes to memory. A typical GERT program is unaffected by these constraints
+because it can use a goroutine to continuously monitor a flag which is only toggled in the interrupt handler.
 
 \subsection{Keeping Time}
 
 Go needs a timer to schedule goroutines properly. GERT uses the 64bit ARM global timer which
-is part of the general ARMv7a architecture. In the timer, each tick is about 2$ns$ so this means it will
+is part of the general ARMv7a architecture \cite{ddi0406}. In the timer, each tick is about 2$ns$ so this means it will
 not roll over for 1169 years. This means that GERT does not need a special timer interrupt to know when the
 counter rolls over. The current value of the timer is returned whenever the Go runtime calls
 clock\_gettime by reading from its MMIO address.

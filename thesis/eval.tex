@@ -41,7 +41,7 @@ In all tests, GERT is run on an i.MX6Quad SOC, which sits on a Wandboard
 platform, and all measurements are taken
 with a Rigol DS1054Z oscilloscope. When GERT is compared to Linux, the SOC
 runs Debian 8 "Jessie" with hardfloat support. GERT is also occasionally
-compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 uses a Cortex M4, which is specifically
+compared to a Teensy 3.2 microcontroller running C. The Teensy 3.2 \cite{teensy} uses a Cortex M4, which is specifically
 intended for microcontroller applications, and has good real-time performance. Even though
 the Cortex M4 has a vastly different architecture and purpose than the iMX6, its event
 response times represent a good comparison point for GERT and Linux.
@@ -66,7 +66,9 @@ has poor concurrency support though because its Cortex M4 is a single core proce
 \subsection{Pin Toggle Frequency}\label{sec:pin_toggle}
 This test measures the speed at which GERT can toggle a simple GPIO pin on
 the iMX6 Quad SOC. GPIO pins are an MMIO peripheral on the iMX6 which requires
-many clock domain crossings to produce an output. After the toggle program sets
+many clock domain crossings to produce an output. Additionally, MMIO regions are marked as strongly-ordered
+device memory in the page tables. This means that all accesses to MMIO regions must occur in explicit program order.
+After the toggle program sets
 the state of a GPIO pin, this information must pass through the memory bus,
 GPIO peripheral, and IO multiplexer peripheral before arriving to the output (\ref{fig:pipeline}).
 The latency of this whole process is determined by the 66MHz peripheral clock,
@@ -185,7 +187,7 @@ should be $n \cdot frequency$ where $n$ is the number of GPIO pins being monitor
 $frequency$ is the input clock frequency. The frequency of the clock is
 increased until each platform starts producing incorrect count totals.
 
-Unfortunately, due to the semantics of the ARM Generic Interrupt Controller and the implications of its 1-N model,
+Unfortunately, due to the semantics of the ARM Generic Interrupt Controller and the implications of its 1-N model \cite{gic},
 it is not possible to dedicate
 multiple CPU's to a single interrupt without also having expensive program logic in the interrupt handler to ensure that
 only one CPU can service the interrupt. Additionally, this concept does not even exist in Linux userspace
@@ -371,7 +373,7 @@ program since it polls.
 \end{figure}
 
 In order to evaluate GERT on a realistic workload, I put it on a robot that was
-donated to me from MIT's MASLAB competition. Among other things, the robot has two drive
+donated to me from MIT's MASLAB \cite{maslab} competition. Among other things, the robot has two drive
 motors with encoders and also several Sharp GP2Y0A21YK infrared distance sensors on its perimeter.
 I wrote a program in Go using GERT to process all of these event sources at the same time
 and operate the robot. The working robot can move and poll the distance sensors in response to user input.
@@ -390,7 +392,7 @@ The robot program uses Go's higher order functions and closures in order to crea
 (fig. \ref{fig:poll_func}). In this paradigm, every sensor gets its own goroutine which sends
 data back into a central event loop.
 
-The robot program also configured the GPIO library to use interrupts in order to count pulses on the encoder (fig. \ref{fig:encoder}).
+The robot program also configures the GPIO library to use interrupts in order to count pulses on the encoder (fig. \ref{fig:encoder}).
 
 \begin{figure}[!h]
   \begin{center}
@@ -480,8 +482,10 @@ func inc() {
 With these powerful set of abstractions, adding events or sensors into the event loop
 is simple because only a Pollfunc() must be implemented. As an added bonus, this
 GERT program is automatically concurrent because the Go and GERT schedulers will
-move idle CPU's to any available goroutine. The rest of this case study explains how the sensors
-are interfaced with GERT.
+move idle CPU's to any available goroutine.
+
+The rest of this case study explains how the sensors
+are interfaced with GERT and gives examples of their API's in Go.
 
 
 \subsection{PWM Motor Control}
@@ -509,7 +513,7 @@ The driver is organized in a typical C fashion where the memory map of the perip
 Go provided little benefit for writing the driver. Even though Go is a systems language, it has poor
 support for reading/writing arbitrary memory. In Go, the programmer cannot align or pad structs
 and they must use the unsafe package in order to modify memory addresses with unsafe casts. This makes for a generally
-unsatisfying experience when writing drivers.
+unsatisfying experience when writing drivers, but it is no worse than C.
 
 
 \begin{figure}[h]
@@ -562,8 +566,8 @@ driver also requires no input from the user except for the data to transmit and 
 The robot program also includes a motor speed monitor which uses the encoders.
 Encoders emit a pulse every time the motor rotates a known amount. This amount is variable depending on the
 encoder resolution. The encoders on the robot motors emit pulses at a max rate of 4KHz, corresponding to
-maximum motor speed. GERT had no difficulty picking up these pulses because this frequency is far less than
-the max pulse frequency in fig. \ref{fig:counter}.
+maximum motor speed. GERT had no difficulty picking up these pulses because this latency is far higher than
+GERT's latency in fig. \ref{fig:RT}.
 
 The robot program asynchronously reads encoders with a special goroutine which computes the pulse difference
 every second (fig. \ref{fig:speedmon}). The result is sent into the event channel.
@@ -630,7 +634,7 @@ In this case study, GERT is used to implement a laser projector with a red laser
 
 \subsection{Overview}
 I selected a laser scanner for this case study because I have a lot of experience programming
-them in C. It is interesting to observe how GERT can alter the experience.
+them in C. It is interesting to see how GERT can alter the experience.
 Points for the scanner are generated from a vector graphics file on a desktop computer and stored
 on an sdcard before GERT loads them and traces the image. The laser projector,
 unlike the robot sensor platform, does not have to process any external events or
@@ -711,7 +715,7 @@ this thesis though.
  \includegraphics[scale=0.4]{csail}
   \end{subfigure}
   \begin{subfigure}[t!]{0.5\textwidth}
- \includegraphics[scale=0.4]{csail}
+ \includegraphics[scale=0.2]{lasertrace}
   \end{subfigure}
   \caption{CSAIL Logo Generated vs Traced} \label{fig:trace_v_reality}
 \end{figure}
@@ -735,7 +739,7 @@ Writing embedded programs in GERT is also easier than writing them in C. Channel
 and goroutines are excellent concurrency primitives. With these two primitives, program architecture can be very moduler
 and performant. A good example is the sensor paradigm from the Robot Sensor Platform (\ref{sec:robot}) where each
 sensor became associated with a goroutine and a channel. Since GERT inherits the Go standard libraries, GERT programs
-are also more portable than bare-metal C programs. If GERT ever gets ported to different platforms, existing applications
+are also more portable than bare-metal C programs. If GERT ever gets ported to different platforms, existing GERT applications
 will need few modifications to run on the new platform because the Go runtime presents the same abstractions everywhere
 that it runs.
 
