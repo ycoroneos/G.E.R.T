@@ -115,10 +115,10 @@ Results are shown in figure \ref{fig:toggle}.
 %%Without all of the syscalls a user-space program must endure, there should have
 %%been a speed increase.
 
-The results of the pin toggle initially show that GERT under performs compared to
-user-space Linux C. The reason became clear after tracing GERT's execution in QEMU:
-the slowdown is caused by Go's interfaces in the embedded package. The GPIO driver
-in the embedded package uses Go interfaces to abstract all of the different pins.
+The results of the pin toggle initially show that GERT underperforms compared to
+user-space Linux C. The reason becomes clear after tracing GERT's execution in QEMU;
+the slowdown is caused by Go's interfaces in the \textit{embedded} package. The GPIO driver
+in the \textit{embedded} package uses Go interfaces to abstract all of the different pins.
 In order to toggle a single pin with an interface requires 47 instructions:
 2 function calls, 19 loads, and 11 stores. In order to increase the toggle speed,
 a new static GPIO driver was developed for GERT. The new driver is just a thin layer
