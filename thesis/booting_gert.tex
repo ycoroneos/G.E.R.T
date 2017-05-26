@@ -4,7 +4,7 @@
 \begin{center}
   \includegraphics[scale=0.5]{boot_process}
 \end{center}
-  \caption{GERT Boot Process} \label{fig:boot}
+  \caption{GERT Boot Process. * means performed by the Go runtime} \label{fig:boot}
 \end{figure}
 
 Even though Go code is compiled, it relies on a runtime to coordinate certain actions with the OS and support its concurrency model.
@@ -18,12 +18,10 @@ Modifying the Go runtime to boot on bare metal is tricky process because all add
 in a non-destructive way that still preserves all of Go's useful primitives, including the standard library.
 
 
-In observation of these constraints, GERT boots via a 3-step process as shown in  figure \ref{fig:boot}.
+In observation of these constraints, GERT boots via a 3-step process as shown in figure \ref{fig:boot}.
 In step 1, u-boot is used to set up device clocks and load the code for step 2 off of an SD card. Step 2 prepares the
 Go stack with arguments and environment variables before jumping into GERT. Step 3 runs inside of GERT and it
 finishes the boot process by initializing virtual memory, threading, and interrupt handlers.
-
-
 
 
 %%The first stage is the u-boot
@@ -182,7 +180,7 @@ All syscalls with an * are expensive because they cause a stack switch to the sc
     getpid & runtime asks its pid\\ \hline
   \end{tabular}
 \end{center}
-  \caption{Linux Syscalls That Are Re-implemented in GERT}  \label{fig:syscalls}
+  \caption{Linux Syscalls That Are Re-implemented in GERT. * means syscall causes stack switch}  \label{fig:syscalls}
 \end{figure}
 
 GERT also maintains data structures that track the state of Go threads

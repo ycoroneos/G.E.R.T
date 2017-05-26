@@ -183,8 +183,8 @@ does not attempt to alleviate this problem in any way because the operating
 assumption is that powerful multicore SOCs will also have at least 1GB of RAM.
 A quick scan through DigiKey does confirm this assumption. The other problem
 with the garbage collector is that it has to "stop the world" sometimes in order
-to perform its function. This process involves checkpointing the executing program
-before pausing it and scanning all of its pointers.
+to perform its function. This process involves pausing the program and scanning
+all of its pointers.
 
 GERT mitigates the effects of a GC collection in two ways, one intentional
 and one unintentional. In an embedded system, the danger of a
@@ -192,7 +192,7 @@ GC collection lies in missing external events. The way GERT intentionally mitiga
 the effects of the garbage collector is by allowing interrupts to be serviced
 even while the world is stopped. This is possible as long as the interrupt
 handler does not execute a blocking operation. The other way GERT unintentionally
-coexists with the garbage collector from the fact that many embedded programs are
+coexists with the garbage collector is because many embedded programs are
 inherently static. Static embedded programs have a known memory use at compile time so
 there is no need to allocate memory at run time and count its references. In fact, some embedded
 platform libraries do not even have \textit{malloc} so all memory use must be static.

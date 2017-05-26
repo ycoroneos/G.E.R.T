@@ -512,7 +512,7 @@ The API is shown in fig. \ref{fig:pwm_api}.
 The driver is organized in a typical C fashion where the memory map of the peripheral is represented in a structure (fig. \ref{fig:pwm_struct}).
 Go provided little benefit for writing the driver. Even though Go is a systems language, it has poor
 support for reading/writing arbitrary memory. In Go, the programmer cannot align or pad structs
-and they must use the unsafe package in order to modify memory addresses with unsafe casts. This makes for a generally
+and they must use the \textit{unsafe} package in order to modify memory addresses with unsafe casts. This makes for a generally
 unsatisfying experience when writing drivers, but it is no worse than C.
 
 
@@ -596,7 +596,7 @@ on this robot emits a lot of noise. The 5v noise spikes measured on the oscillos
 on the 3.3v single-ended signals that the iMX6 operates with, causing serial communication failures
 and spurious interrupts. To deal with this, the robot's motors are connected to an external power supply before
 taking encoder measurements in order to remove noise from the digital circuits. Consequently, the physical
-robot cannot move when the motors are connected to an external power supply.
+robot cannot move very far when the motors are connected to an external power supply because the power supply cannot move.
 
 \subsection{Result}
 GERT is a plausible embedded toolkit to use for robots that incorporate many sensor systems.
@@ -613,7 +613,7 @@ peripherals inherently requires unsafe writes and reads to arbitrary memory, but
 tries very hard to stop the programmer from doing this. Successful drivers for MMIO
 peripherals must defeat the type system. In the end, a GERT driver
 looks like the equivalent C driver but with many more explicit casts.
-If a future version of Go deprecates the unsafe package, it will be catastrophic for
+If a future version of Go deprecates the \textit{unsafe} package, it will be catastrophic for
 GERT's current implementation.
 
 
@@ -671,7 +671,7 @@ type CompactPoint struct {
 In order to store points, a separate encoding program running
 on a desktop computer encodes an array of $CompactPoint$ structs into
 a Gob object and writes them to a file. Next, a utility called
-\textit{go-bindata} is used to embed the gob file into the laser scanner
+\textit{go-bindata} \cite{gobin} is used to embed the gob file into the laser scanner
 program. Then the laser scanner reads the gob'ed data during initialization.
 Code is shown in \ref{fig:loadpoints}.
 
