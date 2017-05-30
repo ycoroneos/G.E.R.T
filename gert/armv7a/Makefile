@@ -1,5 +1,6 @@
 #Makefile for ARM barebones development
 SDCARD?=INVALID
+UPROG ?= .
 
 GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
@@ -8,8 +9,8 @@ GOBIN := ../../golang_embedded/bin/go
 GOARCH := GOOS=linux GOARCH=arm GOARM=7
 GOLINKFLAGS := "-T 0x11000000 -E main.Entry"
 GOCMD := $(GOARCH) $(GOBIN)
-GO_SRC = $(wildcard *.go)
-GO_SRC += kernel.go
+GO_SRC = $(wildcard $(UPROG)/*.go)
+#GO_SRC += kernel.go
 GO_DIR := go/
 GO_OBJ := $(BUILDIR)/kernel
 
@@ -20,8 +21,8 @@ AS_OBJ := $(patsubst boot/%.s,$(BUILDIR)/%.s.o,$(AS_SRC))
 BOOT_OBJ := $(AS_OBJ) $(C_OBJ)
 BOOT_TARGET := $(BUILDIR)/bootloader
 
-QEMU := ~/Documents/qemu/arm-softmmu/qemu-system-arm
-#QEMU := ~/qemu/arm-softmmu/qemu-system-arm
+#QEMU := ~/Documents/qemu/arm-softmmu/qemu-system-arm
+QEMU := ~/qemu/arm-softmmu/qemu-system-arm
 
 #CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -fno-pic -mfpu=neon-vfpv4 -mfloat-abi=hard \
 #          -march=armv7-a -mtune=cortex-a9 -ffreestanding -nostartfiles -Iboot/
@@ -40,7 +41,7 @@ all: $(BOOT_TARGET).elf
 
 $(GO_OBJ).elf: $(GO_SRC)
 	@echo "+GO "$(GO_SRC)
-	@$(GOCMD) build -ldflags $(GOLINKFLAGS) -o $@
+	@$(GOCMD) build -ldflags $(GOLINKFLAGS) -o $@ $(GO_SRC)
 	$(GCCPREFIX)objdump -D $(GO_OBJ).elf > $(GO_OBJ).dump
 	$(GCCPREFIX)readelf -a $(GO_OBJ).elf > $(GO_OBJ).read
 	$(GCCPREFIX)objcopy -O binary $(GO_OBJ).elf $(GO_OBJ).bin
@@ -80,10 +81,10 @@ jtag3:
 	JLinkGDBServer -ScriptFile core3.jlink -device MCIMX6Q5 -port 3333
 gdbj:
 	$(GCCPREFIX)gdb -x gdb-jtag.script
-qemud: all
+qemud:
 	#$(QEMU) -machine sabrelite -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic -s -S
-qemu: all
+qemu:
 	$(QEMU) -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic
 qemu-record: all
 	$(QEMU) -trace events=trace_events -machine sabrelite -cpu cortex-a9 -smp cpus=4 -m 3G -kernel $(BOOT_TARGET).elf -nographic

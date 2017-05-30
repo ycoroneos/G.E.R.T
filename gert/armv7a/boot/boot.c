@@ -36,7 +36,6 @@ extern char gobin_start[], gobin_end[];
 
 // go bin load address
 uintptr_t go_load_addr=(uintptr_t)0x10000000;
-//uintptr_t go_load_addr=(uintptr_t)0x40000000;
 
 
 static void backtrace(struct trapframe *tf)
@@ -160,19 +159,11 @@ static void load_go()
 
 int main()
 {
-  //get a new stack
- // asm("mov sp,%[newsp]" : : [newsp]"r"(&stack[1023]));
-
   consoleinit();
   cprintf("---------------------------------------------\r\n");
-  cprintf("Welcome to Biscuit-ARM Bootloader, 16 is %x hex!\r\n",16);
-  ////boot_memset((void*)(0x10000000), 0xffffffff, 0x60000000);
-  //boot_memset((void*)(0x7FD00000), 0xffffffff, 0x100000);
+  cprintf("Welcome to the GERT Bootloader, 16 is %x hex!\r\n",16);
   boot_memset((void*)(0x7FD00000), 0xff, 0x100000);
 
-  //float a=1.25;
-  //float b =a*3;
-  //cprintf("float multiplication %x\r\n", b);
   //load our kernel
   load_go();
   uint32_t kernel_start = gobin_start;
