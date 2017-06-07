@@ -4,3 +4,6 @@
 [submodule "gert/armv7a/imx6_platform_sdk"]
 	path = gert/armv7a/imx6_platform_sdk
 	url = git@github.com:ycoroneos/imx6_platform_sdk.git
+[submodule "qemu"]
+	path = qemu
+	url = git://git.qemu-project.org/qemu.git

@@ -1,13 +1,14 @@
 package main
 
 import (
-	"./embedded"
+	"../../embedded"
 	"fmt"
 	"runtime"
+	"syscall"
 )
 
 /*
-* This is the entry point of the go kernel. dont try anything fancy
+* This is the entry point of GERT. dont try anything fancy
  */
 
 //go:nosplit
@@ -31,6 +32,7 @@ func main() {
 	//init the GIC and turn on interrupts
 	fmt.Printf("pre-init ...")
 	pre_init()
+	syscall.Setenv("TZ", "UTC")
 	runtime.Booted = 1
 	fmt.Printf("done!\n")
 
