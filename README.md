@@ -9,16 +9,24 @@ GERT can be easily ported to any armv7a SOC with adequate documentation.
 
 ## Index
 
+## Features
++ Improved latency compared to Linux user-space C
++ All of Go's concurrency features, such as goroutines and channels, on bare-metal
++ Greater portability than bare-metal C
++ Drivers written for the iMX6 UART, SPI, SDCARD, GPT, IOMUX and much
+  more
+
 
 ## Quickstart
 
 ### Materials Needed
 
-GERT can either run in the QEMU emulator or on real hardware. To emulate GERT follow the install instructions
-below, because they include a QEMU installation. To run GERT on real hardware,
+GERT can either run in the QEMU emulator or on real hardware. To emulate GERT you must install QEMU. Follow the install instructions
+below because they include a QEMU installation. To run GERT on real hardware,
 you will need to get a **Wandboard Quad** and an SD card, or any other dev kit which uses the Freescale
 iMX6 Quad SOC. GERT only works with the iMX6 right now because its memory map is hard-coded into
-the kernel.
+the kernel. I plan to bring GERT to the raspi eventually, but don't wait
+for me! Feel free to contribute.
 
 
 ### Directory Layout
@@ -38,6 +46,8 @@ the kernel.
 
 
 ### Installation
+These commands will build QEMU from source and also download all of the
+dependencies required to build GERT and the Go runtime.
 
 #### Ubuntu
   <!-- language: lang-none -->
@@ -51,19 +61,23 @@ the kernel.
      cd qemu && git submodule init && git submodule update --recursive && ./configure --target-list=arm-softmmu && make -j4 && cd ..
      cd gert/armv7a && make runtime && make uboot && UPROG=programs/hello make && make qemu
 
-If all went well, you should be running the 'hello' program in QEMU
+If all went well, you should be running the 'hello' program in QEMU.
+Press CTRL+A then X to quit QEMU.
 
 ### Programming With GERT
 
 GERT programs live inside the `gert/armv7a/programs` directory. Each program folder
 must contain three things: `kernel.go`, `irq.go`, and `userprog.go`. Take a look at
-programs/hello to get a feel for the layout.
+`programs/hello` to get a feel for the layout. GERT programs are Go
+programs. Besides for the quirky layout and the few constraints listed
+below, you should go about programming in GERT as you do in Go.
 
 #### kernel.go
 
 This is not the actual GERT kernel, but it contains the GERT entry point,
 initialization for the interrupt controller, and code to enable all 4 cpus
-on the iMX6. It's boilerplate code you would have written anyway.
+on the iMX6. It's boilerplate code you would have written anyway. The
+actual GERT kernel is in the `golang_embedded` repo
 
 #### irq.go
 
@@ -74,14 +88,17 @@ you must obey inside the interrupt handler though : **no blocking operations
 and no allocations on the heap**. This is because the garbage collector might be running
 while an interrupt is being serviced. The *irqnum* input is the ID of the SPI
 that was received. You must enable the specific interrupts you want to receive
-in the GIC before the interrupt handler will ever execute.
+in the ARM GIC before the interrupt handler will ever execute. Look in
+the doc folder for GIC documentation.
 
 #### userprog.go
 
 This contains your GERT program. There are at least two functions you must implement:
 *user_init*, which is called once, and *user_loop*, which is called repeatedly. Besides that,
-Go crazy. Most of the standard libraries work as well as channels and goroutines. The *embedded* package
+Go crazy! Most of the standard libraries work as well as channels and goroutines. The *embedded* package
 contains drivers for many iMX6 peripherals for you to play around with.
+If you find a standard library that doesn't work (and you want it to
+work), then either make an issue on github or submit a fix.
 
 
 ### Working With GERT
@@ -91,16 +108,14 @@ To build a GERT program, run `UPROG=<your prog dir> make`. To run your GERT prog
 To put your GERT program on an sd card and boot it run `SDCARD=/dev/<your sdcard> make sdcard`
 
 
-## 'Hello World!'
-
-Lets make hello world in GERT and run it on bare-metal. This is exactly what your quad-core SOC was made for!
-1. Navigate to `gert/armv7a` because this is the working directory
-2. Copy `programs/blank` to `programs/hello`
-
 ## Debugging
 
 Many bugs in a GERT program result in a Go panic, which prints a very useful backtrace along with a useful
-error message. This is usually enough to fix the problem.
+error message. This is usually enough to fix the problem. If the bug is
+serious, it may be a kernel bug. If you still want to tackle it, then look in my thesis for an overview of
+the different kernel components and the virtual memory map.
+`gert_arm.go` inside the `src/runtime` folder of the Go runtime has the
+majority of the GERT kernel.
 
 ### QEMU
 
