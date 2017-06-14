@@ -9,7 +9,7 @@ type MCP4922_controller struct {
 func MakeMCP4922(spi SPI_periph) MCP4922_controller {
 	//16bit frames in mode 0
 	//spi.Begin(0, 10, 15, 0)
-	spi.Begin(0, 2, 15, 0)
+	spi.Begin(0, 4, 15, 0)
 	return MCP4922_controller{spi}
 }
 
