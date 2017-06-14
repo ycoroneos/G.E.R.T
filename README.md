@@ -7,13 +7,16 @@ the benefits of a high-level, type-safe, and garbage-collected language to bare-
 embedded environments. GERT has been developed for the Wandboard Quad (iMX6 Quad SOC), but
 GERT can be easily ported to any armv7a SOC with adequate documentation.
 
+## Index
+
+
 ## Quickstart
 
 ### Materials Needed
 
 GERT can either run in the QEMU emulator or on real hardware. To emulate GERT follow the install instructions
 below, because they include a QEMU installation. To run GERT on real hardware,
-you will need to get a Wandboard Quad and an SD card, or any other dev kit which uses the Freescale
+you will need to get a **Wandboard Quad** and an SD card, or any other dev kit which uses the Freescale
 iMX6 Quad SOC. GERT only works with the iMX6 right now because its memory map is hard-coded into
 the kernel.
 
@@ -42,22 +45,18 @@ the kernel.
      sudo apt install gcc-arm-none-eabi arm-none-eabi-gdb golang git
      sudo apt-get build-dep golang qemu
      git clone git@github.com:ycoroneos/G.E.R.T.git
-     cd GERT
+     cd G.E.R.T
      git submodule init
      git submodule update --recursive
-     cd qemu && ./configure --target-list=arm-softmmu && make -j4 && cd ..
+     cd qemu && git submodule init && git submodule update --recursive && ./configure --target-list=arm-softmmu && make -j4 && cd ..
      cd gert/armv7a && make runtime && make uboot && UPROG=programs/hello make && make qemu
 
 If all went well, you should be running the 'hello' program in QEMU
 
-#### Gentoo
-
-soon
-
 ### Programming With GERT
 
-GERT programs live inside the gert/armv7a/programs directory. Each program folder
-must contain three things: kernel.go, irq.go, and userprog.go. Take a look at
+GERT programs live inside the `gert/armv7a/programs` directory. Each program folder
+must contain three things: `kernel.go`, `irq.go`, and `userprog.go`. Take a look at
 programs/hello to get a feel for the layout.
 
 #### kernel.go
@@ -71,8 +70,8 @@ on the iMX6. It's boilerplate code you would have written anyway.
 Contains the interrupt service routine that GERT executes when a cpu
 gets an interrupt (switches to ISR mode). Every cpu can concurrently execute
 in the interrupt handler; interrupts are not serialized. There are some basic rules
-you must obey inside the interrupt handler though : no blocking operations
-and no allocations on the heap. This is because the garbage collector might be running
+you must obey inside the interrupt handler though : **no blocking operations
+and no allocations on the heap**. This is because the garbage collector might be running
 while an interrupt is being serviced. The *irqnum* input is the ID of the SPI
 that was received. You must enable the specific interrupts you want to receive
 in the GIC before the interrupt handler will ever execute.
