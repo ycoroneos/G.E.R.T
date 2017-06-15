@@ -12,6 +12,10 @@ import json
 def sweepbez(c, steps):
     return map(lambda t: c[0]*(1.0-t)**3 +3.0*c[1]*t*(1.0-t)**2 + 3.0*c[2]*(1.0-t)*t**2 + c[3]*t**3, np.linspace(0,1,steps))
 
+def sweepany(trace, steps):
+    result = map(lambda t: trace.point(t), np.linspace(0,1,steps))
+    return map(lambda x:x.real, result), map(lambda x:x.imag, result)
+
 def writepoints(xpoints, ypoints, filename):
     d=dict()
     d['X']=map(int, xpoints)
@@ -30,7 +34,11 @@ if __name__=="__main__":
     paths, attributes = svg2paths(sys.argv[1])
     for path in paths:
         for trace in path:
-            if (len(trace)==2):
+            if (type(trace) == Arc):
+                newx, newy = sweepany(trace, 4)
+                xpoints = xpoints + newx
+                ypoints = ypoints + newy
+            elif (len(trace)==2):
                 #line
                 xpoints.append(trace.start.real)
                 xpoints.append(trace.end.real)
@@ -38,8 +46,7 @@ if __name__=="__main__":
                 ypoints.append(trace.end.imag)
             elif (len(trace)==4):
                 #cubic bezier
-                newx = sweepbez(map(lambda x:x.real, trace), 4)
-                newy = sweepbez(map(lambda x:x.imag, trace), 4)
+                newx, newy = sweepany(trace, 4)
                 xpoints = xpoints + newx
                 ypoints = ypoints + newy
             else:
