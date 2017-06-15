@@ -29,7 +29,7 @@ below because they include a QEMU installation. To run GERT on real hardware,
 you will need to get a **Wandboard Quad** and an SD card, or any other dev kit which uses the Freescale
 iMX6 Quad SOC. GERT only works with the iMX6 right now because its memory map is hard-coded into
 the kernel. I plan to bring GERT to the raspi eventually, but don't wait
-for me! Feel free to contribute.
+for me, feel free to contribute!
 
 
 ### Directory Layout
