@@ -10,8 +10,6 @@ the benefits of a high-level, type-safe, and garbage-collected language to bare-
 embedded environments. GERT has been developed for the Wandboard Quad (iMX6 Quad SOC), but
 GERT can be ported to any armv7a SOC with adequate documentation.
 
-## Index
-
 ## Features
 + Improved latency compared to Linux user-space C
 + All of Go's concurrency features, such as goroutines and channels, on bare-metal
@@ -37,9 +35,10 @@ for me, feel free to contribute!
   |----------|----------|
   |`golang_embedded`| Modified Go runtime which runs on bare-metal. It has its own repo which explains modifications in detail|
   |`qemu`| QEMU git master branch. submoduled|
-  |`thesis`| My master's thesis|
+  |`thesis`| My master's thesis. Contains a pretty detailed description
+of this work. It may eventually become outdated|
   |`gert/armv7a`| Contains the user-facing code for running GERT on the Wandboard Quad dev board|
-  |`gert/armv7a/uboot`| U-boot bootloader which configures basic device clocks and loads GERT off the sd card|
+  |`gert/armv7a/uboot_bin`| Images for the U-boot bootloader, which configures basic device clocks and loads GERT off the sd card|
   |`gert/armv7a/boot`|  Second-stage bootloader written in C that prepares the initial Go stack|
   |`gert/armv7a/embedded`| Go package which contains many drivers for the iMX6 Quad cpu|
   |`gert/armv7a/doc`| Technical reference manuals on the armv7a, cortex-a9 mpcore architectures, and iMX6 SOC|
