@@ -35,8 +35,7 @@ for me, feel free to contribute!
   |----------|----------|
   |`golang_embedded`| Modified Go runtime which runs on bare-metal. It has its own repo which explains modifications in detail|
   |`qemu`| QEMU git master branch. submoduled|
-  |`thesis`| My master's thesis. Contains a pretty detailed description
-of this work. It may eventually become outdated|
+  |`thesis`| My master's thesis. Contains a pretty detailed description of this work. It may eventually become outdated|
   |`gert/armv7a`| Contains the user-facing code for running GERT on the Wandboard Quad dev board|
   |`gert/armv7a/uboot_bin`| Images for the U-boot bootloader, which configures basic device clocks and loads GERT off the sd card|
   |`gert/armv7a/boot`|  Second-stage bootloader written in C that prepares the initial Go stack|
