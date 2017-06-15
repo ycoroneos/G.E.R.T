@@ -60,7 +60,7 @@ dependencies required to build GERT and the Go runtime.
      git submodule init
      git submodule update --recursive
      cd qemu && git submodule init && git submodule update --recursive && ./configure --target-list=arm-softmmu && make -j4 && cd ..
-     cd gert/armv7a && make runtime && make uboot && UPROG=programs/hello make && make qemu
+     cd gert/armv7a && make runtime && UPROG=programs/hello make && make qemu
 
 If all went well, you should be running the 'hello' program in QEMU.
 Press CTRL+A then X to quit QEMU.
