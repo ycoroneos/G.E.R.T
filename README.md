@@ -1,5 +1,5 @@
 # G.E.R.T : Golang Embedded Run-Time
-<img src="www/scope.gif" alt="scope shot" width="250" height="250"> <img src="www/laser.gif" alt="laser trace" width="250" height="250">
+<img src="www/boot.gif" alt="booting" width="350" height="250"><img src="www/scope.gif" alt="scope shot" width="250" height="250"> <img src="www/laser.gif" alt="laser trace" width="250" height="250">
 
 
 
@@ -8,7 +8,7 @@ set of OS primitives that Go relies on have been re-implemented entirely in Go
 and Plan 9 assembly inside the modified runtime. The goal of this project is to bring
 the benefits of a high-level, type-safe, and garbage-collected language to bare-metal
 embedded environments. GERT has been developed for the Wandboard Quad (iMX6 Quad SOC), but
-GERT can be easily ported to any armv7a SOC with adequate documentation.
+GERT can be ported to any armv7a SOC with adequate documentation.
 
 ## Index
 
