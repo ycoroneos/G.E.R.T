@@ -32,7 +32,7 @@ LFLAGS := $(CFLAGS) -Tboot/link.ld
 
 
 # Targets
-.PHONY : all runtime $(GO_OBJ).elf
+.PHONY : all runtime $(GO_OBJ).elf uboot
 
 all: $(BOOT_TARGET).elf
 	$(GCCPREFIX)objdump -D $(BOOT_TARGET).elf > $(BOOT_TARGET).dump
@@ -99,15 +99,15 @@ bytecode: test.s
 sdcard:
 	sudo umount $(SDCARD)1
 	sudo mkdosfs $(SDCARD)1 -F 32
-	sudo dd if=./u-boot/SPL of=$(SDCARD) seek=1 bs=1k
-	sudo dd if=./u-boot/u-boot.img of=$(SDCARD) seek=69 bs=1k
+	sudo dd if=./uboot_bin/SPL of=$(SDCARD) seek=1 bs=1k
+	sudo dd if=./uboot_bin/u-boot.img of=$(SDCARD) seek=69 bs=1k
 	sudo mount $(SDCARD)1 /mnt/usb
-	sudo cp ./u-boot/uEnv.txt /mnt/usb/
+	sudo cp ./uboot_bin/uEnv.txt /mnt/usb/
 	sudo cp $(BOOT_TARGET).elf /mnt/usb/kernel2.elf
 	sudo mkdir -p /mnt/usb/boot
-	sudo cp ./u-boot/uEnv.txt /mnt/usb/boot/
+	sudo cp ./uboot_bin/uEnv.txt /mnt/usb/boot/
 	sudo umount /mnt/usb
 	sync
-uboot:
-	cd $(shell pwd)/u-boot && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
+#uboot:
+#	cd $(shell pwd)/uboot && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) distclean && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX) wandboard_defconfig && make ARCH=arm CROSS_COMPILE=$(GCCPREFIX)
 print-%: ; @echo $*=$($*)

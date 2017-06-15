@@ -1,6 +1,0 @@
-CHROMEBOOK LINK BOARD
-M:	Simon Glass <sjg@chromium.org>
-S:	Maintained
-F:	board/google/chromebook_link/
-F:	include/configs/chromebook_link.h
-F:	configs/chromebook_link_defconfig

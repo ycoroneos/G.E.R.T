@@ -1,5 +1,0 @@
-config IMX_CONFIG
-	string
-
-config ROM_UNIFIED_SECTIONS
-	bool
