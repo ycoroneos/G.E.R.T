@@ -69,7 +69,8 @@ Press CTRL+A then X to quit QEMU.
 
 GERT programs live inside the `gert/armv7a/programs` directory. Each program folder
 must contain three things: `kernel.go`, `irq.go`, and `userprog.go`. Take a look at
-`programs/hello` to get a feel for the layout. GERT programs are Go
+`programs/hello` to get a feel for the layout, then look at
+`programs/gopher` to see how to interface a laser projector. Remember that GERT programs are Go
 programs. Besides for the quirky layout and the few constraints listed
 below, you should go about programming in GERT as you do in Go.
 
@@ -95,8 +96,8 @@ the doc folder for GIC documentation.
 #### userprog.go
 
 This contains your GERT program. There are at least two functions you must implement:
-*user_init*, which is called once, and *user_loop*, which is called repeatedly. Besides that,
-Go crazy! Most of the standard libraries work as well as channels and goroutines. The *embedded* package
+*user_init*, which is called once, and *user_loop*, which is called repeatedly.
+Most of the standard libraries work as well as channels and goroutines. The *embedded* package
 contains drivers for many iMX6 peripherals for you to play around with.
 If you find a standard library that doesn't work (and you want it to
 work), then either make an issue on github or submit a fix.
