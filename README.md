@@ -51,15 +51,18 @@ These commands will build QEMU from source and also download all of the
 dependencies required to build GERT and the Go runtime.
 
 #### Ubuntu
+
+First, in ~/.bashrc, put `export GOROOT_BOOTSTRAP=$(go env GOROOT)`
+Then make sure you have the `deb-src` repositories uncommented in `/etc/apt/sources.list`.
+
   <!-- language: lang-none -->
 
-     sudo apt install gcc-arm-none-eabi arm-none-eabi-gdb golang git
+     sudo apt install gcc-arm-none-eabi gdb-arm-none-eabi golang git
      sudo apt-get build-dep golang qemu
      git clone git@github.com:ycoroneos/G.E.R.T.git
      cd G.E.R.T
-     git submodule init
-     git submodule update --recursive
-     cd qemu && git submodule init && git submodule update --recursive && ./configure --target-list=arm-softmmu && make -j4 && cd ..
+     git submodule update --recursive --init
+     cd qemu && ./configure --target-list=arm-softmmu && make -j4 && cd ..
      cd gert/armv7a && make runtime && UPROG=programs/hello make && make qemu
 
 If all went well, you should be running the 'hello' program in QEMU.
