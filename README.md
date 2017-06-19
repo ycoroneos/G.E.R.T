@@ -48,7 +48,9 @@ for me, feel free to contribute!
 
 ### Installation
 These commands will build QEMU from source and also download all of the
-dependencies required to build GERT and the Go runtime.
+dependencies required to build GERT and the Go runtime. You also need to
+have regular Go installed on your system in order to bootstrap the
+compilation of G.E.R.T and Go.
 
 #### Ubuntu
 
@@ -59,6 +61,27 @@ Then make sure you have the `deb-src` repositories uncommented in `/etc/apt/sour
 
      sudo apt install gcc-arm-none-eabi gdb-arm-none-eabi golang git
      sudo apt-get build-dep golang qemu
+     git clone git@github.com:ycoroneos/G.E.R.T.git
+     cd G.E.R.T
+     git submodule update --recursive --init
+     cd qemu && ./configure --target-list=arm-softmmu && make -j4 && cd ..
+     cd gert/armv7a && make runtime && UPROG=programs/hello make && make qemu
+
+If all went well, you should be running the 'hello' program in QEMU.
+Press CTRL+A then X to quit QEMU.
+
+#### Mac OS
+
+Put `export GOROOT_BOOTSTRAP=$(go env GOROOT)` in `~/.bash_profile`.
+In order to get the build dependencies for Go, QEMU, and armv7a
+development I recommend using homebrew. You probably also need the
+xcode command line tools installed.
+
+  <!-- language: lang-none -->
+
+     brew tap PX4/homebrew-px4
+     brew update
+     brew install gcc-arm-none-eabi qemu
      git clone git@github.com:ycoroneos/G.E.R.T.git
      cd G.E.R.T
      git submodule update --recursive --init
