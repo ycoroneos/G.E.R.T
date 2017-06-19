@@ -1,10 +1,14 @@
+// Copyright 2017 Yanni Coroneos. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
-    "bytes"
-    "compress/gzip"
-    "fmt"
-    "io"
+	"bytes"
+	"compress/gzip"
+	"fmt"
+	"io"
 )
 
 func bindata_read(data []byte, name string) ([]byte, error) {
@@ -150,11 +154,10 @@ func data_bindata_gob() ([]byte, error) {
 		0x70, 0x16, 0x59, 0x29, 0xa8, 0x36, 0x90, 0x64, 0x58, 0x4d, 0x40, 0x6d,
 		0xbb, 0x1e, 0xff, 0x0e, 0x00, 0x00, 0xff, 0xff, 0xb0, 0x37, 0x1d, 0xb8,
 		0x25, 0x0f, 0x00, 0x00,
-		},
+	},
 		"data/bindata.gob",
 	)
 }
-
 
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
@@ -167,7 +170,6 @@ func Asset(name string) ([]byte, error) {
 }
 
 // _bindata is a table, holding each asset generator, mapped to its name.
-var _bindata = map[string] func() ([]byte, error) {
+var _bindata = map[string]func() ([]byte, error){
 	"data/bindata.gob": data_bindata_gob,
-
 }

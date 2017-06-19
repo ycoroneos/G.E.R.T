@@ -1,3 +1,6 @@
+// Copyright 2017 Yanni Coroneos. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 .equ SCTLR_ENABLE_DATA_CACHE, 0x4
 .equ SCTLR_ENABLE_BRANCH_PREDICTION, 0x800
 .equ SCTLR_ENABLE_INSTRUCTION_CACHE, 0x1000

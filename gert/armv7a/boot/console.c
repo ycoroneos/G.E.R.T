@@ -1,3 +1,7 @@
+// Copyright 2017 Yanni Coroneos. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Console input and output.
 // Output is written to the screen and serial port.
 #include "console.h"
