@@ -2,6 +2,7 @@
 <img src="www/boot.gif" alt="booting" width="350" height="250"><img src="www/scope.gif" alt="scope shot" width="250" height="250"> <img src="www/laser.gif" alt="laser trace" width="250" height="250">
 
 
+## WARNING : This is a research prototype so don't use it for critical things yet
 
 GERT is a modified version of Go that runs bare-metal on armv7a SOCs. The minimal
 set of OS primitives that Go relies on have been re-implemented entirely in Go
