@@ -1,0 +1,18 @@
+This is an experiment to see how well GERT can run as a para-virtualized OS.
+This is desireable because a good hypervisor can emulate one set of guest hardware
+across different devices. Additionally, as a VM alongside Linux, the programmer can
+develop and run GERT programs on the same machine. The biggest concern is an increase
+in latency for responding to external events. As long as it stays below Linux, we should
+still be fine.
+
+Each directory here contains GERT ported to a different emulated guest. Each guest is emulated by the Xvisor VMM.
+Hopefully there should only be 2: virt-v7 for armv7a and virt-v8 for armv8a (yes, GERT will become 64bit)
+
+Approach:
+On one physical host, there will be 2 guest OSes: a Linux guest and a GERT bootloader guest. In Linux, the programmer can
+write and compile GERT programs. After storing the GERT program in a known memory location, or some kind of VirtIO buffer,
+the user can escape into the VMM and restart the GERT bootloader guest. The GERT bootloader will read the GERT program out of
+storage and run it.
+
+Challenges:
+How to make Linux relinquish cpus and hardware for GERT to use them exclusively?
