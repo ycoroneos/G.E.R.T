@@ -1,10 +1,20 @@
 #Makefile for ARM barebones development
 
+UPROG ?= .
+
 GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
 XVISOR := $(realpath ../../xvisor/)
 
-LINKADDR := 0x40000000
+GOLINK := 0x40000000
+GOBIN := $(realpath ../../golang_embedded/bin/go)
+GOARCH := GOOS=linux GOARCH=arm GOARM=7
+GOLINKFLAGS := "-T $(GOLINK) -E main.Entry"
+GOCMD := $(GOARCH) $(GOBIN)
+GO_SRC = $(wildcard $(UPROG)/*.go)
+GO_OBJ := $(BUILDIR)/kernel
+
+LINKADDR := 0x45000000
 C_SRC += $(wildcard boot/*.c)
 AS_SRC += $(wildcard boot/*.S)
 C_OBJ := $(patsubst boot/%.c,$(BUILDIR)/%.c.o,$(C_SRC))
@@ -17,7 +27,6 @@ CFLAGS := -O0 -std=gnu99 -Wall -Wextra -fno-builtin -mfpu=neon-vfpv4 -mfloat-abi
           -march=armv7ve -mtune=cortex-a15 -ffreestanding -nostartfiles -fno-pic -Iboot/ \
 					-DLINK=$(LINKADDR)
 
-#LFLAGS := $(CFLAGS) -Tboot/link.ld
 LFLAGS := $(CFLAGS) -Ttext $(LINKADDR) -e_init_vectors
 
 
@@ -44,9 +53,20 @@ all: $(BOOT_TARGET).elf
 		-DINITRD=$(BUILDIR)/build/disk.img $(XVISOR)/docs/arm/fast_model_boot.S -o $(BUILDIR)/build/fast_model_boot.axf
 
 #linker
-$(BOOT_TARGET).elf: $(BOOT_OBJ)
+$(BOOT_TARGET).elf: $(GO_OBJ).elf $(BOOT_OBJ)
 	@echo "linking " $(BOOT_OBJ)
 	@$(GCCPREFIX)gcc $(LFLAGS) -o $@ $(BOOT_OBJ)
+
+#build GERT program
+$(GO_OBJ).elf: $(GO_SRC)
+	@echo "+GO "$(GO_SRC)
+	@$(GOCMD) build -ldflags $(GOLINKFLAGS) -o $@ $(GO_SRC)
+	$(GCCPREFIX)objdump -D $(GO_OBJ).elf > $(GO_OBJ).dump
+	$(GCCPREFIX)readelf -a $(GO_OBJ).elf > $(GO_OBJ).read
+	$(GCCPREFIX)objcopy -O binary $(GO_OBJ).elf $(GO_OBJ).bin
+	./hackbin.py $(GO_OBJ).bin $(GO_OBJ)_hacked.bin
+	hexdump $(GO_OBJ).bin > $(GO_OBJ).hex
+	hexdump $(GO_OBJ)_hacked.bin > $(GO_OBJ)_hacked.hex
 
 #build a c file
 $(BUILDIR)/%.c.o : boot/%.c
@@ -67,6 +87,9 @@ bytecode: test.s
 	$(GCCPREFIX)gcc $(CFLAGS) -c test.s -o test.o
 	$(GCCPREFIX)objdump -d -S test.o
 print-%: ; @echo $*=$($*)
+
+runtime:
+	cd ../../golang_embedded/src && ./rebuild_arm.sh
 
 run:
 	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 $(BUILDIR)/build/fast_model_boot.axf

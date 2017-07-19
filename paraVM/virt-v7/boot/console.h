@@ -27,4 +27,5 @@ void vprintfmt(void *putdat, const char *fmt, va_list ap);
 int vcprintf(const char *fmt, va_list ap);
 int cprintf(const char *fmt, ...);
 size_t strnlen(const char *s, size_t maxlen);
+char getchar();
 #endif

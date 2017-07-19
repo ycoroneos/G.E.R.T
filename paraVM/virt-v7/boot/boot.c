@@ -166,10 +166,8 @@ int main()
   consoleinit();
   cprintf("---------------------------------------------\r\n");
   cprintf("Welcome to the GERT Bootloader, 16 is %x hex!\r\n",16);
-  while (1)
-  {
-    cprintf("hoooo");
-  }
+  cprintf("press c to continue booting\r\n");
+  while (getchar() != 'c');
 
   //load our kernel
   load_go();

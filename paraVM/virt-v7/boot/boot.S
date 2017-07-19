@@ -293,7 +293,7 @@ L_fiq_handler:
 	.balign 0x1000
 
 gobin_start:
-	//	.incbin "obj/kernel.elf"
+		.incbin "obj/kernel.elf"
 
 gobin_end:
 

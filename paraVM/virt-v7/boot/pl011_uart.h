@@ -21,6 +21,7 @@
 #define TXE     0x1<<8
 #define EN      0x1
 #define TXFF    0x1<<5
+#define RXFE 0x10
 
 
 //register definitions
@@ -49,5 +50,6 @@
 void uart_setup();
 void uart_tx(uint8_t);
 void puts(char *);
+char uart_getc();
 
 #endif

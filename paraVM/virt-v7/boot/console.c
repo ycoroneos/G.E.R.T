@@ -476,3 +476,12 @@ cputs(char *string)
 {
   puts(string);
 }
+
+char
+getchar()
+{
+  char c=uart_getc();
+  consputc(c);
+  return c;
+}
+

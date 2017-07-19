@@ -44,3 +44,12 @@ void puts(char *string)
     uart_tx(string[i]);
   }
 }
+
+char
+uart_getc()
+{
+  //wait for data
+  while (*UARTFR & RXFE);
+  char c = *UARTDR;
+  return c;
+}
