@@ -177,11 +177,11 @@ int main()
       :"r"(kernel_start)
       :"r5"
       );
-  asm volatile("mov sp, %0"
-      :
-      :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
-      :"sp"
-      );
+  //asm volatile("mov sp, %0"
+   //   :
+    //  :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
+     // :"sp"
+      //);
   cprintf("enter go\n");
   ((void (*)(void)) (go_load_addr))();
   panic("should not be here");
