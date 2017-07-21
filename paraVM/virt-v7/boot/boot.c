@@ -29,7 +29,8 @@ struct trapframe {
 };
 
 const uint32_t RAM_START = 0x40000000;  //RAM starts at 1GB
-const uint32_t RAM_SIZE = 0x80000000;   //Assume 2GB of RAM
+//const uint32_t RAM_SIZE = 0x80000000;   //Assume 2GB of RAM
+const uint32_t RAM_SIZE = 0x10000000;   //Assume 256mb of RAM
 const uint32_t ONE_MEG = 0x00100000;    //1MEG in hex
 
   //stack for go
@@ -177,11 +178,11 @@ int main()
       :"r"(kernel_start)
       :"r5"
       );
-  //asm volatile("mov sp, %0"
-   //   :
-    //  :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
-     // :"sp"
-      //);
+//  asm volatile("mov sp, %0"
+//      :
+//      :"r"((RAM_START + RAM_SIZE - ONE_MEG + stacksize) & -16)
+//      :"sp"
+//      );
   cprintf("enter go\n");
   ((void (*)(void)) (go_load_addr))();
   panic("should not be here");

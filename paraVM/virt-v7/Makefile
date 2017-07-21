@@ -92,7 +92,7 @@ runtime:
 	cd ../../golang_embedded/src && ./rebuild_arm.sh
 
 run:
-	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 $(BUILDIR)/build/fast_model_boot.axf
+	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 -C daughterboard.dram_size=8 $(BUILDIR)/build/fast_model_boot.axf
 
 rund:
 	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 $(BUILDIR)/build/fast_model_boot.axf -S
