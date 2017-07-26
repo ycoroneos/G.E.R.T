@@ -6,7 +6,7 @@ GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
 XVISOR := $(realpath ../../xvisor/)
 
-GOLINK := 0x40100000
+GOLINK := 0x40300000
 GOBIN := $(realpath ../../golang_embedded/bin/go)
 GOARCH := GOOS=linux GOARCH=arm GOARM=7
 GOLINKFLAGS := "-T $(GOLINK) -E main.Entry"
