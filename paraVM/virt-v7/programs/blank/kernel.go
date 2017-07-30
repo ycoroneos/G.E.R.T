@@ -77,8 +77,8 @@ func pre_init() {
 	runtime.SetIRQcallback(irq)
 
 	//Release spinning cpus
-	runtime.Release(3)
+	//	runtime.Release(3)
 
 	//unmap the first page
-	runtime.Unmap_region(0x0, 0x0, 0x100000)
+	//runtime.Unmap_region(0x0, 0x0, 0x100000)
 }

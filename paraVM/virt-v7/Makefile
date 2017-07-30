@@ -1,10 +1,10 @@
 #Makefile for ARM barebones development
 
-UPROG ?= .
+UPROG ?= programs/blank
 
 GCCPREFIX ?= arm-none-eabi-
 BUILDIR := obj
-XVISOR := $(realpath ../../xvisor/)
+XVISOR := $(realpath ../../xvisor2/)
 
 GOLINK := 0x40300000
 GOBIN := $(realpath ../../golang_embedded/bin/go)
@@ -46,7 +46,7 @@ all: $(BOOT_TARGET).elf
 	cp -f $(BOOT_TARGET).bin $(BUILDIR)/build/disk/images/arm32/virt-v7/firmware.bin
 	cp -f boot/nor_flash.list $(BUILDIR)/build/disk/images/arm32/virt-v7/nor_flash.list
 	genext2fs -B 1024 -b 16384 -d $(BUILDIR)/build/disk $(BUILDIR)/build/disk.img
-	arm-linux-gnueabi-gcc -nostdlib -march=armv7ve -mcpu=cortex-a15 -e start_boot -Wl,--build-id=none -Wl,-Ttext=0x80000000 \
+	arm-linux-gnueabi-gcc -nostdlib -march=armv7ve -mtune=cortex-a15 -e start_boot -Wl,--build-id=none -Wl,-Ttext=0x80000000 \
 		-DSPIN_LOCATION=0x1c010030 -DSPIN_LOOP_ADDR=0x14000000 -DUART_PL011 -DUART_PL011_BASE=0x1c090000 \
 		-DGENTIMER_FREQ=100000000 -DGICv2 -DGIC_DIST_BASE=0x2c001000 -DGIC_CPU_BASE=0x2c002000 \
 		-DIMAGE=$(XVISOR)/build/vmm.bin -DDTB=$(XVISOR)/build/arch/arm/board/generic/dts/vexpress/a15/one_guest_virt-v7.dtb \
@@ -91,8 +91,11 @@ print-%: ; @echo $*=$($*)
 runtime:
 	cd ../../golang_embedded/src && ./rebuild_arm.sh
 
+xvisor:
+	cd $(XVISOR) && ./virtv7_build.sh
+
 run:
 	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 -C daughterboard.dram_size=8 $(BUILDIR)/build/fast_model_boot.axf
 
 rund:
-	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 $(BUILDIR)/build/fast_model_boot.axf -S
+	ARMLMD_LICENSE_FILE=~/Downloads/license.dat ~/FVP_VE_Cortex-A15x124/models/Linux64_GCC-4.9/FVP_VE_Cortex-A15x4 -C daughterboard.dram_size=8 $(BUILDIR)/build/fast_model_boot.axf -S -P
