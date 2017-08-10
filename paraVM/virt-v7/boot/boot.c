@@ -162,12 +162,21 @@ static void load_go()
   }
 }
 
+void yell()
+{
+  cprintf("ahhh");
+}
+
 int main()
 {
   consoleinit();
   cprintf("---------------------------------------------\r\n");
   cprintf("Welcome to the GERT Bootloader, 16 is %x hex!\r\n",16);
   cprintf("press c to continue booting\r\n");
+  //uint32_t val = *((uint32_t*)(0x40000000+0x1c010030));
+  //uint32_t val = *((uint32_t*)(0xF0000000));
+  //cprintf("val at adrr is %x\r\n", val);
+  //*((uint32_t*)(0x010030)) = yell;
   while (getchar() != 'c');
 
   //load our kernel

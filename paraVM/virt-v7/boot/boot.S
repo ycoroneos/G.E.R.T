@@ -56,8 +56,33 @@ linkaddr:
 vectors_lva:
 	.long _init_vectors
 
-L_start:
+spin_addr:
+	.word 0x0
 
+//spin_reloc:
+//	.long reloc
+
+L_start:
+	//all cpus start here
+	//primary cpu goes on ahead while secondary cpus enter wfe state
+	mrc p15, 0, r0, c0, c0, 5
+	and r0, r0, #3
+	cmp r0, #0
+	beq primary 				//primary cpu goes on ahead
+											//secondary cpus enter a spin
+second_loop:
+//	wfi 								//wake on interrupt
+//	ldr pc, spin_reloc 	//jump to the correct lva
+//reloc:
+//	ldr r0, spin_addr 	//load the spin address
+	//cmp r0, #0 					//if it's 0,
+	//cmp r0, r0 					//if it's 0,
+	//beq second_loop 		//then go back to sleep
+	b second_loop
+	bx r0 							//else jump to entry point
+
+	//primary cpu continues from here
+primary:
 	// we might be loaded anywhere so calculate the offset and then relocate
 	ldr r0, L_bss_end
 	ldr r1, vectors_lva

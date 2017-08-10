@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"../../embedded"
+	"../../embedded"
 	"fmt"
 	"runtime"
 	"syscall"
@@ -71,13 +71,13 @@ func self_warnings() {
 //If a user doesnt want IRQs then they should never enable one. The GIC will just be ON but do nothing
 func pre_init() {
 	//enable GIC
-	//	embedded.GIC_init(false)
+	embedded.GIC_init(false)
 
 	//set IRQ callback function
 	runtime.SetIRQcallback(irq)
 
 	//Release spinning cpus
-	//	runtime.Release(3)
+	//runtime.Release(1)
 
 	//unmap the first page
 	//runtime.Unmap_region(0x0, 0x0, 0x100000)
