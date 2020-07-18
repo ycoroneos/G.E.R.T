@@ -62,7 +62,7 @@ Then make sure you have the `deb-src` repositories uncommented in `/etc/apt/sour
 
      sudo apt install gcc-arm-none-eabi gdb-arm-none-eabi golang git
      sudo apt-get build-dep golang qemu
-     git clone git@github.com:ycoroneos/G.E.R.T.git
+     git clone https://github.com/ycoroneos/G.E.R.T.git
      cd G.E.R.T
      git submodule update --recursive --init
      cd qemu && ./configure --target-list=arm-softmmu && make -j4 && cd ..
@@ -83,7 +83,7 @@ xcode command line tools installed.
      brew tap PX4/homebrew-px4
      brew update
      brew install gcc-arm-none-eabi qemu
-     git clone git@github.com:ycoroneos/G.E.R.T.git
+     git clone https://github.com/ycoroneos/G.E.R.T.git
      cd G.E.R.T
      git submodule update --recursive --init
      cd qemu && ./configure --target-list=arm-softmmu && make -j4 && cd ..
